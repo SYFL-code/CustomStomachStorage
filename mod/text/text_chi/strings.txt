@@ -1,0 +1,14 @@
+Custom Stomach Storage|自定义胃储存容量
+
+CustomStomachStorage.Redlyn-name|自定义胃储存容量
+CustomStomachStorage.Redlyn-description|自定义蛞蝓猫的胃部储存容量。
+
+Custom slugcat stomach storage capacity.|自定义蛞蝓猫的胃部储存容量。
+
+Options|选项
+Custom Stomach Storage|自定义胃储存容量
+Stomach capacity|胃部容量
+
+
+
+DebugMode|调试模式
