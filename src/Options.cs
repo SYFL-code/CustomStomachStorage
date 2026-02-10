@@ -13,12 +13,12 @@ using UnityEngine;
 
 namespace CustomStomachStorage
 {
-	public class Options : OptionInterface
-	{
-		public static readonly Options Instance = new Options();
+    public class Options : OptionInterface
+    {
+        public static readonly Options Instance = new Options();
 
-		public readonly Configurable<int> StomachCapacity;
-		public readonly Configurable<bool> DebugMode;
+        public readonly Configurable<int> StomachCapacity;
+        public readonly Configurable<bool> DebugMode;
 
 		public readonly Dictionary<string, Configurable<bool>> SwallowTypes = new Dictionary<string, Configurable<bool>>();
 
@@ -71,16 +71,17 @@ namespace CustomStomachStorage
 			};
 
 
-		Options()
-		{
-			//设置默认值
-			StomachCapacity = config.Bind<int>($"StomachCapacity_conf_CustomStomachStorage", 3, new ConfigAcceptableRange<int>(0, 100));
-			DebugMode = config.Bind<bool>($"DebugMode_conf_CustomStomachStorage", false);
+        Options()
+        {
+            //设置默认值
+            StomachCapacity = config.Bind<int>($"StomachCapacity_conf_CustomStomachStorage", 3, new ConfigAcceptableRange<int>(0, 100));
+
+            DebugMode = config.Bind<bool>($"DebugMode_conf_CustomStomachStorage", false);
 
             foreach (string typeName in otherTypeNames)
             {
                 InitializeSwallowType(typeName, false);
-            }
+        }
             foreach (string typeName in ItemTypeNames)
 			{
 				InitializeSwallowType(typeName, false);
@@ -97,17 +98,17 @@ namespace CustomStomachStorage
 		}
 
 
-		public override void Initialize()
-		{
+        public override void Initialize()
+        {
 			// 选项卡
-			OpTab opTab = new OpTab(this, "Options");
+            OpTab opTab = new OpTab(this, "Options");
 			OpTab typeTab = new OpTab(this, "Type");
-			InGameTranslator inGameTranslator = Custom.rainWorld.inGameTranslator;
-			this.Tabs = new OpTab[]
-			{
+            InGameTranslator inGameTranslator = Custom.rainWorld.inGameTranslator;
+            this.Tabs = new OpTab[]
+            {
 				opTab,
 				typeTab
-			};
+            };
 
 			const float Title_X = 10f;
 			const float Title_Y = 560;
@@ -120,17 +121,17 @@ namespace CustomStomachStorage
 			const float spacing = 30f; // 元素间距
 
 			// 标题
-			opTab.AddItems(new UIelement[]
-			{
+            opTab.AddItems(new UIelement[]
+            {
 				new OpLabel(Title_X, Title_Y, inGameTranslator.Translate("Custom Stomach Storage"), true)
-				{
-					alignment = FLabelAlignment.Left
-				}
-			});
+                {
+                    alignment = FLabelAlignment.Left
+                }
+            });
 
-			//选项
-			opTab.AddItems(new UIelement[]
-			{
+            //选项
+            opTab.AddItems(new UIelement[]
+            {
 				new OpTextBox(StomachCapacity, new Vector2(Title_X, OpBox_Y - 0f), 50f),
 				new OpLabel(new Vector2(OpLabel_X, OpBox_Y - 0f), new Vector2(200f, 24f), inGameTranslator.Translate("Stomach capacity"), FLabelAlignment.Left, false, null),
 
@@ -138,7 +139,14 @@ namespace CustomStomachStorage
 				new OpLabel(new Vector2(OpLabel_X, 40f), new Vector2(200f, 24f), inGameTranslator.Translate("DebugMode"), FLabelAlignment.Left, false, null)
 			});
 
+				//new OpCheckBox(OpCheckBoxStunDuration, new Vector2(10, 420)),
+				/*new OpTextBox(OpCheckBoxStunDuration, new Vector2(10, 420), 50f),
+                new OpLabel(new Vector2(75f, 420f), new Vector2(200f, 24f), inGameTranslator.Translate("Stun duration"), FLabelAlignment.Left, false, null),*/
 
+				/*new OpCheckBox(OpCheckBoxSaveIceData_conf, new Vector2(10, 390)),
+				new OpLabel(new Vector2(50f, 390f), new Vector2(200f, 24f), inGameTranslator.Translate("Save Ice data to the next cycle(Save bug not fixed yet)"), FLabelAlignment.Left, false, null),
+				new OpCheckBox(OpCheckBoxUnlockIceShieldNum_conf, new Vector2(10, 360)),
+				new OpLabel(new Vector2(50f, 360f), new Vector2(200f, 24f), inGameTranslator.Translate("Unlock the maximum number of ice shields"), FLabelAlignment.Left, false, null),*/
 
 			// 类型标题
 			typeTab.AddItems(new UIelement[]
@@ -225,8 +233,8 @@ namespace CustomStomachStorage
 			typeTab.AddItems(ui.ToArray());
 
 
-		}
+        }
 
 
-	}
+    }
 }

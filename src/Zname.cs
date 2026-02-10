@@ -9,54 +9,54 @@ using static SlugBase.Features.FeatureTypes;
 namespace CustomStomachStorage
 {
 	internal class Zname//Scrap 废案
-    {
+	{
 
 		private void A(Player player)
 		{
 			//mklink /j "D:\Steam\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\EnderPearl" "D:\Other\EnderPearl\mod"
 		
-			//存档字符串
-			// 读取存档字符串：
-			// "player_name<svB>玩家A<svA>level<svB>5<svA>coins<svB>100<svA>my_simple_data<svB>123<svA>"
+            //存档字符串
+            // 读取存档字符串：
+            // "player_name<svB>玩家A<svA>level<svB>5<svA>coins<svB>100<svA>my_simple_data<svB>123<svA>"
 
-			// 分割成：
-			// ["player_name<svB>玩家A", "level<svB>5", "coins<svB>100", "my_simple_data<svB>123"]
+            // 分割成：
+            // ["player_name<svB>玩家A", "level<svB>5", "coins<svB>100", "my_simple_data<svB>123"]
 
-			// 再分割每个部分：
-			// "my_simple_data<svB>123" → ["my_simple_data", "123"]
+            // 再分割每个部分：
+            // "my_simple_data<svB>123" → ["my_simple_data", "123"]
 
-			// 发现键是"my_simple_data"，值就是"123"
+            // 发现键是"my_simple_data"，值就是"123"
 
-			//ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1
-
-
-			//层级 分隔符  作用
-			//-------------------------------------------
-			//顶级 <svA>   分隔主项
-			//     <svB>   主项内的键值分隔
-			//二级 <mwA>   分隔子项
-			//	   <mwB>   子项内的键值分隔
-			//三级 <slosA> 分隔子子项
-			//     <slosB> 子子项内的键值分隔
-			//四级 <svC>   分隔子子子项
-			//	   <svD>   子子子项内的键值分隔
-
-			// 最终保存格式：
-			// ESS_savefield_name<svB>Player0<mwB>物品1,物品2<mwA>Player1<mwB>物品3<mwA><svA>
-
-			//Debug
-			//Debug.Log("普通消息");
-			//Debug.LogWarning("警告消息");
-			//Debug.LogError("错误消息");
+            //ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1
 
 
-			//room
-			//player.room.game.Players
-			//player.room.game.GetStorySession.Players
-			//player.room.game.warpDeferPlayerSpawnRoomName
-			//player.room.abstractRoom.name
+            //层级 分隔符  作用
+            //-------------------------------------------
+            //顶级 <svA>   分隔主项
+            //     <svB>   主项内的键值分隔
+            //二级 <mwA>   分隔子项
+            //	   <mwB>   子项内的键值分隔
+            //三级 <slosA> 分隔子子项
+            //     <slosB> 子子项内的键值分隔
+            //四级 <svC>   分隔子子子项
+            //	   <svD>   子子子项内的键值分隔
 
-		}
+            // 最终保存格式：
+            // ESS_savefield_name<svB>Player0<mwB>物品1,物品2<mwA>Player1<mwB>物品3<mwA><svA>
+
+            //Debug
+            //Debug.Log("普通消息");
+            //Debug.LogWarning("警告消息");
+            //Debug.LogError("错误消息");
+
+
+            //room
+            //player.room.game.Players
+            //player.room.game.GetStorySession.Players
+            //player.room.game.warpDeferPlayerSpawnRoomName
+            //player.room.abstractRoom.name
+
+        }
 
 		//保存部分
 		private static string SaveState_SaveToString(On.SaveState.orig_SaveToString orig, SaveState saveState)
@@ -304,5 +304,5 @@ for (int i = 0; i < CreaturesTypesList.Count; i++)
 
 
 
-    }
+	}
 }
