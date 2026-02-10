@@ -23,6 +23,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using static SlugBase.Features.FeatureTypes;
+using Watcher;
 //using UDebug =  UnityEngine.Debug;
 
 
@@ -45,7 +46,8 @@ namespace CustomStomachStorage
 			// Put your custom hooks here!-在此放置你自己的钩子
 			On.PlayerGraphics.Update += PlayerGraphics_Update;
 			On.Player.GrabUpdate += Player_GrabUpdate;
-			On.Player.SwallowObject += Player_SwallowObject;
+            On.Player.CanBeSwallowed += Player_CanBeSwallowed;
+            On.Player.SwallowObject += Player_SwallowObject;
 			On.Player.Regurgitate += Player_Regurgitate;
 			//On.SaveState.BringUpToDate += SaveState_BringUpToDate;
 			//On.Player.SaveStomachObjectInPlayerState += Player_SaveStomachObjectInPlayerState;
@@ -63,18 +65,19 @@ namespace CustomStomachStorage
 		}
 
 
-		// add this to do the opposite of whatever you did in OnEnable()
-		//添加此命令以执行与您在Enable()中所做的相反的操作
-		// otherwise you'll wind up with two methods being called
-		//否则，您将会调用两个方法
-		public void OnDisable()
+        // add this to do the opposite of whatever you did in OnEnable()
+        //添加此命令以执行与您在Enable()中所做的相反的操作
+        // otherwise you'll wind up with two methods being called
+        //否则，您将会调用两个方法
+        public void OnDisable()
 		{
 			On.RainWorld.OnModsInit -= Extras.WrapInit(LoadResources);
 
 			// Put your custom hooks here!-在此放置你自己的钩子
 			On.PlayerGraphics.Update -= PlayerGraphics_Update;
 			On.Player.GrabUpdate -= Player_GrabUpdate;
-			On.Player.SwallowObject -= Player_SwallowObject;
+            On.Player.CanBeSwallowed -= Player_CanBeSwallowed;
+            On.Player.SwallowObject -= Player_SwallowObject;
 			On.Player.Regurgitate -= Player_Regurgitate;
 			//On.SaveState.BringUpToDate -= SaveState_BringUpToDate;
 			//On.Player.SaveStomachObjectInPlayerState -= Player_SaveStomachObjectInPlayerState;
@@ -119,21 +122,21 @@ namespace CustomStomachStorage
 			}
 
 			// 获取第一个物品
-			public static AbstractPhysicalObject GetFirstStomachItem(Player player)
+			public static AbstractPhysicalObject? GetFirstStomachItem(Player player)
 			{
 				var contents = GetStomachContents(player);
 				return contents.Count > 0 ? contents[0] : null;
 			}
 
 			// 获取最后一个物品
-			public static AbstractPhysicalObject GetLastStomachItem(Player player)
+			public static AbstractPhysicalObject? GetLastStomachItem(Player player)
 			{
 				var contents = GetStomachContents(player);
 				return contents.Count > 0 ? contents[contents.Count - 1] : null;
 			}
 
 			// 移除指定位置的物品
-			public static AbstractPhysicalObject RemoveStomachItem(Player player, int index)
+			public static AbstractPhysicalObject? RemoveStomachItem(Player player, int index)
 			{
 				var contents = GetStomachContents(player);
 				if (index >= 0 && index < contents.Count)
@@ -170,8 +173,174 @@ namespace CustomStomachStorage
 			}
 		}
 
-		// 修改SwallowObject方法
-		private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player player, int grasp)
+        private bool Player_CanBeSwallowed(On.Player.orig_CanBeSwallowed orig, Player player, PhysicalObject testObj)
+        {
+            if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear)
+            {
+                return false;
+            }
+			var SwallowTypes = Options.Instance.SwallowTypes;
+
+            if (SwallowTypes.TryGetValue("All", out var conf) && conf.Value)
+            {
+                return true;
+            }
+            if (testObj is Creature && Options.Instance?.Creature?.Value == true)
+            {
+                return true;
+            }
+            if (!(testObj is Creature) && Options.Instance?.Item?.Value == true)
+            {
+                return true;
+            }
+
+            if (testObj is Lizard && Options.Instance?.Lizard?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is Vulture && Options.Instance?.Vulture?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is Centipede && Options.Instance?.Centipede?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is Spider && Options.Instance?.Spider?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is DropBug && Options.Instance?.DropBug?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is BigEel && Options.Instance?.BigEel?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is MirosBird && Options.Instance?.MirosBird?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is DaddyLongLegs && Options.Instance?.DaddyLongLegs?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is Cicada && Options.Instance?.Cicada?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is Snail && Options.Instance?.Snail?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is Scavenger && Options.Instance?.Scavenger?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is LanternMouse && Options.Instance?.LanternMouse?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is JetFish && Options.Instance?.JetFish?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is TubeWorm && Options.Instance?.TubeWorm?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is Deer && Options.Instance?.Deer?.Value == true)
+            {
+                return true;
+            }
+
+            if (testObj is Spear && Options.Instance?.Spear?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is VultureMask && Options.Instance?.VultureMask?.Value == true)
+            {
+                return true;
+            }
+            if (testObj is NeedleEgg && Options.Instance?.NeedleEgg?.Value == true)
+            {
+                return true;
+            }
+            if (ModManager.MSC)
+			{
+                if (testObj is Yeek && Options.Instance?.Yeek?.Value == true)
+                {
+                    return true;
+                }
+                if (testObj is Inspector && Options.Instance?.Inspector?.Value == true)
+                {
+                    return true;
+                }
+                if (testObj is StowawayBug && Options.Instance?.StowawayBug?.Value == true)
+                {
+                    return true;
+                }
+
+                if (testObj is JokeRifle && Options.Instance?.JokeRifle?.Value == true)
+                {
+                    return true;
+                }
+                if (testObj is EnergyCell && Options.Instance?.EnergyCell?.Value == true)
+                {
+                    return true;
+                }
+                if (testObj is MoonCloak && Options.Instance?.MoonCloak?.Value == true)
+                {
+                    return true;
+                }
+            }
+            if (ModManager.Watcher)
+            {
+                if (testObj is Loach && Options.Instance?.Loach?.Value == true)
+                {
+                    return true;
+                }
+                if (testObj is BigMoth && Options.Instance?.BigMoth?.Value == true)
+                {
+                    return true;
+                }
+                if (testObj is SkyWhale && Options.Instance?.SkyWhale?.Value == true)
+                {
+                    return true;
+                }
+                if (testObj is BoxWorm && Options.Instance?.BoxWorm?.Value == true)
+                {
+                    return true;
+                }
+                if (testObj is DrillCrab && Options.Instance?.DrillCrab?.Value == true)
+                {
+                    return true;
+                }
+                if (testObj is Tardigrade && Options.Instance?.Tardigrade?.Value == true)
+                {
+                    return true;
+                }
+                if (testObj is Barnacle && Options.Instance?.Barnacle?.Value == true)
+                {
+                    return true;
+                }
+                if (testObj is Frog && Options.Instance?.Frog?.Value == true)
+                {
+                    return true;
+                }
+
+                if (testObj is Boomerang && Options.Instance?.Boomerang?.Value == true)
+                {
+                    return true;
+                }
+            }
+
+            return orig(player, testObj);
+        }
+
+        // 修改SwallowObject方法
+        private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player player, int grasp)
 		{
 			UDebug.Log("SwallowObject_B");
 			if (!ESS.HasSpace(player))
@@ -373,7 +542,7 @@ namespace CustomStomachStorage
 		//最后一次的存档数据
 		public static Dictionary<int, List<string>> playerStomachsDict = new Dictionary<int, List<string>>();
 		//全局系统变量
-		public static WeakReference<RainWorldGame> gameRef = null;
+		public static WeakReference<RainWorldGame>? gameRef = null;
 
 		private static void SaveState_LoadGame(On.SaveState.orig_LoadGame orig, SaveState saveState, string str, RainWorldGame game_)
 		{
@@ -516,7 +685,7 @@ namespace CustomStomachStorage
 							continue;
 						}
 
-						string savedDataOther = sD[1];
+						string? savedDataOther = sD[1];
 						UDebug.Log($">>> [33] savedDataOther 长度: {savedDataOther?.Length ?? -1}");
 
 						// 解析玩家编号
@@ -529,7 +698,7 @@ namespace CustomStomachStorage
 						}
 						UDebug.Log($">>> [35] 玩家编号 N = {N}");
 
-						if (string.IsNullOrEmpty(savedDataOther))
+						if (string.IsNullOrEmpty(savedDataOther) || savedDataOther == null)
 						{
 							UDebug.LogWarning($">>> [WARN] Player{N} 数据为空");
 							continue;
@@ -539,7 +708,7 @@ namespace CustomStomachStorage
 						List<string> result = savedDataOther.Split(',').ToList();
 						UDebug.Log($">>> [37] 物品数量: {result?.Count ?? -1}");
 
-						if (result.Count > 0 && N >= 0)
+						if (result != null && result.Count > 0 && N >= 0)
 						{
 							UDebug.Log($">>> [44] 保存 Player{N} 的 {result.Count} 个物品");
 							playerStomachsDict[N] = result;
@@ -597,8 +766,7 @@ namespace CustomStomachStorage
 							string strings = "";
 							foreach (var item in stomach)
 							{
-								AbstractCreature abstractCreature3 = item as AbstractCreature;
-								if (abstractCreature3 != null)
+								if (item is AbstractCreature abstractCreature3)
 								{
 									if (game.world.GetAbstractRoom(abstractCreature3.pos.room) == null)
 									{
@@ -674,7 +842,7 @@ namespace CustomStomachStorage
 			orig(player, abstractCreature, world);
 
 			//赋值给全局变量供其他函数使用
-			RainWorldGame game = player?.room?.world?.game;
+			RainWorldGame? game = player.room?.world?.game;
 			if (game == null)
 			{
 				UDebug.LogError($">>> [ERR] 设置 game 失败");
@@ -716,7 +884,7 @@ namespace CustomStomachStorage
 					foreach (var item in stomachStr)
 					{
 						UDebug.Log($">>> [38] 处理物品: {item?.Substring(0, Math.Min(50, item?.Length ?? 0))}...");
-						if (string.IsNullOrWhiteSpace(item))
+						if (string.IsNullOrWhiteSpace(item) || item == null)
 						{
 							UDebug.Log(">>>[39] 物品为空：跳过");
 							continue;
@@ -729,7 +897,7 @@ namespace CustomStomachStorage
 							}
 						}
 
-						AbstractPhysicalObject obj = null;
+						AbstractPhysicalObject? obj = null;
 						try
 						{
 							if (item.Contains("<oA>"))
@@ -756,11 +924,8 @@ namespace CustomStomachStorage
 						if (obj != null)
 						{
 							UDebug.Log(">>> [43] 添加物品到列表");
-							if (obj != null)
-							{
-								obj.pos = abstractCreature.pos;
-							}
-							stomachContents.Add(obj);
+                            obj.pos = abstractCreature.pos;
+                            stomachContents.Add(obj);
 							//stomach.Add(obj);
 						}
 						else

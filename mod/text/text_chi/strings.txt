@@ -1,14 +1,24 @@
-Custom Stomach Storage|自定义胃储存容量
+Custom Stomach Storage|自定义胃部储存
 
-CustomStomachStorage.Redlyn-name|自定义胃储存容量
-CustomStomachStorage.Redlyn-description|自定义蛞蝓猫的胃部储存容量。
+CustomStomachStorage.Redlyn-name|自定义胃部储存
+CustomStomachStorage.Redlyn-description|自定义蛞蝓猫的胃部储存物品的类型和数量。<LINE><LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
 
-Custom slugcat stomach storage capacity.<LINE><LINE>Source code: https://github.com/SYFL-code/CustomStomachStorage|自定义蛞蝓猫的胃部储存容量。<LINE><LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
+Customize the type and quantity of items stored in the Slugcat's stomach.<LINE><LINE>Source code: https://github.com/SYFL-code/CustomStomachStorage|自定义蛞蝓猫的胃部储存物品的类型和数量。<LINE><LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
 
 Options|选项
+Type|类型
+
 Custom Stomach Storage|自定义胃储存容量
+Types of swallowing|吞咽类型
+
 Stomach capacity|胃部容量
-
-
-
 DebugMode|调试模式
+
+All|全部
+Spear|矛
+VultureMask|秃鹫面具
+NeedleEgg|面条蝇卵
+JokeRifle|玩笑步枪
+EnergyCell|质量稀释电池
+MoonCloak|斗篷
+Boomerang|回旋镖
