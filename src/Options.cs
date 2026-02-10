@@ -115,7 +115,7 @@ namespace CustomStomachStorage
 			const float Title_X = 10f;
 			const float Title_Y = 560;
 
-			const float Creature_X = 210f;
+			const float Creature_X = 230f;
 
 			const float OpBox_Y = 450f;
 			const float OpLabel_X = 75f;
@@ -178,8 +178,8 @@ namespace CustomStomachStorage
 
 				if (kvp.Key == "All")
 				{
-					cb = new OpCheckBox(kvp.Value, new Vector2(Title_X + (Creature_X / 2), OpBox_Y));
-					label = new OpLabel(new Vector2(OpLabel_X + (Creature_X / 2), OpBox_Y), new Vector2(200f, 24f),
+					cb = new OpCheckBox(kvp.Value, new Vector2(Title_X + Creature_X, OpBox_Y));
+					label = new OpLabel(new Vector2(OpLabel_X + Creature_X, OpBox_Y), new Vector2(200f, 24f),
 												inGameTranslator.Translate(kvp.Key),
 												FLabelAlignment.Left, false, null);
 				}
