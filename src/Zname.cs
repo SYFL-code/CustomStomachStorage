@@ -13,6 +13,8 @@ namespace CustomStomachStorage
 
 		private void A(Player player)
 		{
+		    //mklink /j "D:\Steam\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\EnderPearl" "D:\Other\EnderPearl\mod"
+		
             //存档字符串
             // 读取存档字符串：
             // "player_name<svB>玩家A<svA>level<svB>5<svA>coins<svB>100<svA>my_simple_data<svB>123<svA>"

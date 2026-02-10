@@ -12,50 +12,26 @@ namespace CustomStomachStorage
 
 		public static void Log(string message)
 		{
-            if (Options.Instance?.DebugMode != null)
-            {
-                DebugMode = Options.Instance.DebugMode.Value;
-            }
-            if (DebugMode)
+            if ((Options.Instance?.DebugMode != null && Options.Instance.DebugMode.Value) || DebugMode)
 			{
 				UnityEngine.Debug.Log(message);
 			}
-            /*else
-            {
-                UnityEngine.Debug.Log(message);
-            }*/
         }
 
 		public static void LogWarning(string message)
 		{
-            if (Options.Instance?.DebugMode != null)
+            if ((Options.Instance?.DebugMode != null && Options.Instance.DebugMode.Value) || DebugMode)
             {
-                DebugMode = Options.Instance.DebugMode.Value;
-            }
-            if (DebugMode)
-			{
 				UnityEngine.Debug.LogWarning(message);
 			}
-            /*else
-            {
-                UnityEngine.Debug.LogWarning(message);
-            }*/
         }
 
 		public static void LogError(string message)
 		{
-            if (Options.Instance?.DebugMode != null)
+            if ((Options.Instance?.DebugMode != null && Options.Instance.DebugMode.Value) || DebugMode)
             {
-                DebugMode = Options.Instance.DebugMode.Value;
-            }
-            if (DebugMode)
-			{
 				UnityEngine.Debug.LogError(message);
 			}
-            /*else
-            {
-                UnityEngine.Debug.LogError(message);
-            }*/
         }
 
 	}

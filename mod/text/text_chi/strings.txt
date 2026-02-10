@@ -3,7 +3,7 @@ Custom Stomach Storage|自定义胃储存容量
 CustomStomachStorage.Redlyn-name|自定义胃储存容量
 CustomStomachStorage.Redlyn-description|自定义蛞蝓猫的胃部储存容量。
 
-Custom slugcat stomach storage capacity.|自定义蛞蝓猫的胃部储存容量。
+Custom slugcat stomach storage capacity.<LINE><LINE>Source code: https://github.com/SYFL-code/CustomStomachStorage|自定义蛞蝓猫的胃部储存容量。<LINE><LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
 
 Options|选项
 Custom Stomach Storage|自定义胃储存容量
