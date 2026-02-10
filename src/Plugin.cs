@@ -179,168 +179,115 @@ namespace CustomStomachStorage
             {
                 return false;
             }
-			var SwallowTypes = Options.Instance.SwallowTypes;
 
-            if (SwallowTypes.TryGetValue("All", out var conf) && conf.Value)
-            {
-                return true;
-            }
-            if (testObj is Creature && Options.Instance?.Creature?.Value == true)
-            {
-                return true;
-            }
-            if (!(testObj is Creature) && Options.Instance?.Item?.Value == true)
+            var SwallowTypes = Options.Instance.SwallowTypes;
+            // 检查 All
+            if (SwallowTypes.TryGetValue("All", out var allConf) && allConf.Value)
             {
                 return true;
             }
 
-            if (testObj is Lizard && Options.Instance?.Lizard?.Value == true)
+            // 辅助方法：检查特定类型
+            bool CheckType<T>(string typeName) where T : PhysicalObject
+            {
+                return testObj is T && SwallowTypes.TryGetValue(typeName, out var conf) && conf.Value;
+            }
+
+            // 检查 Item 和 Creature
+            bool isCreature = testObj is Creature;
+            if (isCreature && CheckType<Creature>("Creature"))
             {
                 return true;
             }
-            if (testObj is Vulture && Options.Instance?.Vulture?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is Centipede && Options.Instance?.Centipede?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is Spider && Options.Instance?.Spider?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is DropBug && Options.Instance?.DropBug?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is BigEel && Options.Instance?.BigEel?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is MirosBird && Options.Instance?.MirosBird?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is DaddyLongLegs && Options.Instance?.DaddyLongLegs?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is Cicada && Options.Instance?.Cicada?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is Snail && Options.Instance?.Snail?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is Scavenger && Options.Instance?.Scavenger?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is LanternMouse && Options.Instance?.LanternMouse?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is JetFish && Options.Instance?.JetFish?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is TubeWorm && Options.Instance?.TubeWorm?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is Deer && Options.Instance?.Deer?.Value == true)
+            if (!isCreature && CheckType<PhysicalObject>("Item"))
             {
                 return true;
             }
 
-            if (testObj is Spear && Options.Instance?.Spear?.Value == true)
+            // 检查具体的生物类型
+            if (isCreature)
             {
-                return true;
-            }
-            if (testObj is VultureMask && Options.Instance?.VultureMask?.Value == true)
-            {
-                return true;
-            }
-            if (testObj is NeedleEgg && Options.Instance?.NeedleEgg?.Value == true)
-            {
-                return true;
-            }
-            if (ModManager.MSC)
-			{
-                if (testObj is Yeek && Options.Instance?.Yeek?.Value == true)
-                {
-                    return true;
-                }
-                if (testObj is Inspector && Options.Instance?.Inspector?.Value == true)
-                {
-                    return true;
-                }
-                if (testObj is StowawayBug && Options.Instance?.StowawayBug?.Value == true)
+                if (CheckType<Lizard>("Lizard") ||
+                    CheckType<Vulture>("Vulture") ||
+                    CheckType<Centipede>("Centipede") ||
+                    CheckType<Spider>("Spider") ||
+                    CheckType<DropBug>("DropBug") ||
+                    CheckType<BigEel>("BigEel") ||
+                    CheckType<MirosBird>("MirosBird") ||
+                    CheckType<DaddyLongLegs>("DaddyLongLegs") ||
+                    CheckType<Cicada>("Cicada") ||
+                    CheckType<Snail>("Snail") ||
+                    CheckType<Scavenger>("Scavenger") ||
+                    CheckType<LanternMouse>("LanternMouse") ||
+                    CheckType<JetFish>("JetFish") ||
+                    CheckType<TubeWorm>("TubeWorm") ||
+                    CheckType<Deer>("Deer"))
                 {
                     return true;
                 }
 
-                if (testObj is JokeRifle && Options.Instance?.JokeRifle?.Value == true)
+                // MSC 生物
+                if (ModManager.MSC)
                 {
-                    return true;
+                    if (CheckType<Yeek>("Yeek") ||
+                        CheckType<Inspector>("Inspector") ||
+                        CheckType<StowawayBug>("StowawayBug"))
+                    {
+                        return true;
+                    }
                 }
-                if (testObj is EnergyCell && Options.Instance?.EnergyCell?.Value == true)
+
+                // Watcher 生物
+                if (ModManager.Watcher)
                 {
-                    return true;
-		}
-                if (testObj is MoonCloak && Options.Instance?.MoonCloak?.Value == true)
-                {
-                    return true;
+                    if (CheckType<Loach>("Loach") ||
+                        CheckType<BigMoth>("BigMoth") ||
+                        CheckType<SkyWhale>("SkyWhale") ||
+                        CheckType<BoxWorm>("BoxWorm") ||
+                        CheckType<DrillCrab>("DrillCrab") ||
+                        CheckType<Tardigrade>("Tardigrade") ||
+                        CheckType<Barnacle>("Barnacle") ||
+                        CheckType<Frog>("Frog"))
+                    {
+                        return true;
+                    }
                 }
             }
-            if (ModManager.Watcher)
+            else // 检查物品类型
             {
-                if (testObj is Loach && Options.Instance?.Loach?.Value == true)
-                {
-                    return true;
-                }
-                if (testObj is BigMoth && Options.Instance?.BigMoth?.Value == true)
-                {
-                    return true;
-                }
-                if (testObj is SkyWhale && Options.Instance?.SkyWhale?.Value == true)
-                {
-                    return true;
-                }
-                if (testObj is BoxWorm && Options.Instance?.BoxWorm?.Value == true)
-                {
-                    return true;
-                }
-                if (testObj is DrillCrab && Options.Instance?.DrillCrab?.Value == true)
-                {
-                    return true;
-                }
-                if (testObj is Tardigrade && Options.Instance?.Tardigrade?.Value == true)
-                {
-                    return true;
-                }
-                if (testObj is Barnacle && Options.Instance?.Barnacle?.Value == true)
-                {
-                    return true;
-                }
-                if (testObj is Frog && Options.Instance?.Frog?.Value == true)
+                if (CheckType<Spear>("Spear") ||
+                    CheckType<VultureMask>("VultureMask") ||
+                    CheckType<NeedleEgg>("NeedleEgg"))
                 {
                     return true;
                 }
 
-                if (testObj is Boomerang && Options.Instance?.Boomerang?.Value == true)
+                // MSC 物品
+                if (ModManager.MSC)
                 {
-                    return true;
+                    if (CheckType<JokeRifle>("JokeRifle") ||
+                        CheckType<EnergyCell>("EnergyCell") ||
+                        CheckType<MoonCloak>("MoonCloak"))
+                    {
+                        return true;
+                    }
+                }
+
+                // Watcher 物品
+                if (ModManager.Watcher)
+                {
+                    if (CheckType<Boomerang>("Boomerang"))
+                    {
+                        return true;
+                    }
                 }
             }
 
             return orig(player, testObj);
         }
 
-		// 修改SwallowObject方法
-		private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player player, int grasp)
+        // 修改SwallowObject方法
+        private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player player, int grasp)
 		{
             UDebug.Log("SwallowObject_B");
             if (!ESS.HasSpace(player))
@@ -925,10 +872,7 @@ namespace CustomStomachStorage
 						if (obj != null)
 						{
 							UDebug.Log(">>> [43] 添加物品到列表");
-                            if (obj != null)
-                            {
-                                obj.pos = abstractCreature.pos;
-                            }
+                            obj.pos = abstractCreature.pos;
                             stomachContents.Add(obj);
                             //stomach.Add(obj);
                         }
@@ -936,30 +880,23 @@ namespace CustomStomachStorage
 						{
 							UDebug.LogWarning($">>> [WARN] 物品解析结果为 null");
 						}
-
-					}
-
-				}
-			}
+                    }
                     if (!repeat && player.objectInStomach != null)
-				{
+                    {
                         UDebug.Log(">>> 加载 objectInStomach");
-                    stomachContents.Add(player.objectInStomach);
-                }
-
-
+                        stomachContents.Add(player.objectInStomach);
+                    }
 
                 }
-            }
+			}
 
             if (player.objectInStomach != null && stomachContents.Count == 0)
-			{
+            {
                 UDebug.Log(">>> 使用原版 objectInStomach");
                 stomachContents.Add(player.objectInStomach);
-			}
+            }
 
-		}
-
+        }
 
 
 	}

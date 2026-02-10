@@ -22,11 +22,11 @@ namespace CustomStomachStorage
 
 		public readonly Dictionary<string, Configurable<bool>> SwallowTypes = new Dictionary<string, Configurable<bool>>();
 
-		string[] otherTypeNames = {
+		string[] otherTypeNames = {//36
             "All",
             };
 
-        string[] ItemTypeNames = {//35
+        string[] ItemTypeNames = {
 				"Item",
 
 				"Spear",
@@ -57,9 +57,11 @@ namespace CustomStomachStorage
 				"JetFish",
 				"TubeWorm",
 				"Deer",
+
 				"Yeek",
 				"Inspector",
 				"StowawayBug",
+
 				"Loach",
 				"BigMoth",
 				"SkyWhale",
@@ -166,6 +168,9 @@ namespace CustomStomachStorage
             float CreaturePos_Y = OpBox_Y;
             int Creaturei = 0;
 
+            HashSet<string> itemSet = new HashSet<string>(ItemTypeNames);
+            HashSet<string> creatureSet = new HashSet<string>(CreatureTypeNames);
+
             foreach (var kvp in SwallowTypes)
 			{
 				OpCheckBox? cb = null;
@@ -179,7 +184,7 @@ namespace CustomStomachStorage
 												FLabelAlignment.Left, false, null);
 				}
 
-				else if (ItemTypeNames.Contains(kvp.Key))
+				else if (itemSet.Contains(kvp.Key))
 				{
 					ItemPos_Y = OpBox_Y - (spacing * (Itemi + 1));
 
@@ -193,7 +198,7 @@ namespace CustomStomachStorage
 					Itemi += 1;
                 }
 
-				else if (CreatureTypeNames.Contains(kvp.Key))
+				else if (creatureSet.Contains(kvp.Key))
 				{
                     if (Creaturei <= 14)
                     {
