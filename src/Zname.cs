@@ -10,6 +10,13 @@ namespace CustomStomachStorage
 {
 	internal class Zname//Scrap 废案
 	{
+		/*public static readonly PlayerKeybind Explode = PlayerKeybind.Register(
+				"example:explode",      // 唯一ID（格式：作者:功能）
+				"Example Mod",          // 模组显示名称
+				"Explode",              // 按键显示名称
+				KeyCode.C,              // 键盘默认键（C键）
+				KeyCode.JoystickButton3 // 手柄默认键（通常是RB或R1）
+			);*/
 
 		private void A(Player player)
 		{

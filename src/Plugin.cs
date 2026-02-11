@@ -2,6 +2,7 @@
 using CoralBrain;
 using Expedition;
 using HUD;
+using ImprovedInput;
 using JollyCoop;
 using JollyCoop.JollyMenu;
 using MoreSlugcats;
@@ -22,31 +23,55 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using static SlugBase.Features.FeatureTypes;
 using Watcher;
+using static CustomStomachStorage.Plugin;
+using static SlugBase.Features.FeatureTypes;
 //using UDebug =  UnityEngine.Debug;
 
 
 namespace CustomStomachStorage
 {
-	[BepInPlugin(MOD_ID, "Custom Stomach Storage", "0.1.0")]
+	[BepInPlugin(MOD_ID, MOD_NAME, "0.1.0")]
 	class Plugin : BaseUnityPlugin
 	{
-		public const string MOD_ID = "CustomStomachStorage.Redlyn";
+        public const string MOD_NAME = "Custom Stomach Storage";
+        public const string MOD_name = "CustomStomachStorage";
+        public const string MOD_ID = "CustomStomachStorage.Redlyn";
+
+        public static readonly PlayerKeybind Swallow = PlayerKeybind.Register(
+				$"{MOD_NAME}:Swallow",
+                MOD_NAME,
+                "Swallow",              
+				KeyCode.C,             
+				KeyCode.JoystickButton4
+            );
+		public static readonly PlayerKeybind Regurgitate = PlayerKeybind.Register(
+				$"{MOD_NAME}:Regurgitate",
+                MOD_NAME,
+                "Regurgitate",              
+				KeyCode.V,
+				KeyCode.JoystickButton5
+			);
 
 
-        // Add hooks-添加钩子
-        public void OnEnable()
+		// Add hooks-添加钩子
+		public void OnEnable()
 		{
-			playerStomachsDict = new Dictionary<int, List<string>>();
+			Swallow.MapSuppressed = true;// 是否在地图中抑制
+            Swallow.SleepSuppressed = true;// 是否在睡眠中抑制
+            Regurgitate.MapSuppressed = true;// 是否在地图中抑制
+            Regurgitate.SleepSuppressed = true;// 是否在睡眠中抑制
+
+            playerStomachsDict = new Dictionary<int, List<string>>();
 			gameRef = null;
 
 			On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
 
             // Put your custom hooks here!-在此放置你自己的钩子
+            On.Player.Update += Player_Update;
             On.PlayerGraphics.Update += PlayerGraphics_Update;
-            On.Player.GrabUpdate += Player_GrabUpdate;
-            On.Player.CanBeSwallowed += Player_CanBeSwallowed;
+			On.Player.GrabUpdate += Player_GrabUpdate;
+			On.Player.CanBeSwallowed += Player_CanBeSwallowed;
 			On.Player.SwallowObject += Player_SwallowObject;
 			On.Player.Regurgitate += Player_Regurgitate;
 			//On.SaveState.BringUpToDate += SaveState_BringUpToDate;
@@ -74,9 +99,10 @@ namespace CustomStomachStorage
 			On.RainWorld.OnModsInit -= Extras.WrapInit(LoadResources);
 
             // Put your custom hooks here!-在此放置你自己的钩子
+            On.Player.Update -= Player_Update;
             On.PlayerGraphics.Update -= PlayerGraphics_Update;
-            On.Player.GrabUpdate -= Player_GrabUpdate;
-            On.Player.CanBeSwallowed -= Player_CanBeSwallowed;
+			On.Player.GrabUpdate -= Player_GrabUpdate;
+			On.Player.CanBeSwallowed -= Player_CanBeSwallowed;
 			On.Player.SwallowObject -= Player_SwallowObject;
 			On.Player.Regurgitate -= Player_Regurgitate;
 			//On.SaveState.BringUpToDate -= SaveState_BringUpToDate;
@@ -100,26 +126,62 @@ namespace CustomStomachStorage
 		// Load any resources, such as sprites or sounds-加载任何资源 包括图像素材和音效
 		private void LoadResources(RainWorld rainWorld)
 		{
-            MachineConnector.SetRegisteredOI(MOD_ID, Options.Instance);
+			MachineConnector.SetRegisteredOI(MOD_ID, Options.Instance);
+		}
+
+
+		public static class PMM//PlayerModuleManager
+        {
+            public static ConditionalWeakTable<Player, PM> playerModules = new ConditionalWeakTable<Player, PM>();
+        }
+        public class PM//PlayerModule
+        {
+            public WeakReference<Player> playerRef;
+
+            public List<AbstractPhysicalObject> stomachContents = new();
+
+			public Dictionary<string, int> holdTimes = new();
+
+            public PM(Player player)
+            {
+                playerRef = new WeakReference<Player>(player);
+                stomachContents = new();
+                holdTimes = new Dictionary<string, int>();
+            }
         }
 
-
-
-		// 管理扩展的胃部存储
-		public class ESS//ExtendedStomachStorage
+        public static PM GetPM(Player player, out PM pm)
 		{
-            public static readonly ConditionalWeakTable<Player, List<AbstractPhysicalObject>> stomachContents =
-				new ConditionalWeakTable<Player, List<AbstractPhysicalObject>>();
+            if (PMM.playerModules.TryGetValue(player, out PM pm_))
+			{
+				pm = pm_;
+				return pm;
+			}
+			pm = new PM(player);
+            PMM.playerModules.Add(player, pm);
+            return pm;
+        }
+        public static PM GetPM(Player player)
+        {
+            if (PMM.playerModules.TryGetValue(player, out PM pm))
+            {
+                return pm;
+            }
+            pm = new PM(player);
+            PMM.playerModules.Add(player, pm);
+            return pm;
+        }
+
+        // 管理扩展的胃部存储
+        public class ESS//ExtendedStomachStorage
+		{
+			//public static readonly ConditionalWeakTable<Player, List<AbstractPhysicalObject>> stomachContents =
+			//	new ConditionalWeakTable<Player, List<AbstractPhysicalObject>>();
 
 			public static List<AbstractPhysicalObject> GetStomachContents(Player player)
 			{
-				if (!stomachContents.TryGetValue(player, out var contents))
-				{
-					contents = new List<AbstractPhysicalObject>();
-					stomachContents.Add(player, contents);
-				}
-				return contents;
-			}
+                return GetPM(player).stomachContents;
+            }
 
 			// 获取第一个物品
 			public static AbstractPhysicalObject? GetFirstStomachItem(Player player)
@@ -157,7 +219,7 @@ namespace CustomStomachStorage
 				if (Options.Instance?.StomachCapacity != null)
 				{
 					Capacity = Options.Instance.StomachCapacity.Value;
-                }
+				}
 				if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
 				{
 					Capacity += 2;
@@ -173,332 +235,598 @@ namespace CustomStomachStorage
 			}
 		}
 
-        private bool Player_CanBeSwallowed(On.Player.orig_CanBeSwallowed orig, Player player, PhysicalObject testObj)
-        {
-            if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear)
-            {
-                return false;
-            }
-
-            var SwallowTypes = Options.Instance.SwallowTypes;
-            // 检查 All
-            if (SwallowTypes.TryGetValue("All", out var allConf) && allConf.Value)
-            {
-                return true;
-            }
-
-            // 辅助方法：检查特定类型
-            bool CheckType<T>(string typeName) where T : PhysicalObject
-            {
-                return testObj is T && SwallowTypes.TryGetValue(typeName, out var conf) && conf.Value;
-            }
-
-            // 检查 Item 和 Creature
-            bool isCreature = testObj is Creature;
-            if (isCreature && CheckType<Creature>("Creature"))
-            {
-                return true;
-            }
-            if (!isCreature && CheckType<PhysicalObject>("Item"))
-            {
-                return true;
-            }
-
-            // 检查具体的生物类型
-            if (isCreature)
-            {
-                if (CheckType<Lizard>("Lizard") ||
-                    CheckType<Vulture>("Vulture") ||
-                    CheckType<Centipede>("Centipede") ||
-                    CheckType<Spider>("Spider") ||
-                    CheckType<DropBug>("DropBug") ||
-                    CheckType<BigEel>("BigEel") ||
-                    CheckType<MirosBird>("MirosBird") ||
-                    CheckType<DaddyLongLegs>("DaddyLongLegs") ||
-                    CheckType<Cicada>("Cicada") ||
-                    CheckType<Snail>("Snail") ||
-                    CheckType<Scavenger>("Scavenger") ||
-                    CheckType<LanternMouse>("LanternMouse") ||
-                    CheckType<JetFish>("JetFish") ||
-                    CheckType<TubeWorm>("TubeWorm") ||
-                    CheckType<Deer>("Deer"))
-                {
-                    return true;
-                }
-
-                // MSC 生物
-                if (ModManager.MSC)
-                {
-                    if (CheckType<Yeek>("Yeek") ||
-                        CheckType<Inspector>("Inspector") ||
-                        CheckType<StowawayBug>("StowawayBug"))
-                    {
-                        return true;
-                    }
-                }
-
-                // Watcher 生物
-                if (ModManager.Watcher)
-                {
-                    if (CheckType<Loach>("Loach") ||
-                        CheckType<BigMoth>("BigMoth") ||
-                        CheckType<SkyWhale>("SkyWhale") ||
-                        CheckType<BoxWorm>("BoxWorm") ||
-                        CheckType<DrillCrab>("DrillCrab") ||
-                        CheckType<Tardigrade>("Tardigrade") ||
-                        CheckType<Barnacle>("Barnacle") ||
-                        CheckType<Frog>("Frog"))
-                    {
-                        return true;
-                    }
-                }
-            }
-            else // 检查物品类型
-            {
-                if (CheckType<Spear>("Spear") ||
-                    CheckType<VultureMask>("VultureMask") ||
-                    CheckType<NeedleEgg>("NeedleEgg"))
-                {
-                    return true;
-                }
-
-                // MSC 物品
-                if (ModManager.MSC)
-                {
-                    if (CheckType<JokeRifle>("JokeRifle") ||
-                        CheckType<EnergyCell>("EnergyCell") ||
-                        CheckType<MoonCloak>("MoonCloak"))
-                    {
-                        return true;
-                    }
-                }
-
-                // Watcher 物品
-                if (ModManager.Watcher)
-                {
-                    if (CheckType<Boomerang>("Boomerang"))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return orig(player, testObj);
-        }
-
-        // 修改SwallowObject方法
-        private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player player, int grasp)
+        private void Player_Update(On.Player.orig_Update orig, Player player, bool eu)
 		{
-            UDebug.Log("SwallowObject_B");
-            if (!ESS.HasSpace(player))
-            {
-                UDebug.Log("胃部已满，无法吞咽！");
-                return;
-            }
-            player.objectInStomach = null;
+			orig(player, eu);
 
-            orig(player, grasp);
+            if (player == null) return;
+            UpdateHoldTime(player, GetPM(player), Swallow);
+            UpdateHoldTime(player, GetPM(player), Regurgitate);
+        }
+        private void UpdateHoldTime(Player player, PM pm, PlayerKeybind keybind)
+		{
+            string key = keybind.Id;
 
-            if (player.objectInStomach != null)
-            {
-                var stomachContents = ESS.GetStomachContents(player);
-                stomachContents.Add(player.objectInStomach);
+            if (!pm.holdTimes.ContainsKey(key))
+                pm.holdTimes[key] = 0;
 
-                //player.objectInStomach = null;
-
-                UDebug.Log($"吞咽成功！胃部物品数量: {stomachContents.Count}");
-                for (int i = 0; i < stomachContents.Count; i++)
+            if (player.IsKeyBound(keybind))
+			{
+                if (player.IsPressed(keybind))
                 {
-                    UDebug.Log(stomachContents[i].ToString());
+                    pm.holdTimes[key]++;
+                }
+                else
+                {
+                    pm.holdTimes[key] = 0;
                 }
             }
-            else
-            {
-                UDebug.Log("原版吞咽函数没有处理物品");
+			else
+			{
+                pm.holdTimes[key] = 0;
             }
-            UDebug.Log("SwallowObject_A");
+
         }
+
+
+        private bool Player_CanBeSwallowed(On.Player.orig_CanBeSwallowed orig, Player player, PhysicalObject testObj)
+		{
+			if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear && !(Options.Instance.SpearmasterStoreItems?.Value == true))
+			{
+				return false;
+			}
+
+			var SwallowTypes = Options.Instance.SwallowTypes;
+			// 检查 All
+			if (SwallowTypes.TryGetValue("All", out var allConf) && allConf.Value)
+			{
+				return true;
+			}
+
+			// 辅助方法：检查特定类型
+			bool CheckType<T>(string typeName) where T : PhysicalObject
+			{
+				return testObj is T && SwallowTypes.TryGetValue(typeName, out var conf) && conf.Value;
+			}
+
+			// 检查 Item 和 Creature
+			bool isCreature = testObj is Creature;
+			if (isCreature && CheckType<Creature>("Creature"))
+			{
+				return true;
+			}
+			if (!isCreature && CheckType<PhysicalObject>("Item"))
+			{
+				return true;
+			}
+
+			// 检查具体的生物类型
+			if (isCreature)
+			{
+				if (CheckType<Lizard>("Lizard") ||
+					CheckType<Vulture>("Vulture") ||
+					CheckType<Centipede>("Centipede") ||
+					CheckType<Spider>("Spider") ||
+					CheckType<DropBug>("DropBug") ||
+					CheckType<BigEel>("BigEel") ||
+					CheckType<MirosBird>("MirosBird") ||
+					CheckType<DaddyLongLegs>("DaddyLongLegs") ||
+					CheckType<Cicada>("Cicada") ||
+					CheckType<Snail>("Snail") ||
+					CheckType<Scavenger>("Scavenger") ||
+					CheckType<LanternMouse>("LanternMouse") ||
+					CheckType<JetFish>("JetFish") ||
+					CheckType<TubeWorm>("TubeWorm") ||
+					CheckType<Deer>("Deer"))
+				{
+					return true;
+				}
+
+				// MSC 生物
+				if (ModManager.MSC)
+				{
+					if (CheckType<Yeek>("Yeek") ||
+						CheckType<Inspector>("Inspector") ||
+						CheckType<StowawayBug>("StowawayBug"))
+					{
+						return true;
+					}
+				}
+
+				// Watcher 生物
+				if (ModManager.Watcher)
+				{
+					if (CheckType<Loach>("Loach") ||
+						CheckType<BigMoth>("BigMoth") ||
+						CheckType<SkyWhale>("SkyWhale") ||
+						CheckType<BoxWorm>("BoxWorm") ||
+						CheckType<DrillCrab>("DrillCrab") ||
+						CheckType<Tardigrade>("Tardigrade") ||
+						CheckType<Barnacle>("Barnacle") ||
+						CheckType<Frog>("Frog"))
+					{
+						return true;
+					}
+				}
+			}
+			else // 检查物品类型
+			{
+				if (CheckType<Spear>("Spear") ||
+					CheckType<VultureMask>("VultureMask") ||
+					CheckType<NeedleEgg>("NeedleEgg"))
+				{
+					return true;
+				}
+
+				// MSC 物品
+				if (ModManager.MSC)
+				{
+					if (CheckType<JokeRifle>("JokeRifle") ||
+						CheckType<EnergyCell>("EnergyCell") ||
+						CheckType<MoonCloak>("MoonCloak"))
+					{
+						return true;
+					}
+				}
+
+				// Watcher 物品
+				if (ModManager.Watcher)
+				{
+					if (CheckType<Boomerang>("Boomerang"))
+					{
+						return true;
+					}
+				}
+			}
+
+			return orig(player, testObj);
+		}
+
+		// 修改SwallowObject方法
+		private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player player, int grasp)
+		{
+			UDebug.Log("SwallowObject_B");
+			if (!ESS.HasSpace(player))
+			{
+				UDebug.Log("胃部已满，无法吞咽！");
+				return;
+			}
+			player.objectInStomach = null;
+
+			orig(player, grasp);
+
+			if (player.objectInStomach != null)
+			{
+				var stomachContents = ESS.GetStomachContents(player);
+				stomachContents.Add(player.objectInStomach);
+
+				//player.objectInStomach = null;
+
+				UDebug.Log($"吞咽成功！胃部物品数量: {stomachContents.Count}");
+				for (int i = 0; i < stomachContents.Count; i++)
+				{
+					UDebug.Log(stomachContents[i].ToString());
+				}
+			}
+			else
+			{
+				UDebug.Log("原版吞咽函数没有处理物品");
+			}
+			UDebug.Log("SwallowObject_A");
+		}
 
 		// 修正Regurgitate方法
 		private void Player_Regurgitate(On.Player.orig_Regurgitate orig, Player player)
 		{
-            UDebug.Log("Regurgitate_B");
-            var stomachContents = ESS.GetStomachContents(player);
+			UDebug.Log("Regurgitate_B");
+			var stomachContents = ESS.GetStomachContents(player);
 
-            if (stomachContents.Count == 0)
-            {
-                UDebug.Log("胃部为空");
+			if (stomachContents.Count == 0)
+			{
+				UDebug.Log("胃部为空");
 
-                if (player.isGourmand)
-                {
+				if (player.isGourmand)
+				{
+					orig(player);
+				}
+				return;
+			}
+
+			if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear)
+			{
+				if (Options.Instance.SpearmasterStoreItems?.Value == true)
+				{}
+				else
+				{
+                    UDebug.Log("矛大师珍珠");
+
                     orig(player);
+                    return;
                 }
-                return;
+			}
+
+			player.objectInStomach = stomachContents[stomachContents.Count - 1];
+
+            if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear && Options.Instance.SpearmasterStoreItems?.Value == true)
+			{
+				newRegurgitate(player);
             }
-
-            if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear)
-            {
-				UDebug.Log("矛大师珍珠");
-
+			else
+			{
                 orig(player);
-                return;
             }
 
-            player.objectInStomach = stomachContents[stomachContents.Count - 1];
-			orig(player);
 			stomachContents.RemoveAt(stomachContents.Count - 1);
-            if (stomachContents.Count > 0)
-            {
-                player.objectInStomach = stomachContents[stomachContents.Count - 1];
-            }
-            else
-            {
-                player.objectInStomach = null;
-            }
-            //player.objectInStomach = null;
+			if (stomachContents.Count > 0)
+			{
+				player.objectInStomach = stomachContents[stomachContents.Count - 1];
+			}
+			else
+			{
+				player.objectInStomach = null;
+			}
+			//player.objectInStomach = null;
 
-            for (int i = 0; i < stomachContents.Count; i++)
+			for (int i = 0; i < stomachContents.Count; i++)
 			{
 				UDebug.Log(stomachContents[i].ToString());
 			}
-            UDebug.Log("Regurgitate_A");
+			UDebug.Log("Regurgitate_A");
+		}
+
+        public void newRegurgitate(Player player)
+        {
+            if (player.objectInStomach == null)
+            {
+                if (!player.isGourmand)
+                {
+                    return;
+                }
+                player.objectInStomach = GourmandCombos.RandomStomachItem(player);
+            }
+            player.room.abstractRoom.AddEntity(player.objectInStomach);
+            player.objectInStomach.pos = player.abstractCreature.pos;
+            player.objectInStomach.RealizeInRoom();
+            if (ModManager.MMF && MMF.cfgKeyItemTracking.Value && AbstractPhysicalObject.UsesAPersistantTracker(player.objectInStomach) && player.room.game.IsStorySession && player.room.game.session is StoryGameSession storyGameSession)
+            {
+                AddPersistentTrackerSafe(storyGameSession, player.objectInStomach, player.room.world);
+                //storyGameSession.AddNewPersistentTracker(player.objectInStomach, player.room.world);
+                if (player.room.abstractRoom.NOTRACKERS)
+                {
+                    WorldCoordinate worldCoordinate = player.lastGoodTrackerSpawnCoord;
+                    player.objectInStomach.tracker.lastSeenRegion = player.lastGoodTrackerSpawnRegion;
+                    player.objectInStomach.tracker.lastSeenRoom = player.lastGoodTrackerSpawnRoom;
+                    player.objectInStomach.tracker.ChangeDesiredSpawnLocation(player.lastGoodTrackerSpawnCoord);
+                }
+            }
+            Vector2 vector = player.bodyChunks[0].pos;
+            Vector2 a = Custom.DirVec(player.bodyChunks[1].pos, player.bodyChunks[0].pos);
+            bool flag = false;
+            if (Mathf.Abs(player.bodyChunks[0].pos.y - player.bodyChunks[1].pos.y) > Mathf.Abs(player.bodyChunks[0].pos.x - player.bodyChunks[1].pos.x) && player.bodyChunks[0].pos.y > player.bodyChunks[1].pos.y)
+            {
+                vector += Custom.DirVec(player.bodyChunks[1].pos, player.bodyChunks[0].pos) * 5f;
+                a *= -1f;
+                a.x += 0.4f * (float)player.flipDirection;
+                a.Normalize();
+                flag = true;
+            }
+            player.objectInStomach.realizedObject.firstChunk.HardSetPosition(vector);
+            player.objectInStomach.realizedObject.firstChunk.vel = Vector2.ClampMagnitude((a * 2f + Custom.RNV() * UnityEngine.Random.value) / player.objectInStomach.realizedObject.firstChunk.mass, 6f);
+            player.bodyChunks[0].pos -= a * 2f;
+            player.bodyChunks[0].vel -= a * 2f;
+            if (player.graphicsModule != null && player.graphicsModule is PlayerGraphics playerGraphics)
+            {
+                playerGraphics.head.vel += Custom.RNV() * (UnityEngine.Random.value * 3f);
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                player.room.AddObject(new WaterDrip(vector + Custom.RNV() * (UnityEngine.Random.value * 1.5f), Custom.RNV() * (3f * UnityEngine.Random.value) + a * Mathf.Lerp(2f, 6f, UnityEngine.Random.value), false));
+            }
+            player.room.PlaySound(SoundID.Slugcat_Regurgitate_Item, player.mainBodyChunk);
+            if (player.objectInStomach.realizedObject is Hazer hazer && player.graphicsModule != null)
+            {
+                hazer.SpitOutByPlayer(PlayerGraphics.SlugcatColor(player.playerState.slugcatCharacter));
+            }
+            if (flag && player.FreeHand() > -1)
+            {
+                if (ModManager.MMF && (player.grasps[0] != null ^ player.grasps[1] != null) && player.Grabability(player.objectInStomach.realizedObject) == Player.ObjectGrabability.BigOneHand)
+                {
+                    int num = 0;
+                    if (player.FreeHand() == 0)
+                    {
+                        num = 1;
+                    }
+                    if (player.Grabability(player.grasps[num].grabbed) != Player.ObjectGrabability.BigOneHand)
+                    {
+                        player.SlugcatGrab(player.objectInStomach.realizedObject, player.FreeHand());
+                    }
+                }
+                else
+                {
+                    player.SlugcatGrab(player.objectInStomach.realizedObject, player.FreeHand());
+                }
+            }
+            player.objectInStomach = null;
         }
 
-		public void Player_GrabUpdate(On.Player.orig_GrabUpdate orig, Player player, bool eu)
+        private void AddPersistentTrackerSafe(StoryGameSession session, AbstractPhysicalObject obj, World world)
+        {
+            try
+            {
+                // 方法1：尝试一个参数的方法
+                MethodInfo method1Param = typeof(StoryGameSession).GetMethod("AddNewPersistentTracker",
+                    new Type[] { typeof(AbstractPhysicalObject) });
+
+                if (method1Param != null)
+                {
+                    method1Param.Invoke(session, new object[] { obj });
+                    return;
+                }
+
+                // 方法2：尝试两个参数的方法
+                if (world != null)
+                {
+                    MethodInfo method2Params = typeof(StoryGameSession).GetMethod("AddNewPersistentTracker",
+                        new Type[] { typeof(AbstractPhysicalObject), typeof(World) });
+
+                    if (method2Params != null)
+                    {
+                        method2Params.Invoke(session, new object[] { obj, world });
+                        return;
+                    }
+                }
+
+                UDebug.LogError(">>> AddNewPersistentTracker 方法未找到！");
+            }
+            catch (Exception e)
+            {
+                UDebug.LogError($">>> AddNewPersistentTracker 失败: {e.Message} - {e.StackTrace}");
+            }
+        }
+
+        public void Player_GrabUpdate(On.Player.orig_GrabUpdate orig, Player player, bool eu)
 		{
+            //
+            var stomachContents = ESS.GetStomachContents(player);
             if (player.objectInStomach == null)
-			{
-                var stomachContents = ESS.GetStomachContents(player);
+            {
                 //UDebug.Log($">>> [2] {stomachContents.Count}_GrabUpdate");
                 if (stomachContents.Count > 0)
-				{
+                {
                     UDebug.Log($">>> [3] {stomachContents[stomachContents.Count - 1]}_GrabUpdate");
                     player.objectInStomach = stomachContents[stomachContents.Count - 1];
                 }
             }
+			//
 
-            // 判断玩家是否处于某种特定状态，例如没有移动、跳跃或投掷物品，并且根据 ModManager 的条件进行进一步判断
-            bool flag = ((player.input[0].x == 0 && player.input[0].y == 0 && !player.input[0].jmp && !player.input[0].thrw) || 
+            string SwallowKey = Swallow.Id;
+            string RegurgitateKey = Regurgitate.Id;
+
+            if (GetPM(player, out var pm).holdTimes.TryGetValue(SwallowKey, out int swallowHoldTime) && swallowHoldTime > 0 && ESS.HasSpace(player))
+            {
+                int num13 = 0;
+                while (num13 < 2)
+                {
+                    if (player.grasps[num13] != null && player.CanBeSwallowed(player.grasps[num13].grabbed))
+                    {
+                        player.objectInStomach = null;
+                        player.swallowAndRegurgitateCounter++;
+                        break;
+                    }
+                    else
+                    {
+                        num13++;
+                    }
+                }
+
+				if (player.swallowAndRegurgitateCounter > 90)
+				{
+                    num13 = 0;
+                    while (num13 < 2)
+                    {
+                        if (player.grasps[num13] != null && player.CanBeSwallowed(player.grasps[num13].grabbed))
+                        {
+                            player.bodyChunks[0].pos += Custom.DirVec(player.grasps[num13].grabbed.firstChunk.pos, player.bodyChunks[0].pos) * 2f;
+                            player.SwallowObject(num13);
+                            if (player.spearOnBack != null)
+                            {
+                                player.spearOnBack.interactionLocked = true;
+                            }
+                            if ((ModManager.MSC || ModManager.CoopAvailable) && player.slugOnBack != null)
+                            {
+                                player.slugOnBack.interactionLocked = true;
+                            }
+                            player.swallowAndRegurgitateCounter = 0;
+                            if (player.graphicsModule != null && player.graphicsModule is PlayerGraphics playerGraphics)
+                            {
+                                playerGraphics.swallowing = 20;
+                                break;
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            num13++;
+                        }
+                    }
+                }
+
+				return;
+            }
+            else if (pm.holdTimes.TryGetValue(RegurgitateKey, out int regurgitateHoldTime) && regurgitateHoldTime > 0 && ((player.objectInStomach != null && stomachContents.Count > 0) || player.isGourmand))
+			{
+                if (player.isGourmand)
+				{
+					if (stomachContents.Count > 0)
+					{
+                        player.objectInStomach = stomachContents[stomachContents.Count - 1];
+                    }
+					else
+					{
+                        player.objectInStomach = null;
+                    }
+				}
+
+                player.swallowAndRegurgitateCounter++;
+
+				if (player.swallowAndRegurgitateCounter > 110)
+				{
+                    bool flag6 = false;
+                    if (player.isGourmand && player.objectInStomach == null)
+                    {
+                        flag6 = true;
+                    }
+                    if (!flag6 || (flag6 && player.FoodInStomach >= 1))
+                    {
+                        if (flag6)
+                        {
+                            player.SubtractFood(1);
+                        }
+                        player.Regurgitate();
+                    }
+                    else
+                    {
+                        player.firstChunk.vel += new Vector2(UnityEngine.Random.Range(-1f, 1f), 0f);
+                        player.Stun(30);
+                    }
+                    if (player.spearOnBack != null)
+                    {
+                        player.spearOnBack.interactionLocked = true;
+                    }
+                    if ((ModManager.MSC || ModManager.CoopAvailable) && player.slugOnBack != null)
+                    {
+                        player.slugOnBack.interactionLocked = true;
+                    }
+                    player.swallowAndRegurgitateCounter = 0;
+                }
+
+                return;
+            }
+
+
+
+			//
+			// 判断玩家是否处于某种特定状态，例如没有移动、跳跃或投掷物品，并且根据 ModManager 的条件进行进一步判断
+			bool flag = ((player.input[0].x == 0 && player.input[0].y == 0 && !player.input[0].jmp && !player.input[0].thrw) || 
 				(ModManager.MMF && player.input[0].x == 0 && player.input[0].y == 1 && !player.input[0].jmp && !player.input[0].thrw && 
 				(player.bodyMode != Player.BodyModeIndex.ClimbingOnBeam || player.animation == Player.AnimationIndex.BeamTip || 
 				player.animation == Player.AnimationIndex.StandOnBeam))) && 
 				(player.mainBodyChunk.submersion < 0.5f || player.isRivulet);
-            bool flag3 = false;
-            bool craftingObject = false;
+			bool flag3 = false;
+			bool craftingObject = false;
 
-            // 如果满足 flag 条件，进一步判断玩家是否按下了 pckp 键，并根据 ModManager 和玩家状态判断是否可以进行抓取或制作物品
-            if (flag)
+			// 如果满足 flag 条件，进一步判断玩家是否按下了 pckp 键，并根据 ModManager 和玩家状态判断是否可以进行抓取或制作物品
+			if (flag)
 			{
-                if (player.input[0].pckp)
+				if (player.input[0].pckp)
 				{
 					flag3 = true;
-                    if (ModManager.MSC && (player.FreeHand() == -1 || player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Artificer) && player.GraspsCanBeCrafted())
-                    {
-                        craftingObject = true;
-                    }
-                }
-            }
+					if (ModManager.MSC && (player.FreeHand() == -1 || player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Artificer) && player.GraspsCanBeCrafted())
+					{
+						craftingObject = true;
+					}
+				}
+			}
 
-            // 如果玩家被水淹没且 MMF 模组启用，则禁止执行某些操作
-            if (ModManager.MMF && player.mainBodyChunk.submersion >= 0.5f)
-            {
-                flag3 = false;
-            }
-
-            // 如果满足 flag3 条件，根据 craftingObject 状态执行不同的操作，例如抓取物品或进行物品制作
-            if (flag3)
+			// 如果玩家被水淹没且 MMF 模组启用，则禁止执行某些操作
+			if (ModManager.MMF && player.mainBodyChunk.submersion >= 0.5f)
 			{
-                if (craftingObject)
-                {
-                }
-                // 如果不是 MMF 模组启用或玩家没有向上的移动输入，则尝试将抓取的物品吞下
-                else if (!ModManager.MMF || player.input[0].y == 0)
-				{
-                    if (ESS.HasSpace(player))
-                    {
-                        int num13 = 0;
-                        while (num13 < 2)
-                        {
-                            if (player.grasps[num13] != null && player.CanBeSwallowed(player.grasps[num13].grabbed))
-                            {
-                                player.objectInStomach = null;
-                                UDebug.Log($">>> [4] {player.objectInStomach}_GrabUpdate");
-                                //player.SwallowObject(num13);
-                                break;
-                            }
-                            else
-                            {
-                                num13++;
-                            }
-                        }
-                    }
+				flag3 = false;
+			}
 
-                    // 根据玩家状态和 stomach 内容判断是否可以进行物品反刍
-                    var stomachContents = ESS.GetStomachContents(player);
+			// 如果满足 flag3 条件，根据 craftingObject 状态执行不同的操作，例如抓取物品或进行物品制作
+			if (flag3)
+			{
+				if (craftingObject)
+				{
+				}
+				// 如果不是 MMF 模组启用或玩家没有向上的移动输入，则尝试将抓取的物品吞下
+				else if (!ModManager.MMF || player.input[0].y == 0)
+				{
+					if (ESS.HasSpace(player))
+					{
+						int num13 = 0;
+						while (num13 < 2)
+						{
+							if (player.grasps[num13] != null && player.CanBeSwallowed(player.grasps[num13].grabbed))
+							{
+								player.objectInStomach = null;
+								UDebug.Log($">>> [4] {player.objectInStomach}_GrabUpdate");
+								//player.SwallowObject(num13);
+								break;
+							}
+							else
+							{
+								num13++;
+							}
+						}
+					}
+
+					// 根据玩家状态和 stomach 内容判断是否可以进行物品反刍
 					if ((player.objectInStomach != null && stomachContents.Count > 0) || player.isGourmand || (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear))
 					{
-                        bool flag6 = false;
-                        if (player.isGourmand && stomachContents.Count == 0)
-                        {
-                            flag6 = true;
-                        }
-                        if (!flag6 || (flag6 && player.FoodInStomach >= 1))
-                        {
-                            UDebug.Log($">>> [5] {stomachContents.Count > 0}_GrabUpdate");
-                            if (stomachContents.Count > 0)
-                            {
-                                player.objectInStomach = stomachContents[stomachContents.Count - 1];
-                            }
-                            else
-                            {
-                                player.objectInStomach = null;
-                            }
-                            //player.Regurgitate();
-                        }
-                    }
+						bool flag6 = false;
+						if (player.isGourmand && stomachContents.Count == 0)
+						{
+							flag6 = true;
+						}
+						if (!flag6 || (flag6 && player.FoodInStomach >= 1))
+						{
+							UDebug.Log($">>> [5] {stomachContents.Count > 0}_GrabUpdate");
+							if (stomachContents.Count > 0)
+							{
+								player.objectInStomach = stomachContents[stomachContents.Count - 1];
+							}
+							else
+							{
+								player.objectInStomach = null;
+							}
+							//player.Regurgitate();
+						}
+					}
 
 
-                }
+				}
 
-            }
+			}
 			if (player.swallowAndRegurgitateCounter > 0)
 			{
-                UDebug.Log($">>> [5] {player.objectInStomach}_GrabUpdate");
-            }
+				UDebug.Log($">>> [5] {player.objectInStomach}_GrabUpdate");
+			}
 
-            // 调用原始方法
-            orig(player, eu);
-        }
+			// 调用原始方法
+			orig(player, eu);
+		}
 
 
-        private void PlayerGraphics_Update(On.PlayerGraphics.orig_Update orig, PlayerGraphics playerGra)
+		private void PlayerGraphics_Update(On.PlayerGraphics.orig_Update orig, PlayerGraphics playerGra)
 		{
 			orig(playerGra);
 		}
 
 
 
-        //数据保存字段
-        public const string ESS_savefield_name = "StomachStorage_ESS_SAVEFIELD";
+		//数据保存字段
+		public const string ESS_savefield_name = "StomachStorage_ESS_SAVEFIELD";
 
-        public const string svA = "<svA>";
-        public const string svB = "<svB>";
-        public const string svC = "<svC>";
-        public const string svD = "<svD>";
-        public const string PlayerStr = "Player";
-        //最后一次的存档数据
-        public static Dictionary<int, List<string>> playerStomachsDict = new Dictionary<int, List<string>>();
+		public const string svA = "<svA>";
+		public const string svB = "<svB>";
+		public const string svC = "<svC>";
+		public const string svD = "<svD>";
+		public const string PlayerStr = "Player";
+		//最后一次的存档数据
+		public static Dictionary<int, List<string>> playerStomachsDict = new Dictionary<int, List<string>>();
 		//全局系统变量
 		public static WeakReference<RainWorldGame>? gameRef = null;
 
 		private static void SaveState_LoadGame(On.SaveState.orig_LoadGame orig, SaveState saveState, string str, RainWorldGame game_)
 		{
-            UDebug.Log($">>> [0] 方法入口_{playerStomachsDict.Count}_LoadGame");
+			UDebug.Log($">>> [0] 方法入口_{playerStomachsDict.Count}_LoadGame");
 
-            UDebug.Log(">>> [1] 方法入口");
+			UDebug.Log(">>> [1] 方法入口");
 
-            // 先调用原版
-            try
+			// 先调用原版
+			try
 			{
 				UDebug.Log(">>> [2] 调用 orig");
 				orig(saveState, str, game_);
@@ -681,8 +1009,8 @@ namespace CustomStomachStorage
 
 		private static string SaveState_SaveToString(On.SaveState.orig_SaveToString orig, SaveState saveState)
 		{
-            UDebug.Log(">>> [1] 方法入口_SaveState");
-            string text = orig(saveState);
+			UDebug.Log(">>> [1] 方法入口_SaveState");
+			string text = orig(saveState);
 			UDebug.Log($"{text}_SaveToString_B");
 
 			//return text;
@@ -752,25 +1080,25 @@ namespace CustomStomachStorage
 
 		public static string RemoveField(string dataText, string fieldName)
 		{
-            if (string.IsNullOrEmpty(dataText) || string.IsNullOrEmpty(fieldName))
-                return dataText;
+			if (string.IsNullOrEmpty(dataText) || string.IsNullOrEmpty(fieldName))
+				return dataText;
 
-            // 查找字段名在文本中的首次出现位置
-            int index_start = dataText.IndexOf(fieldName);
+			// 查找字段名在文本中的首次出现位置
+			int index_start = dataText.IndexOf(fieldName);
 
 			// 循环处理所有匹配的字段（因为可能多次出现）
 			while (index_start != -1)
 			{
-                // 查找字段值结束标签"<svA>"的位置
-                // 从字段名位置开始搜索，确保找到的是当前字段对应的结束标签
-                int endTagIndex = dataText.IndexOf(svA, index_start);
-                if (endTagIndex == -1) break; // 找不到结束标签，退出
+				// 查找字段值结束标签"<svA>"的位置
+				// 从字段名位置开始搜索，确保找到的是当前字段对应的结束标签
+				int endTagIndex = dataText.IndexOf(svA, index_start);
+				if (endTagIndex == -1) break; // 找不到结束标签，退出
 
-                int index_end = endTagIndex + 5;
-                // 注意：+5是为了包含"<svA>"标签本身（标签长度为5个字符）
+				int index_end = endTagIndex + 5;
+				// 注意：+5是为了包含"<svA>"标签本身（标签长度为5个字符）
 
-                // 计算要移除的文本长度（从字段名开始到结束标签之后）
-                int removeLength = index_end - index_start;
+				// 计算要移除的文本长度（从字段名开始到结束标签之后）
+				int removeLength = index_end - index_start;
 
 				// 移除字段名及其对应的值（包括结束标签）
 				dataText = dataText.Remove(index_start, removeLength);
@@ -788,8 +1116,10 @@ namespace CustomStomachStorage
 			// 先调用原版构造函数
 			orig(player, abstractCreature, world);
 
-			//赋值给全局变量供其他函数使用
-			RainWorldGame? game = player.room?.world?.game;
+            PMM.playerModules.Add(player, new PM(player));
+
+            //赋值给全局变量供其他函数使用
+            RainWorldGame? game = player.room?.world?.game;
 			if (game == null)
 			{
 				UDebug.LogError($">>> [ERR] 设置 game 失败");
@@ -831,7 +1161,7 @@ namespace CustomStomachStorage
 
 					foreach (var item in stomachStr)
 					{
-                        UDebug.Log($">>> [38] 处理物品: {item?.Substring(0, Math.Min(50, item?.Length ?? 0))}...");
+						UDebug.Log($">>> [38] 处理物品: {item?.Substring(0, Math.Min(50, item?.Length ?? 0))}...");
 						if (string.IsNullOrWhiteSpace(item) || item == null)
 						{
 							UDebug.Log(">>>[39] 物品为空：跳过");
@@ -872,31 +1202,31 @@ namespace CustomStomachStorage
 						if (obj != null)
 						{
 							UDebug.Log(">>> [43] 添加物品到列表");
-                            obj.pos = abstractCreature.pos;
-                            stomachContents.Add(obj);
-                            //stomach.Add(obj);
-                        }
+							obj.pos = abstractCreature.pos;
+							stomachContents.Add(obj);
+							//stomach.Add(obj);
+						}
 						else
 						{
 							UDebug.LogWarning($">>> [WARN] 物品解析结果为 null");
 						}
-                    }
-                    if (!repeat && player.objectInStomach != null)
-                    {
-                        UDebug.Log(">>> 加载 objectInStomach");
-                        stomachContents.Add(player.objectInStomach);
-                    }
+					}
+					if (!repeat && player.objectInStomach != null)
+					{
+						UDebug.Log(">>> 加载 objectInStomach");
+						stomachContents.Add(player.objectInStomach);
+					}
 
-                }
+				}
 			}
 
-            if (player.objectInStomach != null && stomachContents.Count == 0)
-            {
-                UDebug.Log(">>> 使用原版 objectInStomach");
-                stomachContents.Add(player.objectInStomach);
-            }
+			if (player.objectInStomach != null && stomachContents.Count == 0)
+			{
+				UDebug.Log(">>> 使用原版 objectInStomach");
+				stomachContents.Add(player.objectInStomach);
+			}
 
-        }
+		}
 
 
 	}

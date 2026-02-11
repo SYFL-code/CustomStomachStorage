@@ -12,6 +12,7 @@ Custom Stomach Storage|自定义胃储存容量
 Types of swallowing|吞咽类型
 
 Stomach capacity|胃部容量
+Allow Spearmaster to store items|允许矛大师存储物品
 DebugMode|调试模式
 
 All|全部
@@ -37,6 +38,7 @@ DaddyLongLegs|腐化物
 Cicada|蝉乌贼
 Snail|波动龟
 Scavenger|拾荒者
+EggBug|蛋虫
 LanternMouse|光鼠
 JetFish|蛙鱼
 TubeWorm|管虫

@@ -18,7 +18,7 @@ namespace CustomStomachStorage
 			}
         }
 
-		public static void LogWarning(string message)
+        public static void LogWarning(string message)
 		{
             if ((Options.Instance?.DebugMode != null && Options.Instance.DebugMode.Value) || DebugMode)
 			{
