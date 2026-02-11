@@ -26,6 +26,7 @@ using UnityEngine;
 using Watcher;
 using static CustomStomachStorage.Plugin;
 using static SlugBase.Features.FeatureTypes;
+using static Player.ObjectGrabability;
 //using UDebug =  UnityEngine.Debug;
 
 
@@ -71,7 +72,8 @@ namespace CustomStomachStorage
             On.Player.Update += Player_Update;
             On.PlayerGraphics.Update += PlayerGraphics_Update;
 			On.Player.GrabUpdate += Player_GrabUpdate;
-			On.Player.CanBeSwallowed += Player_CanBeSwallowed;
+			On.Player.Grabability += Player_Grabability;
+            On.Player.CanBeSwallowed += Player_CanBeSwallowed;
 			On.Player.SwallowObject += Player_SwallowObject;
 			On.Player.Regurgitate += Player_Regurgitate;
 			//On.SaveState.BringUpToDate += SaveState_BringUpToDate;
@@ -102,7 +104,8 @@ namespace CustomStomachStorage
             On.Player.Update -= Player_Update;
             On.PlayerGraphics.Update -= PlayerGraphics_Update;
 			On.Player.GrabUpdate -= Player_GrabUpdate;
-			On.Player.CanBeSwallowed -= Player_CanBeSwallowed;
+            On.Player.Grabability -= Player_Grabability;
+            On.Player.CanBeSwallowed -= Player_CanBeSwallowed;
 			On.Player.SwallowObject -= Player_SwallowObject;
 			On.Player.Regurgitate -= Player_Regurgitate;
 			//On.SaveState.BringUpToDate -= SaveState_BringUpToDate;
@@ -268,6 +271,140 @@ namespace CustomStomachStorage
 
         }
 
+        private Player.ObjectGrabability Player_Grabability(On.Player.orig_Grabability orig, Player player, PhysicalObject testObj)
+        {
+            Player.ObjectGrabability original = orig(player, testObj);
+            Player.ObjectGrabability result = CantGrab;
+
+			if (testObj == player)
+			{
+                return original;
+            }
+
+            var GrabTypes = Options.Instance.GrabTypes;
+            // 检查 GrabAll
+            if (GrabTypes.TryGetValue("OneHandGrabAll", out var conf) && conf.Value)
+            {
+                result = OneHand;
+                return result;
+            }
+            if (GrabTypes.TryGetValue("DragGrabAll", out var conf_) && conf_.Value)
+            {
+                if (original == CantGrab)
+                {
+                    result = Drag;
+                    return result;
+                }
+            }
+
+            // 辅助方法：检查特定类型
+            bool CheckType<T>(string typeName) where T : PhysicalObject
+			{
+				if (testObj is T && GrabTypes.TryGetValue(typeName, out var conf) && conf.Value)
+				{
+					if (original == CantGrab)
+					{
+                        result = Drag;
+                        return true;
+                    }
+                    result = OneHand;
+					return true;
+                }
+				return false;
+            }
+
+			// 检查 Item 和 Creature
+			bool isCreature = testObj is Creature;
+			if (isCreature && CheckType<Creature>("Creature"))
+			{
+				return result;
+			}
+			if (!isCreature && CheckType<PhysicalObject>("Item"))
+			{
+				return result;
+			}
+
+			// 检查具体的生物类型
+			if (isCreature)
+			{
+				if (CheckType<Lizard>("Lizard") ||
+					CheckType<Vulture>("Vulture") ||
+					CheckType<Centipede>("Centipede") ||
+					CheckType<Spider>("Spider") ||
+					CheckType<DropBug>("DropBug") ||
+					CheckType<BigEel>("BigEel") ||
+					CheckType<MirosBird>("MirosBird") ||
+					CheckType<DaddyLongLegs>("DaddyLongLegs") ||
+					CheckType<Cicada>("Cicada") ||
+					CheckType<Snail>("Snail") ||
+					CheckType<Scavenger>("Scavenger") ||
+					CheckType<LanternMouse>("LanternMouse") ||
+					CheckType<JetFish>("JetFish") ||
+					CheckType<TubeWorm>("TubeWorm") ||
+					CheckType<Deer>("Deer"))
+				{
+					return result;
+				}
+
+				// MSC 生物
+				if (ModManager.MSC)
+				{
+					if (CheckType<Yeek>("Yeek") ||
+						CheckType<Inspector>("Inspector") ||
+						CheckType<StowawayBug>("StowawayBug"))
+					{
+						return result;
+					}
+				}
+
+				// Watcher 生物
+				if (ModManager.Watcher)
+				{
+					if (CheckType<Loach>("Loach") ||
+						CheckType<BigMoth>("BigMoth") ||
+						CheckType<SkyWhale>("SkyWhale") ||
+						CheckType<BoxWorm>("BoxWorm") ||
+						CheckType<DrillCrab>("DrillCrab") ||
+						CheckType<Tardigrade>("Tardigrade") ||
+						CheckType<Barnacle>("Barnacle") ||
+						CheckType<Frog>("Frog"))
+					{
+						return result;
+					}
+				}
+			}
+			else // 检查物品类型
+			{
+				if (CheckType<Spear>("Spear") ||
+					CheckType<VultureMask>("VultureMask") ||
+					CheckType<NeedleEgg>("NeedleEgg"))
+				{
+					return result;
+				}
+
+				// MSC 物品
+				if (ModManager.MSC)
+				{
+					if (CheckType<JokeRifle>("JokeRifle") ||
+						CheckType<EnergyCell>("EnergyCell") ||
+						CheckType<MoonCloak>("MoonCloak"))
+					{
+						return result;
+					}
+				}
+
+				// Watcher 物品
+				if (ModManager.Watcher)
+				{
+					if (CheckType<Boomerang>("Boomerang"))
+					{
+						return result;
+					}
+				}
+			}
+
+            return original;
+        }
 
         private bool Player_CanBeSwallowed(On.Player.orig_CanBeSwallowed orig, Player player, PhysicalObject testObj)
 		{

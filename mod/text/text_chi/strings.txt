@@ -10,12 +10,16 @@ Type|类型
 
 Custom Stomach Storage|自定义胃储存容量
 Types of swallowing|吞咽类型
+Types of graspable|抓取类型
 
 Stomach capacity|胃部容量
 Allow Spearmaster to store items|允许矛大师存储物品
 DebugMode|调试模式
 
 All|全部
+
+One hand can grab all|一只手能抓住全部
+At least able to drag all|至少能拖动全部
 
 Item|物品
 Spear|矛
