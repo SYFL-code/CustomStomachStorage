@@ -3,7 +3,7 @@
 	"name": "Custom Stomach Storage",
 	"version": "0.1.0",
 	"authors": "Redlyn",
-	"description": "Customize the type and quantity of items stored in the Slugcat's stomach.<LINE><LINE>Source code: https://github.com/SYFL-code/CustomStomachStorage",
+	"description": "Customize the type and quantity of items stored in the Slugcat's stomach.<LINE>And customize Slugcat's grabbing method.<LINE><LINE>Source code: https://github.com/SYFL-code/CustomStomachStorage",
 	"requirements": [ "improved-input-config" ],
 	"requirements_names": [ "Improved Input Config: Extended" ]
 }

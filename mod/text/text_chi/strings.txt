@@ -1,9 +1,9 @@
 Custom Stomach Storage|自定义胃部储存
 
 CustomStomachStorage.Redlyn-name|自定义胃部储存
-CustomStomachStorage.Redlyn-description|自定义蛞蝓猫的胃部储存物品的类型和数量。<LINE><LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
+CustomStomachStorage.Redlyn-description|自定义蛞蝓猫的胃部储存物品的类型和数量。<LINE>与自定义蛞蝓猫的抓取方式。<LINE><LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
 
-Customize the type and quantity of items stored in the Slugcat's stomach.<LINE><LINE>Source code: https://github.com/SYFL-code/CustomStomachStorage|自定义蛞蝓猫的胃部储存物品的类型和数量。<LINE><LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
+Customize the type and quantity of items stored in the Slugcat's stomach.<LINE>And customize Slugcat's grabbing method.<LINE><LINE>Source code: https://github.com/SYFL-code/CustomStomachStorage|自定义蛞蝓猫的胃部储存物品的类型和数量。<LINE>与自定义蛞蝓猫的抓取方式。<LINE><LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
 
 Options|选项
 Type|类型
@@ -25,10 +25,17 @@ Item|物品
 Spear|矛
 VultureMask|秃鹫面具
 NeedleEgg|面条蝇卵
+OracleSwarmer|神经元
+SeedCob|爆米花
+
+LillyPuck|百合花灯
+FireEgg|火虫卵
 JokeRifle|玩笑步枪
 EnergyCell|质量稀释电池
 MoonCloak|斗篷
+
 Boomerang|回旋镖
+GraffitiBomb|涂鸦炸弹
 
 Creature|生物
 Lizard|蜥蜴
@@ -47,6 +54,7 @@ LanternMouse|光鼠
 JetFish|蛙鱼
 TubeWorm|管虫
 Deer|雨鹿
+TempleGuard|守卫
 
 Yeek|跃客
 Inspector|监察者
