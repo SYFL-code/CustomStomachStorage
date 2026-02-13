@@ -26,6 +26,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Watcher;
+using static CustomStomachStorage.MyOptions;
 using static CustomStomachStorage.Plugin;
 using static Player.ObjectGrabability;
 using static SlugBase.Features.FeatureTypes;
@@ -301,44 +302,57 @@ namespace CustomStomachStorage
 			if (player == null) return;
 		}
 
-		private static Player.ObjectGrabability Player_Grabability(On.Player.orig_Grabability orig, Player player, PhysicalObject testObj)
-		{
-			var opt = MyOptions.Instance;
-			Player.ObjectGrabability original = orig(player, testObj);
+        #region MyOptions
+        private static Player.ObjectGrabability Player_Grabability(On.Player.orig_Grabability orig, Player player, PhysicalObject testObj)
+        {
+            var opt = MyOptions.Instance;
+            Player.ObjectGrabability original = orig(player, testObj);
 
-			if (testObj == player) return original;
+            if (testObj == player) return original;
 
-			// 全局抓取设置
-			if (opt.GrabTypes.TryGetValue("OneHandGrabAll", out var c1) && c1.Value)
-				return OneHand;
+            // 全局抓取设置
+            if (opt.GetGrabSpecial("OneHandGrabAll"))
+                return Player.ObjectGrabability.OneHand;
 
-			if (opt.GrabTypes.TryGetValue("DragGrabAll", out var c2) && c2.Value && original == CantGrab)
-				return Drag;
+            if (opt.GetGrabSpecial("DragGrabAll") && original == Player.ObjectGrabability.CantGrab)
+                return Player.ObjectGrabability.Drag;
 
-			// 获取继承链
-			HashSet<string> chain = GetInheritanceChain(testObj);
-			bool isCreature = testObj is Creature;
+            bool isCreature = testObj is Creature;
 
-			// 遍历所有启用的抓取类型
-			foreach (var kvp in opt.GrabTypes)
-			{
-				if (!kvp.Value.Value) continue;
-				if (kvp.Key == "OneHandGrabAll" || kvp.Key == "DragGrabAll") continue;
-				if (!chain.Contains(kvp.Key)) continue;
+            // 2. 再检查大类（Creature/Item）
+            if (isCreature)
+            {
+                string mode = opt.GetGrabMode("Creature");
+                if (mode != MyOptions.NotSelected)
+                {
+                    return opt.GetPlayerGrab(mode);
+                }
+            }
+            else
+            {
+                string mode = opt.GetGrabMode("Item");
+                if (mode != MyOptions.NotSelected)
+                {
+                    return opt.GetPlayerGrab(mode);
+                }
+            }
 
-				// 特殊处理 Creature/Item 大类
-				if (kvp.Key == "Creature" && !isCreature) continue;
-				if (kvp.Key == "Item" && isCreature) continue;
+            // 1. 先检查具体的类型（从最具体到最一般）
+            HashSet<string> chain = GetInheritanceChain(testObj);
 
-				return original == Player.ObjectGrabability.CantGrab
-					? Player.ObjectGrabability.Drag
-					: Player.ObjectGrabability.OneHand;
-			}
+            foreach (string type in chain)
+            {
+                string mode = opt.GetGrabMode(type);
+                if (mode != MyOptions.NotSelected)
+                {
+                    return opt.GetPlayerGrab(mode);
+                }
+            }
 
-			return original;
-		}
+            return original;
+        }
 
-		private static bool Player_CanBeSwallowed(On.Player.orig_CanBeSwallowed orig, Player player, PhysicalObject testObj)
+        private static bool Player_CanBeSwallowed(On.Player.orig_CanBeSwallowed orig, Player player, PhysicalObject testObj)
 		{
 			var opt = MyOptions.Instance;
 
@@ -347,15 +361,30 @@ namespace CustomStomachStorage
 				return false;
 
 			// 全局吞咽
-			if (opt.SwallowTypes.TryGetValue("All", out var all) && all.Value)
+			if (opt.CanSwallow("All"))
 				return true;
+
+			bool isCreature = testObj is Creature;
+
+			if (isCreature && opt.CanSwallow("Creature"))
+			{
+				return true;
+			}
+			if (!isCreature && opt.CanSwallow("Item"))
+			{
+				return true;
+			}
 
 			// 获取继承链
 			HashSet<string> chain = GetInheritanceChain(testObj);
-			bool isCreature = testObj is Creature;
-
 			// 遍历所有启用的吞咽类型
-			foreach (var kvp in opt.SwallowTypes)
+			foreach (string inherit in chain)
+			{
+				if (opt.CanSwallow(inherit))
+					return true;
+			}
+
+			/*foreach (var kvp in opt.SwallowTypes)
 			{
 				if (!kvp.Value.Value) continue;
 				if (kvp.Key == "All") continue;
@@ -366,10 +395,11 @@ namespace CustomStomachStorage
 				if (kvp.Key == "Item" && isCreature) continue;
 
 				return true;
-			}
+			}*/
 
 			return orig(player, testObj);
 		}
+		#endregion
 
 		private static readonly ConcurrentDictionary<Type, HashSet<string>> _typeCache = new();
 		public static HashSet<string> GetInheritanceChain(object obj)
