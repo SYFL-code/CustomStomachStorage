@@ -40,7 +40,22 @@ namespace CustomStomachStorage
 		{
 			UDebug.Log($">>> [0] 方法入口_{GlobalVar.playerStomachsDict.Count}_LoadGame");
 
-			UDebug.Log(">>> [1] 方法入口");
+            // 检查字典
+            UDebug.Log(">>> [10] 检查字典");
+            if (playerStomachsDict == null)
+            {
+                UDebug.LogWarning(">>> [WARN] 字典为 null，重新创建");
+                playerStomachsDict = new Dictionary<int, List<string>>();
+            }
+            else
+            {
+                UDebug.Log(">>> [11] 清空字典");
+                playerStomachsDict.Clear();
+            }
+
+            ESS.stomachContents.Clear();
+
+            UDebug.Log(">>> [1] 方法入口");
 
 			// 先调用原版
 			try
@@ -70,19 +85,6 @@ namespace CustomStomachStorage
 			try
 			{
 				UDebug.Log(">>> [9] 进入 try 块");
-
-				// 检查字典
-				UDebug.Log(">>> [10] 检查字典");
-				if (playerStomachsDict == null)
-				{
-					UDebug.LogWarning(">>> [WARN] 字典为 null，重新创建");
-					playerStomachsDict = new Dictionary<int, List<string>>();
-				}
-				else
-				{
-					UDebug.Log(">>> [11] 清空字典");
-					playerStomachsDict.Clear();
-				}
 
 				// 检查是否包含我们的数据
 				UDebug.Log(">>> [12] 检查 ESS_savefield_name");

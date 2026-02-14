@@ -33,15 +33,18 @@ using static CustomStomachStorage.Plugin;
 namespace CustomStomachStorage
 {
 	[BepInPlugin(MOD_ID, MOD_NAME, "0.1.0")]
-	class Plugin : BaseUnityPlugin
+    [BepInDependency(WHATS_IN_MY_POCKET_GUID, BepInDependency.DependencyFlags.SoftDependency)]
+    class Plugin : BaseUnityPlugin
 	{
         public const string MOD_NAME = "Custom Stomach Storage";
         public const string MOD_name = "CustomStomachStorage";
         public const string MOD_ID = "CustomStomachStorage.Redlyn";
 
+        public const string WHATS_IN_MY_POCKET_GUID = "Jimarad.WhatsInMyPocket";
 
-		// Add hooks-添加钩子
-		public void OnEnable()
+
+        // Add hooks-添加钩子
+        public void OnEnable()
 		{
             GlobalVar.HookAdd();
 
@@ -60,6 +63,8 @@ namespace CustomStomachStorage
 
             State.HookAdd();
 			Fix.HookAdd();
+
+            StomachHUD.HookAdd();
         }
 
 
@@ -83,6 +88,8 @@ namespace CustomStomachStorage
 
 			State.HookSubtract();
 			Fix.HookSubtract();
+
+            StomachHUD.HookSubtract();
 
             GlobalVar.HookSubtract();
         }

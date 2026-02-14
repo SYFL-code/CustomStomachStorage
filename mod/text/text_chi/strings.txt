@@ -6,27 +6,82 @@ CustomStomachStorage.Redlyn-description|自定义蛞蝓猫的胃部储存物品�
 Customize the type and quantity of items stored in the Slugcat's stomach.<LINE>And customize Slugcat's grabbing method.<LINE><LINE>Source code: https://github.com/SYFL-code/CustomStomachStorage|自定义蛞蝓猫的胃部储存物品的类型和数量。<LINE>与自定义蛞蝓猫的抓取方式。<LINE><LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
 
 Options|选项
+HUD|HUD
+Swallowing|吞咽
+Grasping|抓取
 Type|类型
 
 Custom Stomach Storage|自定义胃储存容量
-Types of swallowing|吞咽类型
-Types of graspable|抓取类型
 
 Stomach capacity|胃部容量
 Allow Spearmaster to store items|允许矛大师存储物品
-DebugMode|调试模式
+Allow Spearmaster to store items (needs MSC)|允许矛大师存储物品（需要倾盆大雨）
+If enabled, Spearmaster can store items in stomach|如果启用，矛大师可以将物品储存在胃里
+Debug Mode|调试模式
+Enable debug logging|启用调试日志记录
+
+HUD Settings|HUD设置
+
+Global visibility|全局可见性
+Choose whether the icons are always visible, or only visible when the map is shown|选择图标是始终可见，还是仅在显示地图时可见
+When Map button is held|按住地图键时
+Always|始终
+
+Background visibility|背景可见性
+Choose when the icon background is visible|选择图标背景何时可见
+Never|从不
+Always|始终
+
+Background opacity|背景不透明度
+
+Side line visibility|侧边线条可见性
+Choose when the color-coded side lines are visible|选择彩色侧边线条何时可见
+Never|从不
+Always|始终
+
+Side line opacity|侧边线条不透明度
+Icon size|图标大小
+
+
+Types of swallowing|吞咽类型
+Types of graspable|抓取类型
+
+Swallowing Settings|吞咽设置
+Swallow All|全部吞咽
+Allow swallowing all objects and creatures|允许吞咽所有物体和生物
+ITEMS|物品
+CREATURES|生物
+
+Grasping Settings|抓取设置
+One hand can grab all|单手抓取所有
+Allows grabbing any object with one hand|允许用一只手抓取任何物体
+At least able to drag all|至少能够拖动所有
+Objects that cannot be grabbed can at least be dragged|无法抓取的物体至少可以被拖动
+ITEMS|物品
+CREATURES|生物
 
 All|全部
 
-One hand can grab all|一只手能抓住全部
-At least able to drag all|至少能拖动全部
+GrabMode|抓取模式
+Not selected|未选择
+One hand|单手
+Big one hand|大单手
+Two hands|双手
+Drag|拖拽
+Cannot grab|无法抓取
 
 Item|物品
+Rock|石头
 Spear|矛
 VultureMask|秃鹫面具
 NeedleEgg|面条蝇卵
 OracleSwarmer|神经元
 SeedCob|爆米花
+SporePlant|蜂巢
+FlareBomb|闪光果
+PuffBall|烟雾果
+FirecrackerPlant|鞭炮草
+KarmaFlower|业力花
 
 LillyPuck|百合花灯
 FireEgg|火虫卵
@@ -38,6 +93,7 @@ Boomerang|回旋镖
 GraffitiBomb|涂鸦炸弹
 
 Creature|生物
+Slugcat|蛞蝓猫
 Lizard|蜥蜴
 Vulture|秃鹫
 Centipede|蜈蚣

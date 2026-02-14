@@ -12,58 +12,123 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 using static CustomStomachStorage.Plugin;
+using static CustomStomachStorage.Extended;
 
 
 namespace CustomStomachStorage
 {
 	public class MyOptions : OptionInterface
 	{
-		public static readonly MyOptions Instance = new MyOptions();
+        #region Variable变量
+        public static readonly MyOptions Instance = new MyOptions();
 
-		public readonly Configurable<int> StomachCapacity;
-		public readonly Configurable<bool> DebugMode;
-		public readonly Configurable<bool> SpearmasterStoreItems;
+        /// <summary>
+        /// 可配置的胃容量
+        /// </summary>
+        public readonly Configurable<int> StomachCapacity;
+        /// <summary>
+        /// 可配置的调试模式
+        /// </summary>
+        public readonly Configurable<bool> DebugMode;
+        /// <summary>
+        /// 可配置的矛大师是否可以存储物品
+        /// </summary>
+        public readonly Configurable<bool> SpearmasterStoreItems;
 
-		public readonly Dictionary<string, Configurable<bool>> SwallowTypes = new();
-		public readonly Dictionary<string, Configurable<string>> GrabTypes = new();
-		public readonly Dictionary<string, Configurable<bool>> GrabSpecialTypes = new();
+        /// <summary>
+        /// 可配置的吞咽类型字典
+        /// </summary>
+        public readonly Dictionary<string, Configurable<bool>> SwallowTypes = new();
+        /// <summary>
+        /// 可配置的抓取类型字典
+        /// </summary>
+        public readonly Dictionary<string, Configurable<string>> GrabTypes = new();
+        /// <summary>
+        /// 可配置的特殊抓取类型字典
+        /// </summary>
+        public readonly Dictionary<string, Configurable<bool>> GrabSpecialTypes = new();
 
-		public HashSet<string> ItemTypeNames { get; private set; } = new();
-		public HashSet<string> CreatureTypeNames { get; private set; } = new();
+        /// <summary>
+        /// 可配置的全局可见性模式
+        /// </summary>
+        public readonly Configurable<string> GlobalVisibility;
+        /// <summary>
+        /// 可配置的背景可见性模式
+        /// </summary>
+        public readonly Configurable<string> BackgroundVisibility;
+        /// <summary>
+        /// 可配置的侧边线可见性模式
+        /// </summary>
+        public readonly Configurable<string> SideLineVisibility;
+        /// <summary>
+        /// 可配置的背景透明度
+        /// </summary>
+        public readonly Configurable<float> BackgroundOpacity;
+        /// <summary>
+        /// 可配置的侧边线透明度
+        /// </summary>
+        public readonly Configurable<float> SideLineOpacity;
+        /// <summary>
+        /// 可配置的图标颜色模式
+        /// </summary>
+        //public readonly Configurable<string> IconColorMode;
+        /// <summary>
+        /// 可配置的图标大小
+        /// </summary>
+        public readonly Configurable<int> IconSize;
 
-		string[] specialTypeNames = {//45
+        /// <summary>
+        /// 物品类型名称集合
+        /// </summary>
+        public HashSet<string> ItemTypeNames { get; private set; } = new();
+        /// <summary>
+        /// 生物类型名称集合
+        /// </summary>
+        public HashSet<string> CreatureTypeNames { get; private set; } = new();
+        #endregion
+
+        #region Special
+        string[] specialTypeNames = {//45
 				"All",
 
 				"OneHandGrabAll",
 				"DragGrabAll",
 			};
-
-		#region Items
-		string[] baseItemTypes = {
+		#endregion
+        #region Items
+        string[] baseItemTypes = {
 				"Item",
-				"Spear",
+                "Rock",
+                "Spear",
 				"VultureMask",
 				"NeedleEgg",
 				"OracleSwarmer",
-				"SeedCob"
+				"SeedCob",
+                "SporePlant",
+                "FlareBomb",
+                "PuffBall",
+                "FirecrackerPlant",
+                "KarmaFlower",
 			};
 		string[] mscItemTypes = {
 				"LillyPuck",
 				"FireEgg",
 				"JokeRifle",
 				"EnergyCell",
-				"MoonCloak"
+				"MoonCloak",
 			};
 		string[] watcherItemTypes = {
 				"Boomerang",
-				"GraffitiBomb"
+				"GraffitiBomb",
 			};
 		#endregion
 		#region Creatures
 		string[] baseCreatureTypes = {
 				"Creature",
-				"Lizard",
+                "Slugcat",
+                "Lizard",
 				"Vulture",
 				"Centipede",
 				"Spider",
@@ -96,63 +161,187 @@ namespace CustomStomachStorage
 				"Barnacle",
 				"Frog"
 			};
+        #endregion
+
+        public const string NotSelected = "Not selected";
+        #region Modes
+        /// <summary>
+        ///抓取模式
+        /// </summary>
+        public enum GrabMode
+		{
+			NotSelected,
+			OneHand,
+			BigOneHand,
+			TwoHands,
+			Drag,
+			CantGrab
+		}
+
+        /// <summary>
+        /// 全局可见性模式
+        /// </summary>
+        public enum GlobalVisibilityMode
+		{
+			WhenMapButtonIsHeld,  // 按住地图键时显示
+			Always                // 始终显示
+		}
+
+        /// <summary>
+        /// 部件可见性模式（背景/侧边线）
+        /// </summary>
+        public enum PartVisibilityMode
+		{
+			Never,                 // 从不显示
+			WhenAnObjectIsHeld,    // 持有物品时显示
+			Always                 // 始终显示
+		}
+
+        /// <summary>
+        /// 图标颜色模式
+        /// </summary>
+        public enum IconColorModes
+		{
+			ColorCoded,    // 彩色编码（左右手不同色）
+			DefaultColors  // 默认颜色
+		}
 		#endregion
 
-        public enum GrabMode
-        {
-            NotSelected,
-            OneHand,
-            BigOneHand,
-            TwoHands,
-            Drag,
-            CantGrab
-        }
-        public const string NotSelected = "Not selected";  // 注意与数组中的文本一致
+		#region Transform转换
         private static string GrabModeToString(GrabMode mode)
-        {
-            return mode switch
-            {
-                GrabMode.NotSelected => "Not selected",
-                GrabMode.OneHand => "One hand",
-                GrabMode.BigOneHand => "Big one hand",
-                GrabMode.TwoHands => "Two hands",
-                GrabMode.Drag => "Drag",
-                GrabMode.CantGrab => "Cannot grab",
-                _ => "Not selected"
-            };
-        }
-        private static GrabMode GrabModeFromString(string value)
-        {
-            foreach (GrabMode mode in Enum.GetValues(typeof(GrabMode)))
-                if (GrabModeToString(mode) == value)
-                    return mode;
-            return GrabMode.NotSelected;
-        }
+		{
+			return mode switch
+			{
+				GrabMode.NotSelected => "Not selected",
+				GrabMode.OneHand => "One hand",
+				GrabMode.BigOneHand => "Big one hand",
+				GrabMode.TwoHands => "Two hands",
+				GrabMode.Drag => "Drag",
+				GrabMode.CantGrab => "Cannot grab",
+				_ => "Not selected"
+			};
+		}
+		private static GrabMode GrabModeFromString(string value)
+		{
+			foreach (GrabMode mode in Enum.GetValues(typeof(GrabMode)))
+				if (GrabModeToString(mode) == value)
+					return mode;
+			return GrabMode.NotSelected;
+		}
+		public Player.ObjectGrabability GetPlayerGrab(string mode)
+		{
+			// 转换显示文本到实际值
+			return mode switch
+			{
+				"One hand" => Player.ObjectGrabability.OneHand,
+				"Big one hand" => Player.ObjectGrabability.BigOneHand,
+				"Two hands" => Player.ObjectGrabability.TwoHands,
+				"Drag" => Player.ObjectGrabability.Drag,
+				"Cannot grab" => Player.ObjectGrabability.CantGrab,
+				"Not selected" => Player.ObjectGrabability.CantGrab,
+                "单手" => Player.ObjectGrabability.OneHand,
+                "大单手" => Player.ObjectGrabability.BigOneHand,
+                "双手" => Player.ObjectGrabability.TwoHands,
+                "拖拽" => Player.ObjectGrabability.Drag,
+                "无法抓取" => Player.ObjectGrabability.CantGrab,
+                "未选择" => Player.ObjectGrabability.CantGrab,
+                _ => Player.ObjectGrabability.CantGrab
+			};
+		}
 
+		private static string GlobalVisibilityModeToString(GlobalVisibilityMode value)
+		{
+			return value switch
+			{
+				GlobalVisibilityMode.WhenMapButtonIsHeld => "When Map button is held",
+				GlobalVisibilityMode.Always => "Always",
+				_ => "Always"
+			};
+		}
+		private static GlobalVisibilityMode GlobalVisibilityModeFromString(string value)
+		{
+			foreach (GlobalVisibilityMode mode in Enum.GetValues(typeof(GlobalVisibilityMode)))
+				if (GlobalVisibilityModeToString(mode) == value)
+					return mode;
+			return GlobalVisibilityMode.Always;
+		}
+
+		private static string PartVisibilityModeToString(PartVisibilityMode value)
+		{
+			return value switch
+			{
+				PartVisibilityMode.Never => "Never",
+				PartVisibilityMode.WhenAnObjectIsHeld => "When an object is held",
+				PartVisibilityMode.Always => "Always",
+				_ => "Never"
+			};
+		}
+		private static PartVisibilityMode PartVisibilityModeFromString(string value)
+		{
+			foreach (PartVisibilityMode mode in Enum.GetValues(typeof(PartVisibilityMode)))
+				if (PartVisibilityModeToString(mode) == value)
+					return mode;
+			return PartVisibilityMode.Never;
+		}
+
+		private static string IconColorModeToString(IconColorModes value)
+		{
+			return value switch
+			{
+				IconColorModes.ColorCoded => "Color-coded",
+				IconColorModes.DefaultColors => "Default colors",
+				_ => "Color-coded"
+			};
+		}
+		private static IconColorModes IconColorModeFromString(string value)
+		{
+			foreach (IconColorModes mode in Enum.GetValues(typeof(IconColorModes)))
+				if (IconColorModeToString(mode) == value)
+					return mode;
+			return IconColorModes.ColorCoded;
+		}
+        #endregion
+
+        #region 访问器
         // ============ 访问器 ============
         public bool CanSwallow(string type) =>
-            SwallowTypes.TryGetValue(type, out var config) && config.Value == true;
-        public bool GetGrabSpecial(string typeName) =>
-            GrabSpecialTypes.TryGetValue(typeName, out var config) && config.Value == true;
-        public string GetGrabMode(string typeName) =>
-            GrabTypes.TryGetValue(typeName, out var config) ? config.Value : NotSelected;
+			SwallowTypes.TryGetValue(type, out var config) && config.Value == true;
+		public bool GetGrabSpecial(string typeName) =>
+			GrabSpecialTypes.TryGetValue(typeName, out var config) && config.Value == true;
+		public string GetGrabMode(string typeName) =>
+			GrabTypes.TryGetValue(typeName, out var config) ? config.Value : NotSelected;
 
-        public Player.ObjectGrabability GetPlayerGrab(string mode)
-        {
-            // 转换显示文本到实际值
-            return mode switch
-            {
-                "One hand" => Player.ObjectGrabability.OneHand,
-                "Big one hand" => Player.ObjectGrabability.BigOneHand,
-                "Two hands" => Player.ObjectGrabability.TwoHands,
-                "Drag" => Player.ObjectGrabability.Drag,
-                "Cannot grab" => Player.ObjectGrabability.CantGrab,
-                "Not selected" => Player.ObjectGrabability.CantGrab,
-                _ => Player.ObjectGrabability.CantGrab
-            };
-        }
+		public int GetIconSize()
+		{
+			return IconSize.Value;
+		}
+		public GlobalVisibilityMode GetGlobalVisibility()
+		{
+			return GlobalVisibilityModeFromString(GlobalVisibility.Value);
+		}
+		public PartVisibilityMode GetBackgroundVisibility()
+		{
+			return PartVisibilityModeFromString(BackgroundVisibility.Value);
+		}
+		public PartVisibilityMode GetSideLineVisibility()
+		{
+			return PartVisibilityModeFromString(SideLineVisibility.Value);
+		}
+		public float GetBackgroundOpacity()
+		{
+			return BackgroundOpacity.Value;
+		}
+		public float GetSideLineOpacity()
+		{
+			return SideLineOpacity.Value;
+		}
+		/*public IconColorModes GetIconColorMode()
+		{
+			return IconColorModeFromString(IconColorMode.Value);
+		}*/
+        #endregion
 
-
+        #region MyOptions
         MyOptions()
 		{
 			//设置默认值
@@ -161,6 +350,46 @@ namespace CustomStomachStorage
 			DebugMode = config.Bind<bool>($"DebugMode_conf_{MOD_name}", false);
 
 			SpearmasterStoreItems = config.Bind<bool>($"SpearmasterStoreItems_conf_{MOD_name}", false);
+
+			// 添加 HUD 相关配置
+			GlobalVisibility = config.Bind<string>(
+				$"GlobalVisibility_conf_{MOD_name}",
+				GlobalVisibilityModeToString(GlobalVisibilityMode.Always)
+			);
+
+			BackgroundVisibility = config.Bind<string>(
+				$"BackgroundVisibility_conf_{MOD_name}",
+				PartVisibilityModeToString(PartVisibilityMode.Never)
+			);
+
+			SideLineVisibility = config.Bind<string>(
+				$"SideLineVisibility_conf_{MOD_name}",
+				PartVisibilityModeToString(PartVisibilityMode.Always)
+			);
+
+			BackgroundOpacity = config.Bind<float>(
+				$"BackgroundOpacity_conf_{MOD_name}",
+				0.5f,
+				new ConfigAcceptableRange<float>(0f, 1f)
+			);
+
+			SideLineOpacity = config.Bind<float>(
+				$"SideLineOpacity_conf_{MOD_name}",
+				1f,
+				new ConfigAcceptableRange<float>(0f, 1f)
+			);
+
+			/*IconColorMode = config.Bind<string>(
+				$"IconColorMode_conf_{MOD_name}",
+				IconColorModeToString(IconColorModes.ColorCoded)
+			);*/
+
+			// 图标大小（默认20，范围15-64）
+			IconSize = config.Bind<int>(
+				$"IconSize_conf_{MOD_name}",
+				20,
+				new ConfigAcceptableRange<int>(15, 64)
+			);
 
 			// 基础类型
 			SwallowTypes["All"] = config.Bind<bool>($"{"All"}_GrabSpecial_conf_{MOD_name}", false);
@@ -198,28 +427,33 @@ namespace CustomStomachStorage
 		private void InitializeSwallowType(string typeName, bool defaultValue = false)
 		{
 			SwallowTypes[typeName] = config.Bind<bool>($"{typeName}_Swallow_conf_{MOD_name}", defaultValue);
-            GrabTypes[typeName] = config.Bind<string>(
-                $"{typeName}_Grab_conf_{MOD_name}",
-                GrabModeToString(GrabMode.NotSelected)
-            );
-        }
+			GrabTypes[typeName] = config.Bind<string>(
+				$"{typeName}_Grab_conf_{MOD_name}",
+				GrabModeToString(GrabMode.NotSelected)
+			);
+		}
+        #endregion
 
-
+        #region Add
+        /// <summary>
+        /// 添加带有标签的选择框
+        /// </summary>
         private void AddLabeledCheckbox(OpTab tab, Vector2 pos, string label,
 			Configurable<bool> config, string description = "", Color? warningColor = null)
 		{
-			var checkbox = new OpCheckBox(config, pos)
+            InGameTranslator translator = Custom.rainWorld.inGameTranslator;
+            var checkbox = new OpCheckBox(config, pos)
 			{
-				description = description
+				description = translator.Translate(description)
 			};
-			var labelWidth = Custom.rainWorld.inGameTranslator.Translate(label).Length * 10f;
+			//float labelWidth = Custom.rainWorld.inGameTranslator.Translate(label).Length * 10f;
 
 			var labelElement = new OpLabel(
 				pos.x + checkbox.size.x + 5f,
 				pos.y + checkbox.size.y / 2f - 10f,
-				label, false)
+                translator.Translate(label), false)
 			{
-				description = description
+				description = translator.Translate(description)
 			};
 
 			if (warningColor.HasValue)
@@ -233,149 +467,209 @@ namespace CustomStomachStorage
 			//_checkBoxItems.Add(checkbox);
 		}
 
+        /// <summary>
+        /// 添加带有标签的下拉框
+        /// </summary>
         private void AddLabeledComboBox(OpTab tab, Vector2 pos, string label,
-            Configurable<string> config, string[] items, string description = "", Color? warningColor = null)
-        {
-            // 计算合适的宽度（基于最长的选项文本）
-            float maxItemWidth = items.Max(item =>
-                Custom.rainWorld.inGameTranslator.Translate(item).Length * 8f);
-            float comboBoxWidth = Mathf.Max(100f, maxItemWidth + 20f);
-
-            // 创建下拉框（直接使用 string[]）
-            var comboBox = new OpaqueComboBox(config, pos, comboBoxWidth, items)
-            {
-                description = description,
-                colorFill = new Color(0f, 0f, 0f, 1f),
-            };
-
-            // 创建标签
-            var labelElement = new OpLabel(
-                pos.x + comboBox.size.x + 5f,
-                pos.y + comboBox.size.y / 2f - 10f,
-                label, false)
-            {
-                description = description
-            };
-
-            // 警告颜色（如果需要）
-            if (warningColor.HasValue)
-            {
-                labelElement.color = warningColor.Value;
-                comboBox.colorEdge = warningColor.Value;
-            }
-
-            // 添加到选项卡
-            tab.AddItems(new UIelement[] { comboBox, labelElement });
-        }
-
-        private void AddCheckboxType(OpTab tab, ref float yPos, string title,
-			IEnumerable<string> types, Dictionary<string, Configurable<bool>> configs,
-			float xOffset = 0, string note = "")
+			Configurable<string> config, string[] items, string description = "", Color? warningColor = null)
 		{
-			if (!types.Any()) return;
+            InGameTranslator translator = Custom.rainWorld.inGameTranslator;
+			// 计算合适的宽度（基于最长的选项文本）
+            float maxItemWidth = CalculateMaxItemWidth(items);
+			float comboBoxWidth = Mathf.Max(100f, maxItemWidth + 10f);
 
-			// 分类标题
-			if (!string.IsNullOrEmpty(title))
+			/*for (int i = 0; i < items.Length; i++)
 			{
-				var titleLabel = new OpLabel(TITLE_X + xOffset, yPos, title, true)
-				{
-					alignment = FLabelAlignment.Left
-				};
-				tab.AddItems(new UIelement[] { titleLabel });
-				yPos -= SPACING * 1.5f;
-			}
-			float yTop = yPos;
+				items[i] = translator.Translate(items[i]);
+			}*/
 
-			// 类型复选框
-			foreach (var type in types)
+			// 创建下拉框
+			var comboBox = new OpaqueComboBox(config, pos, comboBoxWidth, items)
 			{
-				if (!configs.ContainsKey(type)) continue;
+                description = translator.Translate(description),
+				colorFill = new Color(0f, 0f, 0f, 1f),
+			};
 
-				var displayName = type;
-				if (!string.IsNullOrEmpty(note))
-					displayName += $" {note}";
+			// 创建标签
+			var labelElement = new OpLabel(
+				pos.x + comboBox.size.x + 5f,
+				pos.y + comboBox.size.y / 2f - 10f,
+                translator.Translate(label), false)
+			{
+                description = translator.Translate(description)
+            };
 
-				if (yPos < -1f)
-				{
-					yPos = yTop;
-					xOffset *= 2;
-				}
-				AddLabeledCheckbox(tab,
-					new Vector2(TITLE_X + xOffset, yPos),
-					displayName,
-					configs[type]);
-
-				yPos -= SPACING;
+			// 警告颜色（如果需要）
+			if (warningColor.HasValue)
+			{
+				labelElement.color = warningColor.Value;
+				comboBox.colorEdge = warningColor.Value;
 			}
 
-			yPos -= SPACING * 0.5f;
+			// 添加到选项卡
+			tab.AddItems(new UIelement[] { comboBox, labelElement });
 		}
 
-		private void AddComboBoxType(OpTab tab, ref float yPos, string title,
-			IEnumerable<string> types, Dictionary<string, Configurable<string>> configs, string[] items, 
-			float xOffset = 0, string note = "")
+        /// <summary>
+        /// 添加选择框的类型列
+        /// </summary>
+        private void AddCheckboxType(OpTab tab, ref Vector2 pos, string title,
+			IEnumerable<string> types, Dictionary<string, Configurable<bool>> configs,
+			string note = "")
 		{
 			if (!types.Any()) return;
 
-			// 分类标题
-			if (!string.IsNullOrEmpty(title))
+            InGameTranslator translator = Custom.rainWorld.inGameTranslator;
+
+            float yTop = TITLE_Y;
+            if (pos.y < -1f)
+            {
+                pos.y = yTop;
+                pos.x += COLUMN_WIDTH;
+            }
+            // 分类标题
+            if (!string.IsNullOrEmpty(title))
 			{
-				var titleLabel = new OpLabel(TITLE_X + xOffset, yPos, title, true)
+				var titleLabel = new OpLabel(pos.x, pos.y, translator.Translate(title), true)
 				{
 					alignment = FLabelAlignment.Left
 				};
 				tab.AddItems(new UIelement[] { titleLabel });
-				yPos -= SPACING * 1.5f;
+				pos.y -= SPACING * 1.5f;
 			}
-			float yTop = yPos;
 
-			// 类型复选框
+            // 类型选择框
+            foreach (var type in types)
+			{
+				if (!configs.ContainsKey(type)) continue;
+
+                string displayName = translator.Translate(type);
+				if (!string.IsNullOrEmpty(note))
+					displayName += $" {translator.Translate(note)}";
+
+                displayName = translator.Translate(displayName);
+
+                if (pos.y < -1f)
+                {
+                    pos.y = yTop;
+                    pos.x += COLUMN_WIDTH;
+                }
+                AddLabeledCheckbox(tab,
+					new Vector2(pos.x, pos.y),
+                    displayName,
+					configs[type]);
+
+                pos.y -= SPACING;
+			}
+
+            pos.y -= SPACING * 0.5f;
+		}
+
+        /// <summary>
+        /// 添加下拉框的类型列
+        /// </summary>
+        private void AddComboBoxType(OpTab tab, ref Vector2 pos, string title,
+			IEnumerable<string> types, Dictionary<string, Configurable<string>> configs, string[] items, 
+			string note = "")
+		{
+            if (!types.Any()) return;
+
+            InGameTranslator translator = Custom.rainWorld.inGameTranslator;
+
+            float yTop = TITLE_Y;
+            if (pos.y < -1f)
+            {
+                pos.y = yTop;
+                pos.x += COLUMN_WIDTH;
+            }
+            // 分类标题
+            if (!string.IsNullOrEmpty(title))
+			{
+				var titleLabel = new OpLabel(pos.x, pos.y, translator.Translate(title), true)
+				{
+					alignment = FLabelAlignment.Left
+				};
+				tab.AddItems(new UIelement[] { titleLabel });
+				pos.y -= SPACING * 1.5f;
+			}
+
+			// 类型下拉框
 			foreach (var type in types)
 			{
 				if (!configs.ContainsKey(type)) continue;
 
-				var displayName = type;
-				if (!string.IsNullOrEmpty(note))
-					displayName += $" {note}";
+                string displayName = translator.Translate(type);
+                if (!string.IsNullOrEmpty(note))
+                    displayName += $" {translator.Translate(note)}";
 
-				if (yPos < -1f)
-				{
-					yPos = yTop;
-					xOffset *= 2;
-				}
-				AddLabeledComboBox(tab,
-					new Vector2(TITLE_X + xOffset, yPos),
+                displayName = translator.Translate(displayName);
+
+                if (pos.y < -1f)
+                {
+                    pos.y = yTop;
+                    pos.x += COLUMN_WIDTH;
+                }
+                AddLabeledComboBox(tab,
+					new Vector2(pos.x, pos.y),
 					displayName,
 					configs[type],
 					items);
 
-				yPos -= SPACING;
+                pos.y -= SPACING;
 			}
-
-			yPos -= SPACING * 0.5f;
+			
+            pos.y -= SPACING * 0.5f;
 		}
+        #endregion
 
+        #region 常量
+        // 常量
+        /// <summary>
+        /// 标题X坐标
+        /// </summary>
+        private const float TITLE_X = 10f;
+        /// <summary>
+        /// 标题Y坐标
+        /// </summary>
+        private const float TITLE_Y = 560f;
+        /// <summary>
+        /// 列宽度
+        /// </summary>
+        private const float COLUMN_WIDTH = 230f;
+        /// <summary>
+        /// 基础Y坐标
+        /// </summary>
+        private const float BASE_Y = 450f;
+        /// <summary>
+        /// 标签X坐标
+        /// </summary>
+        private const float LABEL_X = 75f;
+        /// <summary>
+        /// 元素间距
+        /// </summary>
+        private const float SPACING = 30f;
+        /// <summary>
+        /// 下拉框宽度
+        /// </summary>
+        private const float COMBOBOX_WIDTH = 120f;
+        /// <summary>
+        /// 警告颜色
+        /// </summary>
+        private readonly Color WARNING_COLOR = new(0.85f, 0.35f, 0.4f);
+        #endregion
 
-		// 常量
-		private const float TITLE_X = 10f;
-		private const float TITLE_Y = 560f;
-		private const float COLUMN_WIDTH = 230f;
-		private const float BASE_Y = 450f;
-		private const float LABEL_X = 75f;
-		private const float SPACING = 30f; // 元素间距
-		private const float COMBOBOX_WIDTH = 120f;
-		private readonly Color WARNING_COLOR = new(0.85f, 0.35f, 0.4f);
-
-		public override void Initialize()
+        public override void Initialize()
 		{
-			// 创建选项卡
-			var optionsTab = new OpTab(this, "Options");
-			var swallowTab = new OpTab(this, "Swallowing");
-			var grabTab = new OpTab(this, "Grasping");
-			InGameTranslator translator = Custom.rainWorld.inGameTranslator;
+            // 创建选项卡
+            InGameTranslator translator = Custom.rainWorld.inGameTranslator;
+            var optionsTab = new OpTab(this, translator.Translate("Options"));
+            var hudTab = new OpTab(this, translator.Translate("HUD"));
+            var swallowTab = new OpTab(this, translator.Translate("Swallowing"));
+			var grabTab = new OpTab(this, translator.Translate("Grasping"));
 			this.Tabs = new OpTab[]
 			{
-				optionsTab,
+				optionsTab, 
+				hudTab,
 				swallowTab,
 				grabTab,
 			};
@@ -401,13 +695,16 @@ namespace CustomStomachStorage
 			var capacityLabel = new OpLabel(TITLE_X + capacityBox.size.x + 10f, yPos - 5f, translator.Translate("Stomach capacity"), false);
 
 			optionsTab.AddItems(new UIelement[] { capacityBox, capacityLabel });
+
 			yPos -= SPACING * 1.5f;
 
 			// 矛大师选项
 			string spearText = translator.Translate("Allow Spearmaster to store items");
 			Color? spearColor = !ModManager.MSC ? WARNING_COLOR : null;
 			if (!ModManager.MSC)
-				spearText += " (needs MSC)";
+			{
+                spearText = translator.Translate("Allow Spearmaster to store items (needs MSC)");
+            }
 
 			AddLabeledCheckbox(optionsTab, new Vector2(TITLE_X, yPos),
 				spearText, SpearmasterStoreItems,
@@ -422,9 +719,102 @@ namespace CustomStomachStorage
 				"Enable debug logging");
 			#endregion
 
-			#region swallowTab
-			// ============ Swallowing 选项卡 ============
+			#region hudTab
 			yPos = TITLE_Y;
+
+			// 标题
+			hudTab.AddItems(new OpLabel(TITLE_X, yPos,
+				translator.Translate("HUD Settings"), true)
+			{
+				alignment = FLabelAlignment.Left
+			});
+			yPos -= SPACING * 2;
+
+			// 全局可见性
+			string[] globalVisModes = new[]
+			{
+				GlobalVisibilityModeToString(GlobalVisibilityMode.WhenMapButtonIsHeld),
+				GlobalVisibilityModeToString(GlobalVisibilityMode.Always)
+			};
+			AddLabeledComboBox(hudTab, new Vector2(TITLE_X, yPos),
+				translator.Translate("Global visibility"),
+				GlobalVisibility, globalVisModes,
+				"Choose whether the icons are always visible, or only visible when the map is shown");
+			yPos -= SPACING * 1.5f;
+
+			// 图标颜色模式
+			/*string[] colorModes = new[]
+			{
+				IconColorModeToString(IconColorModes.ColorCoded),
+				IconColorModeToString(IconColorModes.DefaultColors)
+			};
+			AddLabeledComboBox(hudTab, new Vector2(TITLE_X, yPos),
+				translator.Translate("Icon color mode"),
+				IconColorMode, colorModes,
+				"Choose whether icons are color-coded or use default colors");
+			yPos -= SPACING * 1.5f;*/
+
+            // 背景可见性
+            string[] partVisModes = new[]
+			{
+				PartVisibilityModeToString(PartVisibilityMode.Never),
+				//PartVisibilityModeToString(PartVisibilityMode.WhenAnObjectIsHeld),
+				PartVisibilityModeToString(PartVisibilityMode.Always)
+			};
+			AddLabeledComboBox(hudTab, new Vector2(TITLE_X, yPos),
+				translator.Translate("Background visibility"),
+				BackgroundVisibility, partVisModes,
+				"Choose when the icon background is visible");
+			yPos -= SPACING * 1.5f;
+
+            // 背景透明度
+            var bgOpacitySlider = new OpFloatSlider(BackgroundOpacity,
+				new Vector2(TITLE_X, yPos - 10f), 200);
+			var bgOpacityLabel = new OpLabel(TITLE_X + 210f, yPos - 5f,
+				translator.Translate("Background opacity"), false);
+			hudTab.AddItems(new UIelement[] { bgOpacitySlider, bgOpacityLabel });
+			yPos -= SPACING * 1.5f;
+
+            // 侧边线可见性
+            AddLabeledComboBox(hudTab, new Vector2(TITLE_X, yPos),
+				translator.Translate("Side line visibility"),
+				SideLineVisibility, partVisModes,
+				"Choose when the color-coded side lines are visible");
+			yPos -= SPACING * 1.5f;
+
+            // 侧边线透明度
+            var slOpacitySlider = new OpFloatSlider(SideLineOpacity,
+				new Vector2(TITLE_X, yPos - 10f), 200);
+			var slOpacityLabel = new OpLabel(TITLE_X + 210f, yPos - 5f,
+				translator.Translate("Side line opacity"), false);
+			hudTab.AddItems(new UIelement[] { slOpacitySlider, slOpacityLabel });
+            yPos -= SPACING * 1.5f;
+
+            // 图标大小滑块
+            var iconSizeSlider = new OpSlider(IconSize,
+				new Vector2(TITLE_X, yPos - 10f), 200)
+			{
+				min = 15,
+				max = 64
+			};
+			var iconSizeLabel = new OpLabel(TITLE_X + 210f, yPos - 5f,
+				translator.Translate("Icon size"), false);
+			/*var iconSizeDescription = new OpLabel(TITLE_X + 210f, yPos - 25f,
+				translator.Translate("Size of item icons in HUD"), true)
+			{
+				alpha = 0.5f
+			};*/
+
+			hudTab.AddItems(new UIelement[] {
+				iconSizeSlider,
+				iconSizeLabel,
+			 });
+			yPos -= SPACING * 1.5f;
+            #endregion
+
+            #region swallowTab
+            // ============ Swallowing 选项卡 ============
+            yPos = TITLE_Y;
 
 			// 标题
 			swallowTab.AddItems(new OpLabel(TITLE_X, yPos,
@@ -438,18 +828,22 @@ namespace CustomStomachStorage
 			AddLabeledCheckbox(swallowTab, new Vector2(TITLE_X, yPos),
 				translator.Translate("Swallow All"), SwallowTypes["All"],
 				"Allow swallowing all objects and creatures");
-			yPos -= SPACING * 2;
+            yPos -= SPACING;
+
+            yPos -= SPACING * 2;
+
+			Vector2 pos = new Vector2(TITLE_X, yPos);
 
 			// 物品分类 - 左列
-			AddCheckboxType(swallowTab, ref yPos,
+			AddCheckboxType(swallowTab, ref pos,
 				translator.Translate("ITEMS"),
-				ItemTypeNames, SwallowTypes, 0);
+				ItemTypeNames, SwallowTypes);
 
 			// 生物分类 - 右列
-			float rightColY = TITLE_Y - SPACING * 2;
-			AddCheckboxType(swallowTab, ref rightColY,
+			//float rightColY = TITLE_Y - SPACING * 2;
+			AddCheckboxType(swallowTab, ref pos,
 				translator.Translate("CREATURES"),
-				CreatureTypeNames, SwallowTypes, COLUMN_WIDTH);
+				CreatureTypeNames, SwallowTypes);
 			#endregion
 
 			#region grabTab
@@ -476,28 +870,31 @@ namespace CustomStomachStorage
 				"Objects that cannot be grabbed can at least be dragged");
 			yPos -= SPACING * 2;
 
-            string[] grabModeNames = Enum.GetValues(typeof(GrabMode))
-                .Cast<GrabMode>()
-                .Select(m => GrabModeToString(m))
-                .ToArray();
+			string[] grabModeNames = Enum.GetValues(typeof(GrabMode))
+				.Cast<GrabMode>()
+				.Select(m => GrabModeToString(m))
+				.ToArray();
+
+            pos = new Vector2(TITLE_X, yPos);
 
             // 物品分类 - 左列
             float grabYPos = yPos;
-			AddComboBoxType(grabTab, ref grabYPos,
+			AddComboBoxType(grabTab, ref pos,
 				translator.Translate("ITEMS"),
-				ItemTypeNames, GrabTypes, grabModeNames, 0);
+				ItemTypeNames, GrabTypes, grabModeNames);
 
 			// 生物分类 - 右列
-			float grabRightY = TITLE_Y - SPACING * 2;
-			AddComboBoxType(grabTab, ref grabRightY,
+			//float grabRightY = TITLE_Y - SPACING * 2;
+			AddComboBoxType(grabTab, ref pos,
 				translator.Translate("CREATURES"),
-				CreatureTypeNames, GrabTypes, grabModeNames, COLUMN_WIDTH);
+				CreatureTypeNames, GrabTypes, grabModeNames);
 			#endregion
 
 		}
 
 
 	}
+
 
 	// 自定义不透明下拉框类
 	public class OpaqueComboBox : OpComboBox
@@ -548,10 +945,13 @@ namespace CustomStomachStorage
 			// 列表刚刚打开时自定义
 			if (!wasListVisible && isListVisible)
 			{
-				// 强制向上展开
-				var downwardField = typeof(OpComboBox).GetField("_downward",
-					BindingFlags.NonPublic | BindingFlags.Instance);
-				downwardField?.SetValue(this, false);
+				if (this.pos.y < 501f)
+				{
+                    // 强制向上展开
+                    var downwardField = typeof(OpComboBox).GetField("_downward",
+                        BindingFlags.NonPublic | BindingFlags.Instance);
+                    downwardField?.SetValue(this, false);
+                }
 
 				// 设置不透明背景和位置
 				if (this._rectList != null)
@@ -574,7 +974,7 @@ namespace CustomStomachStorage
 				}
 
 				// 更新滚动条
-				if (this._rectScroll != null && this._rectList != null && this._lblList != null && this._itemList.Length > this._lblList.Length)
+				if (this._rectScroll != null && this._rectList != null && this._lblList != null && this._itemList.Length > this._lblList.Length && this.pos.y < 501f)
 				{
 					this._rectScroll.size = new Vector2(15f, this._ScrollLen(this._itemList.Length));
 					this._rectScroll.pos = new Vector2(this._rectList.pos.x + this._rectList.size.x - 20f,
@@ -586,6 +986,7 @@ namespace CustomStomachStorage
 				}
 			}
 		}
+
 	}
 
 }

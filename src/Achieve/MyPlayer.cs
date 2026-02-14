@@ -336,9 +336,17 @@ namespace CustomStomachStorage
                     return opt.GetPlayerGrab(mode);
                 }
             }
+			if (testObj is Player)
+			{
+				string mode = opt.GetGrabMode("Slugcat");
+				if (mode != MyOptions.NotSelected)
+				{
+					return opt.GetPlayerGrab(mode);
+				}
+			}
 
-            // 1. 先检查具体的类型（从最具体到最一般）
-            HashSet<string> chain = GetInheritanceChain(testObj);
+			// 1. 先检查具体的类型（从最具体到最一般）
+			HashSet<string> chain = GetInheritanceChain(testObj);
 
             foreach (string type in chain)
             {
@@ -354,7 +362,9 @@ namespace CustomStomachStorage
 
         private static bool Player_CanBeSwallowed(On.Player.orig_CanBeSwallowed orig, Player player, PhysicalObject testObj)
 		{
-			var opt = MyOptions.Instance;
+			//bool a = testObj is Player;//Slugcat
+
+            var opt = MyOptions.Instance;
 
 			// 矛大师特殊处理
 			if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear && !(opt.SpearmasterStoreItems?.Value == true))
@@ -374,15 +384,21 @@ namespace CustomStomachStorage
 			{
 				return true;
 			}
+            if (testObj is Player && opt.CanSwallow("Slugcat"))
+            {
+                return true;
+            }
 
-			// 获取继承链
-			HashSet<string> chain = GetInheritanceChain(testObj);
+            // 获取继承链
+            HashSet<string> chain = GetInheritanceChain(testObj);
 			// 遍历所有启用的吞咽类型
 			foreach (string inherit in chain)
 			{
 				if (opt.CanSwallow(inherit))
-					return true;
-			}
+				{
+                    return true;
+                }
+            }
 
 			/*foreach (var kvp in opt.SwallowTypes)
 			{

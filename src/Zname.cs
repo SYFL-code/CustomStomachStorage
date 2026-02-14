@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using SlugBase.Features;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -155,8 +156,60 @@ namespace CustomStomachStorage
 			}*/
 		}
 
-		private void Options()
+        /// <summary>
+        /// 添加选择框的类型列
+        /// </summary>
+        /*private void AddCheckboxType(OpTab tab, ref float yPos, string title,
+            IEnumerable<string> types, Dictionary<string, Configurable<bool>> configs,
+            float xOffset = 0, string note = "")
+        {
+            if (!types.Any()) return;
+
+            InGameTranslator translator = Custom.rainWorld.inGameTranslator;
+            // 分类标题
+            if (!string.IsNullOrEmpty(title))
+            {
+                var titleLabel = new OpLabel(TITLE_X + xOffset, yPos, translator.Translate(title), true)
+                {
+                    alignment = FLabelAlignment.Left
+                };
+                tab.AddItems(new UIelement[] { titleLabel });
+                yPos -= SPACING * 1.5f;
+            }
+            float yTop = TITLE_Y;
+
+            // 类型复选框
+            foreach (var type in types)
+            {
+                if (!configs.ContainsKey(type)) continue;
+
+                string displayName = translator.Translate(type);
+                if (!string.IsNullOrEmpty(note))
+                    displayName += $" {translator.Translate(note)}";
+
+                displayName = translator.Translate(displayName);
+
+                if (yPos < -1f)
+                {
+                    yPos = yTop;
+                    xOffset += xOffset;
+                }
+                AddLabeledCheckbox(tab,
+                    new Vector2(TITLE_X + xOffset, yPos),
+                    displayName,
+                    configs[type]);
+
+                yPos -= SPACING;
+            }
+
+            yPos -= SPACING * 0.5f;
+        }*/
+
+        private void Options()
 		{
+
+
+
 			/*public readonly Configurable<bool> All;
 //
 public readonly Configurable<bool> Item;
@@ -622,7 +675,7 @@ for (int i = 0; i < CreaturesTypesList.Count; i++)
             PlayerGrabDisplay.TryGetValue(mode, out var value) ? value : Player.ObjectGrabability.CantGrab;*/
 
         // ============ 访问器 ============
-        public bool CanSwallow(string type) =>
+        /*public bool CanSwallow(string type) =>
                     SwallowConfigs.TryGetValue(type, out var config) && config.Value == true;
                 public bool GetGrabSpecial(string type) =>
                     GrabSpecialConfigs.TryGetValue(type, out var config) && config.Value == true;
