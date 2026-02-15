@@ -1,62 +1,94 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
-using System.Threading.Tasks;
+using UnityEngine;
 
 namespace CustomStomachStorage
 {
-    class UDebug
+    public static class UDebug
     {
         public static bool DebugMode = false;
-        private static bool _initialized = false;
-        private static bool _configDebugMode = false;
+        public static bool LogReset = true;
 
-        private static void UpdateConfigValue()
+        private static readonly object _lock = new object();
+        private static readonly string _logFilePath = "CustomStomachStorageLog.txt";
+        private static bool _isInitialized = false;
+
+        private static readonly StringBuilder _buffer = new StringBuilder();
+        private static DateTime _lastFlush = DateTime.Now;
+
+        // 缓存条件结果，避免每次重复判断
+        private static bool ShouldLog =>
+            DebugMode || (MyOptions.Instance?.DebugMode?.Value ?? false);
+
+        public static void Log(string message) => LogInternal(message, UnityEngine.Debug.Log);
+        public static void LogWarning(string message) => LogInternal(message, UnityEngine.Debug.LogWarning);
+        public static void LogError(string message) => LogInternal(message, UnityEngine.Debug.LogError);
+
+        private static void LogInternal(string message, Action<string> unityLogger)
         {
-            if (!_initialized)
+            if (!ShouldLog || string.IsNullOrEmpty(message)) return;
+
+            unityLogger(message);
+            OutputLog(message);
+        }
+
+        public static void OutputLog(string content)
+        {
+            if (string.IsNullOrEmpty(content)) return;
+
+            lock (_lock)
             {
-                try
+                _buffer.AppendLine($"{DateTime.Now:HH:mm:ss} {content}");
+
+                // 每秒或每50条刷新一次
+                if ((DateTime.Now - _lastFlush).TotalSeconds > 1 || _buffer.Length > 5000)
                 {
-                    // 只在初始化时读取一次配置，避免递归
-                    if (MyOptions.Instance?.DebugMode != null)
-                    {
-                        _configDebugMode = MyOptions.Instance.DebugMode.Value;
-                    }
-                    _initialized = true;
+                    FlushBuffer();
                 }
-                catch
+
+                /*try
                 {
-                    // 配置还没准备好，忽略
+                    InitializeLogFile();
+                    File.AppendAllText(_logFilePath, $"{DateTime.Now:HH:mm:ss} {content}{Environment.NewLine}");
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"日志写入失败: {ex.Message}");
+                }*/
             }
         }
 
-        public static void Log(string message)
+        private static void FlushBuffer()
         {
-            UpdateConfigValue();
-            if (_configDebugMode || DebugMode)
+            try
             {
-                UnityEngine.Debug.Log(message);
+                InitializeLogFile();
+                File.AppendAllText(_logFilePath, _buffer.ToString());
+                _buffer.Clear();
+                _lastFlush = DateTime.Now;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"日志写入失败: {ex.Message}");
             }
         }
 
-        public static void LogWarning(string message)
+        private static void InitializeLogFile()
         {
-            UpdateConfigValue();
-            if (_configDebugMode || DebugMode)
-            {
-                UnityEngine.Debug.LogWarning(message);
-            }
-        }
+            if (_isInitialized && !LogReset) return;
 
-        public static void LogError(string message)
-        {
-            UpdateConfigValue();
-            if (_configDebugMode || DebugMode)
+            var header = LogReset
+                ? $"=== 新日志 {DateTime.Now:yyyy-MM-dd HH:mm:ss} ==={Environment.NewLine}{Environment.NewLine}"
+                : string.Empty;
+
+            if (LogReset || !File.Exists(_logFilePath))
             {
-                UnityEngine.Debug.LogError(message);
+                File.WriteAllText(_logFilePath, header);
+                LogReset = false;
             }
+
+            _isInitialized = true;
         }
     }
 }

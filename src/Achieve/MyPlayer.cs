@@ -74,6 +74,11 @@ namespace CustomStomachStorage
 			//调试图像
 			pv.myDebug = new MyDebug(player);
 
+			if (player.room?.game.session is StoryGameSession sto && sto.saveState.malnourished)
+			{
+                UDebug.Log($">>> 挨饿轮回，");
+            }
+
 			if (player.room?.world.game.session is ArenaGameSession)//在竞技场模式
 			{
                 UDebug.Log(">>> 竞技场模式，跳过胃部加载");
@@ -173,7 +178,7 @@ namespace CustomStomachStorage
 
 
 			}
-			else if(stomachContents.Count > 0)
+			else if(player.room?.game.session is StoryGameSession story_ && story_.saveState.malnourished && stomachContents.Count > 0)
 			{
 				for (int i = 0; i < stomachContents.Count; i++)
 				{

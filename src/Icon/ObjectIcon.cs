@@ -18,8 +18,8 @@ namespace CustomStomachStorage
 		/// <summary>
 		/// 定义侧线位置的枚举
 		/// </summary>
-		public enum SideLinePosition
-		{
+		public enum SideLinePositionMode
+        {
 			Top,
 			Bottom,
 			Left,
@@ -48,6 +48,8 @@ namespace CustomStomachStorage
             /// 允许的最大尺寸
             /// </summary>
             public int maxAllowedSize;
+
+            public int size;
 
             /// <summary>
             /// 图标无着色器
@@ -90,7 +92,7 @@ namespace CustomStomachStorage
         /// <param name="sideLinePosition">侧边线位置</param>
         /// <param name="sideLineColor">侧边线颜色</param>
         /// <param name="settings">设置配置</param>
-        public ObjectIcon(FContainer parentContainer, Vector2 position, Color? forcedColor, SideLinePosition sideLinePosition, Color sideLineColor, Settings settings)
+        public ObjectIcon(FContainer parentContainer, Vector2 position, Color? forcedColor, SideLinePositionMode sideLinePosition, Color sideLineColor, Settings settings)
         {
 			this.container = new FContainer();
 			this.position = position;
@@ -162,7 +164,7 @@ namespace CustomStomachStorage
                 scaleY = 2f,
                 color = this.sideLineColor,
                 alpha = this.settings.sideLineOpacity,
-                rotation = this.sideLinePosition == SideLinePosition.Left || this.sideLinePosition == SideLinePosition.Right
+                rotation = this.sideLinePosition == SideLinePositionMode.Left || this.sideLinePosition == SideLinePositionMode.Right
                     ? 90f
                     : 0f
             };
@@ -174,19 +176,19 @@ namespace CustomStomachStorage
 
             Vector2 posOffset;
 
-            if (this.sideLinePosition == SideLinePosition.Left)
+            if (this.sideLinePosition == SideLinePositionMode.Left)
             {
                 posOffset = new Vector2(-this.settings.maxAllowedSize / 2f + 1f, 0f);
             }
-            else if (this.sideLinePosition == SideLinePosition.Right)
+            else if (this.sideLinePosition == SideLinePositionMode.Right)
             {
                 posOffset = new Vector2(this.settings.maxAllowedSize / 2f - 1f, 0f);
             }
-            else if (this.sideLinePosition == SideLinePosition.Bottom)
+            else if (this.sideLinePosition == SideLinePositionMode.Bottom)
             {
                 posOffset = new Vector2(0f, -this.settings.maxAllowedSize / 2f + 1f);
             }
-            else //if (this.sideLineSettings.position == SideLinePosition.Top)
+            else //if (this.sideLineSettings.position == SideLinePositionMode.Top)
             {
                 posOffset = new Vector2(0f, this.settings.maxAllowedSize / 2f - 1f);
             }
@@ -360,7 +362,8 @@ namespace CustomStomachStorage
 
             if (this.iconSprite != null)
             {
-                float? scaleFactor = CalculateSpriteScaleFactor(this.iconSprite.width, this.iconSprite.height);
+                //float? scaleFactor = CalculateSpriteScaleFactor(this.iconSprite.width, this.iconSprite.height);
+                float? scaleFactor = this.settings.size / 40f;
 
                 if (scaleFactor != null)
                 {
@@ -448,12 +451,12 @@ namespace CustomStomachStorage
             //If bigger side is less than min allowed size, scale up.
             //如果较长边小于允许的最小尺寸，则放大。
             if (this.settings.minAllowedSize != null && iconSprite != null && Math.Max(this.iconSprite.width, this.iconSprite.height) < this.settings.minAllowedSize.Value)
-			{
-				forcedSize = this.settings.minAllowedSize;
-			}
+            {
+                forcedSize = this.settings.minAllowedSize;
+            }
             // If bigger side is greater than max allowed size, scale down.
             //如果较长边大于允许的最大尺寸，则缩小。
-            else if (iconSprite != null && Math.Max(this.iconSprite.width, this.iconSprite.height) > this.settings.maxAllowedSize)
+            if (iconSprite != null && Math.Max(this.iconSprite.width, this.iconSprite.height) > this.settings.maxAllowedSize)
 			{
 				forcedSize = this.settings.maxAllowedSize;
 			}
@@ -507,7 +510,7 @@ namespace CustomStomachStorage
         /// <summary>
         /// 侧边线位置（只读）
         /// </summary>
-        private readonly SideLinePosition sideLinePosition;
+        private readonly SideLinePositionMode sideLinePosition;
         /// <summary>
         /// 侧边线颜色（只读）
         /// </summary>

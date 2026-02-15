@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using static CustomStomachStorage.Plugin;
+using static CustomStomachStorage.ObjectIcon;
 using static CustomStomachStorage.Extended;
 
 
@@ -62,6 +63,10 @@ namespace CustomStomachStorage
         /// 可配置的侧边线可见性模式
         /// </summary>
         public readonly Configurable<string> SideLineVisibility;
+        /// <summary>
+        /// 可配置的侧边线位置
+        /// </summary>
+        public readonly Configurable<string> SideLinePosition;
         /// <summary>
         /// 可配置的背景透明度
         /// </summary>
@@ -196,7 +201,16 @@ namespace CustomStomachStorage
 			WhenAnObjectIsHeld,    // 持有物品时显示
 			Always                 // 始终显示
 		}
-
+        /// <summary>
+        /// 定义侧线位置
+        /// </summary>
+        /*public enum SideLinePositionMode
+        {
+            Top,
+            Bottom,
+            Left,
+            Right
+        }*/
         /// <summary>
         /// 图标颜色模式
         /// </summary>
@@ -284,7 +298,26 @@ namespace CustomStomachStorage
 			return PartVisibilityMode.Never;
 		}
 
-		private static string IconColorModeToString(IconColorModes value)
+        private static string SideLinePositionModeToString(SideLinePositionMode value)
+        {
+            return value switch
+            {
+                SideLinePositionMode.Top => "Top",
+                SideLinePositionMode.Bottom => "Bottom",
+                SideLinePositionMode.Left => "Left",
+                SideLinePositionMode.Right => "Right",
+                _ => "Left"
+            };
+        }
+        private static SideLinePositionMode SideLinePositionModeFromString(string value)
+        {
+            foreach (SideLinePositionMode mode in Enum.GetValues(typeof(SideLinePositionMode)))
+                if (SideLinePositionModeToString(mode) == value)
+                    return mode;
+            return SideLinePositionMode.Left;
+        }
+
+        private static string IconColorModeToString(IconColorModes value)
 		{
 			return value switch
 			{
@@ -327,7 +360,11 @@ namespace CustomStomachStorage
 		{
 			return PartVisibilityModeFromString(SideLineVisibility.Value);
 		}
-		public float GetBackgroundOpacity()
+        public SideLinePositionMode GetSideLinePosition()
+        {
+            return SideLinePositionModeFromString(SideLinePosition.Value);
+        }
+        public float GetBackgroundOpacity()
 		{
 			return BackgroundOpacity.Value;
 		}
@@ -367,7 +404,12 @@ namespace CustomStomachStorage
 				PartVisibilityModeToString(PartVisibilityMode.Always)
 			);
 
-			BackgroundOpacity = config.Bind<float>(
+            SideLinePosition = config.Bind<string>(
+                $"SideLinePosition_conf_{MOD_name}",
+                SideLinePositionModeToString(SideLinePositionMode.Left)
+            );
+
+            BackgroundOpacity = config.Bind<float>(
 				$"BackgroundOpacity_conf_{MOD_name}",
 				0.5f,
 				new ConfigAcceptableRange<float>(0f, 1f)
@@ -384,10 +426,10 @@ namespace CustomStomachStorage
 				IconColorModeToString(IconColorModes.ColorCoded)
 			);*/
 
-			// 图标大小（默认20，范围15-64）
+			// 图标大小（默认38，范围15-64）
 			IconSize = config.Bind<int>(
 				$"IconSize_conf_{MOD_name}",
-				20,
+				38,
 				new ConfigAcceptableRange<int>(15, 64)
 			);
 
@@ -781,6 +823,20 @@ namespace CustomStomachStorage
 				SideLineVisibility, partVisModes,
 				"Choose when the color-coded side lines are visible");
 			yPos -= SPACING * 1.5f;
+
+            // 侧边线位置
+            string[] positionModes = new[]
+			{
+                SideLinePositionModeToString(SideLinePositionMode.Top),
+                SideLinePositionModeToString(SideLinePositionMode.Bottom),
+				SideLinePositionModeToString(SideLinePositionMode.Left),
+                SideLinePositionModeToString(SideLinePositionMode.Right),
+            };
+            AddLabeledComboBox(hudTab, new Vector2(TITLE_X, yPos),
+                translator.Translate("Side line position"),
+                SideLinePosition, positionModes,
+                "Choose the position of the color-coded side lines");
+            yPos -= SPACING * 1.5f;
 
             // 侧边线透明度
             var slOpacitySlider = new OpFloatSlider(SideLineOpacity,

@@ -36,22 +36,29 @@ namespace CustomStomachStorage
 
         private static void CreateStomachHUD(HUD.HUD hud, RainWorldGame game)
         {
+            UDebug.Log($">>> CreateStomachHUD - JollyCoop: {ModManager.JollyCoop}, Players: {game.Players.Count}");
+
             if (!ModManager.JollyCoop)
             {
-                // 单人模式
-                if (game.Players.Count > 0 && game.Players[0].realizedCreature is Player player)
+                if (game.Players.Count > 0)
                 {
-                    var stomachHUD = new StomachHUD(hud, player, 0, 1);
-                    hud.AddPart(stomachHUD);
+                    UDebug.Log($">>> Player0 realized: {game.Players[0].realizedCreature != null}");
+
+                    if (game.Players[0].realizedCreature is Player player)
+                    {
+                        var stomachHUD = new StomachHUD(hud, player, 0, 1);
+                        hud.AddPart(stomachHUD);
+                        UDebug.Log(">>> StomachHUD 创建成功");
+                    }
                 }
             }
             else
             {
-                // 多人模式 - 为每个玩家创建独立的 HUD
                 for (int i = 0; i < game.Players.Count; i++)
                 {
                     if (game.Players[i].realizedCreature is Player player)
                     {
+                        UDebug.Log($">>> 为玩家 {i} 创建 HUD");
                         var stomachHUD = new StomachHUD(hud, player, player.playerState.playerNumber, game.Players.Count);
                         hud.AddPart(stomachHUD);
                     }
@@ -70,6 +77,8 @@ namespace CustomStomachStorage
         public StomachHUD(HUD.HUD hud, Player player, int playerId, int playerCount)
             : base(hud)
         {
+            UDebug.Log(">>> 创建StomachHUD");
+
             this.container = new FContainer();
             this.player = player;
             this.options = MyOptions.Instance;
@@ -101,7 +110,11 @@ namespace CustomStomachStorage
         {
             base.Update();
 
+            // 安全检查
+            if (player == null || options == null) return;
+
             var stomachContents = MyPlayer.ESS.GetStomachContents(player);
+            if (stomachContents == null) return;
 
             // 更新图标数量
             if (stomachContents.Count != itemIcons.Count)
@@ -112,12 +125,27 @@ namespace CustomStomachStorage
             // 更新每个图标的内容
             for (int i = 0; i < stomachContents.Count && i < itemIcons.Count; i++)
             {
-                itemIcons[i].SetObject(stomachContents[i], ObjectIcon.DisplayMode.Holding);
+                try
+                {
+                    itemIcons[i].SetObject(stomachContents[i], ObjectIcon.DisplayMode.Holding);
+
+                    // 确保图标可见
+                    itemIcons[i].isVisible = true;
+                }
+                catch (Exception e)
+                {
+                    UDebug.LogError($">>> 更新图标失败: {e.Message}");
+                }
             }
 
-            // 控制显示/隐藏
-            bool shouldShow = options.GetGlobalVisibility() == GlobalVisibilityMode.Always ||
-                             (player.mapInput.mp);//player.mapInput != null
+            // 控制显示/隐藏 - ✅ 修复空引用
+            bool shouldShow = options.GetGlobalVisibility() == GlobalVisibilityMode.Always;
+
+            if (!shouldShow)
+            {
+                shouldShow = player.mapInput.mp;
+            }
+
             container.isVisible = shouldShow;
         }
 
@@ -135,20 +163,29 @@ namespace CustomStomachStorage
         /// </summary>
         private void CreateIcons()
         {
-            var settings = CreateSettings();
-
-            for (int i = 0; i < INITIAL_CAPACITY; i++)
+            try
             {
-                var icon = new ObjectIcon(
-                    container,
-                    new Vector2(0, i * iconSize),  // 垂直排列
-                    null,
-                    ObjectIcon.SideLinePosition.Left,
-                    Color.white,
-                    settings
-                );
-                icon.isVisible = false;
-                itemIcons.Add(icon);
+                var settings = CreateSettings();
+
+                for (int i = 0; i < INITIAL_CAPACITY; i++)
+                {
+                    var icon = new ObjectIcon(
+                        container,
+                        new Vector2(0, i * iconSize),
+                        null,
+                        options.GetSideLinePosition(),
+                        Color.white,
+                        settings
+                    );
+                    icon.isVisible = false;
+                    itemIcons.Add(icon);
+                }
+
+                UDebug.Log($">>> 成功创建 {INITIAL_CAPACITY} 个图标");
+            }
+            catch (Exception e)
+            {
+                UDebug.LogError($">>> 创建图标失败: {e.Message}");
             }
         }
 
@@ -158,10 +195,19 @@ namespace CustomStomachStorage
         /// <param name="newCount">新图标数量</param>
         private void RebuildIcons(int newCount)
         {
+            UDebug.Log($">>> 重建图标: {newCount} 个");
+
             // 清除现有图标
             foreach (var icon in itemIcons)
             {
-                icon.ClearSprites();
+                try
+                {
+                    icon.ClearSprites();
+                }
+                catch (Exception e)
+                {
+                    UDebug.LogError($">>> 清除图标失败: {e.Message}");
+                }
             }
             itemIcons.Clear();
 
@@ -169,15 +215,22 @@ namespace CustomStomachStorage
             var settings = CreateSettings();
             for (int i = 0; i < newCount; i++)
             {
-                var icon = new ObjectIcon(
-                    container,
-                    new Vector2(0, i * iconSize),
-                    null,
-                    ObjectIcon.SideLinePosition.Top,
-                    Color.white,
-                    settings
-                );
-                itemIcons.Add(icon);
+                try
+                {
+                    var icon = new ObjectIcon(
+                        container,
+                        new Vector2(0, i * iconSize),
+                        null,
+                        options.GetSideLinePosition(),
+                        Color.white,
+                        settings
+                    );
+                    itemIcons.Add(icon);
+                }
+                catch (Exception e)
+                {
+                    UDebug.LogError($">>> 创建第 {i} 个图标失败: {e.Message}");
+                }
             }
 
             // 重新定位
@@ -196,7 +249,7 @@ namespace CustomStomachStorage
         }
 
         /// <summary>
-        /// 定位容器
+        /// 放置容器
         /// </summary>
         /// <param name="playerId">玩家ID</param>
         /// <param name="playerCount">玩家总数</param>
@@ -229,6 +282,8 @@ namespace CustomStomachStorage
             {
                 minAllowedSize = iconSize - 4,
                 maxAllowedSize = iconSize,
+
+                size = iconSize,
 
                 iconNoShader = hud.rainWorld.Shaders["Basic"],
                 iconHoldingShader = hud.rainWorld.Shaders["Basic"],

@@ -34,12 +34,19 @@ Always|始终
 
 Background opacity|背景不透明度
 
-Side line visibility|侧边线条可见性
-Choose when the color-coded side lines are visible|选择彩色侧边线条何时可见
+Side line visibility|侧边线可见性
+Choose when the color-coded side lines are visible|选择彩色侧边线何时可见
 Never|从不
 Always|始终
 
-Side line opacity|侧边线条不透明度
+Side line position|侧边线位置
+Choose the position of the color-coded side lines|选择彩色侧边线的显示位置
+Top|上
+Bottom|下
+Left|左
+Right|右
+
+Side line opacity|侧边线不透明度
 Icon size|图标大小
 
 
