@@ -1,7 +1,7 @@
 ﻿{
 	"id": "CustomStomachStorage.Redlyn",
 	"name": "Custom Stomach Storage",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"authors": "Redlyn",
 	"description": "Customize the types and quantities the Slugcat can store in stomachs.<LINE><LINE>Thanks to Jimarads Whats in My Pocket? source code<LINE>Source code: https://github.com/SYFL-code/CustomStomachStorage",
 	"requirements": [ "improved-input-config" ],

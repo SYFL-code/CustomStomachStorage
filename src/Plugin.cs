@@ -32,13 +32,14 @@ using static CustomStomachStorage.Plugin;
 
 namespace CustomStomachStorage
 {
-	[BepInPlugin(MOD_ID, MOD_NAME, "0.1.0")]
+	[BepInPlugin(MOD_ID, MOD_NAME, MOD_version)]
     [BepInDependency(WHATS_IN_MY_POCKET_GUID, BepInDependency.DependencyFlags.SoftDependency)]
     class Plugin : BaseUnityPlugin
 	{
         public const string MOD_NAME = "Custom Stomach Storage";
         public const string MOD_name = "CustomStomachStorage";
         public const string MOD_ID = "CustomStomachStorage.Redlyn";
+        public const string MOD_version = "0.1.1";
 
         public const string WHATS_IN_MY_POCKET_GUID = "Jimarad.WhatsInMyPocket";
 

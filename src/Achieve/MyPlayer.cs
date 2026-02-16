@@ -614,19 +614,65 @@ namespace CustomStomachStorage
 			}
 			else
 			{
-				bool found = false;
-                for (int i = 0; i < stomachContents.Count; i++)
-				{
-					if (stomachContents[i] == player.objectInStomach) { found = true; break; }
-                }	
-				if (found && stomachContents.Count > 0)
-				{
+                bool found = false;
+
+                string objectInStrings = "";
+                if (player.objectInStomach is AbstractCreature abstractCreature4)
+                {
+                    if (player.room?.world?.GetAbstractRoom(abstractCreature4.pos.room) == null)
+                    {
+                        abstractCreature4.pos = player.coord;
+                    }
+                    objectInStrings = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature4);
+                }
+                else
+                {
+                    objectInStrings = player.objectInStomach.ToString();
+                }
+
+                if (!string.IsNullOrWhiteSpace(objectInStrings))
+                {
+                    foreach (var item in stomachContents)
+                    {
+                        string strings = "";
+                        if (item is AbstractCreature abstractCreature3)
+                        {
+                            if (player.room?.world?.GetAbstractRoom(abstractCreature3.pos.room) == null)
+                            {
+                                abstractCreature3.pos = player.coord;
+                            }
+                            strings = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature3);
+                        }
+                        else
+                        {
+                            strings = item.ToString();
+                        }
+                        if (!string.IsNullOrWhiteSpace(strings))
+                        {
+                            if (strings == objectInStrings)
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                /*for (int i = 0; i < stomachContents.Count; i++)
+                {
+                                if (stomachContents[i] == player.objectInStomach) { found = true; break; }
+                }*/
+                if (found && stomachContents.Count > 0)
+                {
                     player.objectInStomach = stomachContents[stomachContents.Count - 1];
                 }
-				else
-				{
+                else
+                {
+                    for (int i = 0; i < stomachContents.Count; i++)
+                    {
+                        UDebug.Log($"GrabUpdate_{stomachContents[i].ToString()}");
+                    }
                     stomachContents.Add(player.objectInStomach);
-                    UDebug.Log(player.objectInStomach.ToString());
+                    UDebug.Log($"GrabUpdate_{player.objectInStomach.ToString()}");
                 }
             }
 			//
