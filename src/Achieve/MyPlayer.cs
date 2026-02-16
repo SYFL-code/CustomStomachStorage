@@ -108,7 +108,7 @@ namespace CustomStomachStorage
 				//List<AbstractPhysicalObject> stomach = new List<AbstractPhysicalObject>();
 				if (stomachStr != null && stomachStr.Count > 0)
 				{
-					bool repeat = false;
+					bool found = false;
 					string? strings = null;
 					if (player.room?.game.session is StoryGameSession story && !string.IsNullOrWhiteSpace(story.saveState.swallowedItems[player.playerState.playerNumber]))
 					{
@@ -128,7 +128,7 @@ namespace CustomStomachStorage
 						{
 							if (item == strings)
 							{
-								repeat = true;
+                                found = true;
 							}
 						}
 
@@ -168,7 +168,7 @@ namespace CustomStomachStorage
 							UDebug.LogWarning($">>> [WARN] 物品解析结果为 null");
 						}
 					}
-					if (!repeat && strings != null)
+					if (!found && strings != null)
 					{
 						UDebug.Log(">>> 加载 objectInStomach");
 						stomachContents.Add(player.objectInStomach);
@@ -217,6 +217,16 @@ namespace CustomStomachStorage
 
 			}
 
+			/*if (player.SlugCatClass == SlugcatStats.Name.Red && !player.playerState.isGhost)
+			{
+				if (player.room?.game.devToolsActive ?? false && player.room.game.rainWorld.buildType == RainWorld.BuildType.Development && player.room.game.manager.menuSetup.startGameCondition == ProcessManager.MenuSetup.StoryGameInitCondition.Dev && player.objectInStomach == null)
+				{
+                    UDebug.Log(">>> objectInStomach_NSHSwarmer");
+                    UDebug.Log($">>> 2objectInStomach{player.objectInStomach}_stomachContents.Count{stomachContents.Count}");
+                    player.objectInStomach = new AbstractConsumable(world, AbstractPhysicalObject.AbstractObjectType.NSHSwarmer, null, abstractCreature.pos, world.game.GetNewID(), -1, -1, null);
+				}
+			}*/
+            UDebug.Log($">>> objectInStomach{player.objectInStomach}_stomachContents.Count{stomachContents.Count}");
 			if (player.objectInStomach != null && stomachContents.Count == 0)
 			{
 				UDebug.Log(">>> 使用原版 objectInStomach");
@@ -524,7 +534,10 @@ namespace CustomStomachStorage
 				}
 			}
 
-			player.objectInStomach = stomachContents[stomachContents.Count - 1];
+			if (stomachContents.Count > 0)
+			{
+                player.objectInStomach = stomachContents[stomachContents.Count - 1];
+            }
 
 			if (player.objectInStomach.world.GetAbstractRoom(player.objectInStomach.pos)?.realizedRoom != null)
 			{ }
@@ -599,6 +612,23 @@ namespace CustomStomachStorage
 					player.objectInStomach = stomachContents[stomachContents.Count - 1];
 				}
 			}
+			else
+			{
+				bool found = false;
+                for (int i = 0; i < stomachContents.Count; i++)
+				{
+					if (stomachContents[i] == player.objectInStomach) { found = true; break; }
+                }	
+				if (found && stomachContents.Count > 0)
+				{
+                    player.objectInStomach = stomachContents[stomachContents.Count - 1];
+                }
+				else
+				{
+                    stomachContents.Add(player.objectInStomach);
+                    UDebug.Log(player.objectInStomach.ToString());
+                }
+            }
 			//
 
 			if (GlobalVar.IsPressedSwallow(player) && ESS.HasSpace(player))
