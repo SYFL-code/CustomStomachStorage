@@ -3,8 +3,6 @@ Custom Stomach Storage|自定义胃部储存
 CustomStomachStorage.Redlyn-name|自定义胃部储存
 CustomStomachStorage.Redlyn-description|自定义蛞蝓猫的胃部储存物品的类型和数量。<LINE>与自定义蛞蝓猫的抓取方式。<LINE><LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
 
-Customize the types and quantities the Slugcat can store in stomachs.<LINE><LINE>Thanks to Jimarad's "What's in My Pocket?" source code<LINE>Source code: https://github.com/SYFL-code/CustomStomachStorage|自定义蛞蝓猫的胃部储存容量。<LINE><LINE>感谢Jimarad的"What's in My Pocket?"源代码<LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
-
 Options|选项
 HUD|HUD
 Swallowing|吞咽
