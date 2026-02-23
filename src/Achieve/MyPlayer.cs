@@ -14,6 +14,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
@@ -28,6 +29,7 @@ using UnityEngine;
 using Watcher;
 using static CustomStomachStorage.MyOptions;
 using static CustomStomachStorage.Plugin;
+using static CustomStomachStorage.Extended;
 using static Player.ObjectGrabability;
 using static SlugBase.Features.FeatureTypes;
 //using UDebug =  UnityEngine.Debug;
@@ -42,7 +44,9 @@ namespace CustomStomachStorage
 		{
 			On.Player.ctor += Player_ctor;
 			On.Player.Update += Player_Update;
+			On.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSprites;
 			On.PlayerGraphics.Update += PlayerGraphics_Update;
+			On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
 			On.Player.GrabUpdate += Player_GrabUpdate;
 			On.Player.Grabability += Player_Grabability;
 			On.Player.CanBeSwallowed += Player_CanBeSwallowed;
@@ -53,7 +57,9 @@ namespace CustomStomachStorage
 		{
 			On.Player.ctor -= Player_ctor;
 			On.Player.Update -= Player_Update;
+			On.PlayerGraphics.InitiateSprites -= PlayerGraphics_InitiateSprites;
 			On.PlayerGraphics.Update -= PlayerGraphics_Update;
+			On.PlayerGraphics.DrawSprites -= PlayerGraphics_DrawSprites;
 			On.Player.GrabUpdate -= Player_GrabUpdate;
 			On.Player.Grabability -= Player_Grabability;
 			On.Player.CanBeSwallowed -= Player_CanBeSwallowed;
@@ -63,219 +69,329 @@ namespace CustomStomachStorage
 
 		private static void Player_ctor(On.Player.orig_ctor orig, Player player, AbstractCreature abstractCreature, World world)
 		{
-			// 先调用原版构造函数
-			orig(player, abstractCreature, world);
-
-            //赋值给全局变量供其他函数使用
-            GlobalVar._game = player.room?.world?.game;
-            //玩家变量初始化
-            var pv = new PlayerVar();
-			GlobalVar.playerVar.Add(player, pv);
-			//调试图像
-			pv.myDebug = new MyDebug(player);
-
-			if (player.room?.game.session is StoryGameSession sto && sto.saveState.malnourished)
+#if MYDEBUG
+			try
 			{
-                UDebug.Log($">>> 挨饿轮回，");
-            }
+#endif
 
-			if (player.room?.world.game.session is ArenaGameSession)//在竞技场模式
-			{
-                UDebug.Log(">>> 竞技场模式，跳过胃部加载");
-				try
-				{
-                    ESS.stomachContents.Clear();
-                    GlobalVar.playerStomachsDict.Clear();
-                }
-				catch (Exception ex)
-				{
-                    UDebug.Log($">>> 竞技场模式，{ex}");
-                }
-				return;
-            }
-            if (player.room?.world?.game?.manager?.menuSetup?.startGameCondition == ProcessManager.MenuSetup.StoryGameInitCondition.New)//新剧情模式
-            {
-                UDebug.Log(">>> 新剧情，跳过胃部加载");
-                ESS.stomachContents.Clear();
-                GlobalVar.playerStomachsDict.Clear();
-            }
-            var stomachContents = ESS.GetStomachContents(player);
+				// 先调用原版构造函数
+				orig(player, abstractCreature, world);
 
-			int N = player.playerState.playerNumber;
-			if (GlobalVar.playerStomachsDict.TryGetValue(N, out var stomachStr))
-			{
-				stomachContents.Clear();
-				//List<AbstractPhysicalObject> stomach = new List<AbstractPhysicalObject>();
-				if (stomachStr != null && stomachStr.Count > 0)
+				// 添加日志记录传入参数
+				UDebug.Log($">>> Player_ctor 开始 - player: {player.ToString() ?? "null"}, abstractCreature: {abstractCreature.ToString()}, world: {world?.ToString() ?? "null"}");
+				UDebug.Log($">>> player.playerState.playerNumber: {player.playerState.playerNumber}");
+
+				//赋值给全局变量供其他函数使用
+				GlobalVar._game = abstractCreature.world?.game;
+				UDebug.Log($">>> GlobalVar._game 设置: {(GlobalVar._game != null ? "成功" : "失败 - 可能为 null")}");
+
+				//玩家变量初始化
+				var pv = new PlayerVar();
+				GlobalVar.playerVar.Add(player, pv);
+				//调试图像
+				//pv.myDebug = new MyDebug(player);
+				if (UDebug.ShouldLog)
 				{
-					bool found = false;
-					string? strings = null;
-					if (player.room?.game.session is StoryGameSession story && !string.IsNullOrWhiteSpace(story.saveState.swallowedItems[player.playerState.playerNumber]))
+					pv.myDebug = new MyDebug(player);
+				}
+
+				if (abstractCreature.world?.game.session is StoryGameSession sto && sto.saveState.malnourished)
+				{
+					UDebug.Log($">>> 挨饿轮回，");
+				}
+
+				if (abstractCreature.world?.game.session is ArenaGameSession)//在竞技场模式
+				{
+					UDebug.Log(">>> 竞技场模式，跳过胃部加载");
+					try
 					{
-						strings = story.saveState.swallowedItems[player.playerState.playerNumber];
-						UDebug.Log($">>> [38] 处理物品_objectInStomach: {strings}");
+						ESS.stomachItems.Clear();
+						GlobalVar.playersStrStomachs.Clear();
 					}
-
-					foreach (var item in stomachStr)
+					catch (Exception ex)
 					{
-						UDebug.Log($">>> [38] 处理物品: {item}");
-						if (string.IsNullOrWhiteSpace(item) || item == null)
-						{
-							UDebug.Log(">>>[39] 物品为空：跳过");
-							continue;
-						}
-						if (!string.IsNullOrWhiteSpace(strings))
-						{
-							if (item == strings)
-							{
-                                found = true;
-							}
-						}
+						UDebug.Log($">>> 竞技场模式清除失败: {ex}");
+					}
+					return;
+				}
 
-						AbstractPhysicalObject? obj = null;
+				if (abstractCreature.world?.game?.manager?.menuSetup?.startGameCondition == ProcessManager.MenuSetup.StoryGameInitCondition.New)//新剧情模式
+				{
+					UDebug.Log(">>> 新剧情，跳过胃部加载");
+					ESS.stomachItems.Clear();
+					GlobalVar.playersStrStomachs.Clear();
+				}
+
+				var stomachItems = ESS.GetstomachItems(player);
+				UDebug.Log($">>> 获取 stomachItems, Count: {stomachItems.Count}");
+
+				int N = player.playerState.playerNumber;
+				UDebug.Log($">>> 尝试获取 playersStrStomachs 中玩家 {N} 的数据");
+				UDebug.Log($">>> GlobalVar.playersStrStomachs 当前状态: Count={GlobalVar.playersStrStomachs.Count}, Keys={string.Join(", ", GlobalVar.playersStrStomachs.Keys)}");
+
+				bool hasValue = GlobalVar.playersStrStomachs.TryGetValue(N, out var strStomach);
+				UDebug.Log($">>> TryGetValue 结果: {hasValue}, strStomach 是否为 null: {strStomach == null}");
+
+				if (hasValue)
+				{
+					UDebug.Log($">>> 进入 strStomach 处理块");
+                    stomachItems.Clear();
+
+					// 添加对 strStomach 的详细检查
+					if (strStomach == null)
+					{
+						UDebug.Log($">>> [错误] strStomach 为 null，跳过处理");
+					}
+					else
+					{
 						try
 						{
-							if (item.Contains("<oA>"))
+							UDebug.Log($">>> strStomach 类型: {strStomach.GetType()}, Count: {strStomach.Count}");
+
+							if (strStomach.Count > 0)
 							{
-								UDebug.Log(">>> [40] 解析物品对象");
-								obj = SaveState.AbstractPhysicalObjectFromString(GlobalVar._game?.world, item);
-							}
-							else if (item.Contains("<cA>"))
-							{
-								UDebug.Log(">>> [41] 解析生物对象");
-								obj = SaveState.AbstractCreatureFromString(GlobalVar._game?.world, item, false, default(WorldCoordinate));
+								UDebug.Log($">>> strStomach 包含 {strStomach.Count} 个项目");
+
+								// 遍历 strStomach 前先记录所有项目
+								for (int idx = 0; idx < strStomach.Count; idx++)
+								{
+									UDebug.Log($">>> strStomach[{idx}] = {strStomach[idx] ?? "null"}");
+								}
+
+								bool found = false;
+								string? strings = null;
+
+								// 检查 story session 和 swallowedItems
+								if (abstractCreature.world?.game.session is StoryGameSession story)
+								{
+									UDebug.Log($">>> 当前是故事模式，检查 swallowedItems");
+									if (story.saveState?.swallowedItems != null)
+									{
+										UDebug.Log($">>> swallowedItems 数组长度: {story.saveState.swallowedItems.Length}");
+										if (player.playerState?.playerNumber < story.saveState.swallowedItems.Length)
+										{
+											strings = story.saveState.swallowedItems[player.playerState.playerNumber];
+											UDebug.Log($">>> [38] 处理物品_objectInStomach: {strings ?? "null"}");
+										}
+										else
+										{
+											UDebug.Log($">>> 警告: playerNumber {player.playerState?.playerNumber} 超出 swallowedItems 数组范围");
+										}
+									}
+									else
+									{
+										UDebug.Log($">>> 警告: story.saveState.swallowedItems 为 null");
+									}
+								}
+
+								foreach (var str in strStomach)
+								{
+									UDebug.Log($">>> [38] 处理物品: {str}");
+									if (string.IsNullOrWhiteSpace(str))
+									{
+										UDebug.Log(">>>[39] 物品为空：跳过");
+										continue;
+									}
+
+									if (!string.IsNullOrWhiteSpace(strings))
+									{
+										if (str == strings)
+										{
+											found = true;
+											UDebug.Log($">>> 找到匹配的 str: {str}");
+										}
+									}
+
+									AbstractPhysicalObject? obj = null;
+									try
+									{
+										if (str.Contains("<oA>"))
+										{
+											UDebug.Log(">>> [40] 解析物品对象");
+											UDebug.Log($">>> 使用 GlobalVar._game?.world: {(GlobalVar._game?.world != null ? "有效" : "为 null")}");
+											obj = SaveState.AbstractPhysicalObjectFromString(GlobalVar._game?.world, str);
+										}
+										else if (str.Contains("<cA>"))
+										{
+											UDebug.Log(">>> [41] 解析生物对象");
+											UDebug.Log($">>> 使用 GlobalVar._game?.world: {(GlobalVar._game?.world != null ? "有效" : "为 null")}");
+											obj = SaveState.AbstractCreatureFromString(GlobalVar._game?.world, str, false, default(WorldCoordinate));
+										}
+										else
+										{
+											UDebug.Log($">>> [42] 未知物品类型: {str}");
+										}
+									}
+									catch (Exception ex)
+									{
+										UDebug.LogWarning($">>> [WARN] 解析物品失败: {ex.Message}\nStackTrace: {ex.StackTrace}");
+										continue;
+									}
+
+									if (obj != null)
+									{
+										UDebug.Log(">>> [43] 添加物品到列表");
+										obj.pos = abstractCreature.pos;
+										stomachItems.Add(obj);
+									}
+									else
+									{
+										UDebug.LogWarning($">>> [WARN] 物品解析结果为 null");
+									}
+								}
+
+								if (!found && strings != null)
+								{
+									UDebug.Log(">>> 加载 objectInStomach");
+									if (player.objectInStomach != null)
+									{
+										stomachItems.Add(player.objectInStomach);
+										UDebug.Log($">>> 添加 objectInStomach: {player.objectInStomach}");
+									}
+									else
+									{
+										UDebug.Log(">>> 警告: player.objectInStomach 为 null");
+									}
+								}
 							}
 							else
 							{
-								UDebug.Log($">>> [42] 未知物品类型: {item}");
+								UDebug.Log(">>> strStomach.Count == 0，跳过处理");
 							}
 						}
 						catch (Exception ex)
 						{
-							UDebug.LogWarning($">>> [WARN] 解析物品失败: {ex.Message}");
+							UDebug.LogError($">>> [严重错误] 处理 strStomach 时发生异常: {ex.Message}\nStackTrace: {ex.StackTrace}");
+							throw; // 重新抛出异常以便外部 catch 捕获
+						}
+					}
+				}
+				else if (abstractCreature.world?.game.session is StoryGameSession story_ && story_.saveState.malnourished && stomachItems.Count > 0)
+				{
+					UDebug.Log($">>> 进入挨饿轮回处理，stomachItems.Count = {stomachItems.Count}");
+					for (int i = 0; i < stomachItems.Count; i++)
+					{
+						UDebug.Log($">>> 挨饿轮回，重新解析 stomachItems[{i}] = {stomachItems[i]?.ToString() ?? "null"}");
+
+						if (stomachItems[i] == null)
+						{
+							UDebug.Log($">>> 警告: stomachItems[{i}] 为 null，跳过");
 							continue;
 						}
 
-						if (obj != null)
+						string? strings;
+						if (stomachItems[i] is AbstractCreature abstractCreature3)
 						{
-							UDebug.Log(">>> [43] 添加物品到列表");
-							obj.pos = abstractCreature.pos;
-							stomachContents.Add(obj);
-							//stomach.Add(obj);
+							abstractCreature3.pos = player.coord;
+							strings = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature3);
+							UDebug.Log($">>> 转换生物为字符串: {strings}");
 						}
 						else
 						{
-							UDebug.LogWarning($">>> [WARN] 物品解析结果为 null");
+							strings = stomachItems[i].ToString();
+							UDebug.Log($">>> 使用 ToString(): {strings}");
+						}
+
+						if (!string.IsNullOrWhiteSpace(strings))
+						{
+							AbstractPhysicalObject? obj = null;
+							try
+							{
+								if (strings.Contains("<oA>"))
+								{
+									UDebug.Log(">>> [40] 解析物品对象");
+									obj = SaveState.AbstractPhysicalObjectFromString(abstractCreature.world, strings);
+								}
+								else if (strings.Contains("<cA>"))
+								{
+									UDebug.Log(">>> [41] 解析生物对象");
+									obj = SaveState.AbstractCreatureFromString(abstractCreature.world, strings, false, default(WorldCoordinate));
+								}
+
+								if (obj != null)
+								{
+									stomachItems[i] = obj;
+									UDebug.Log($">>> 重新解析成功，更新 stomachItems[{i}]");
+								}
+								else
+								{
+									UDebug.Log($">>> 重新解析失败，obj 为 null");
+								}
+							}
+							catch (Exception ex)
+							{
+								UDebug.LogError($">>> 重新解析时发生异常: {ex.Message}");
+							}
 						}
 					}
-					if (!found && strings != null)
-					{
-						UDebug.Log(">>> 加载 objectInStomach");
-						stomachContents.Add(player.objectInStomach);
-					}
-
 				}
 
-
-			}
-			else if(player.room?.game.session is StoryGameSession story_ && story_.saveState.malnourished && stomachContents.Count > 0)
-			{
-				for (int i = 0; i < stomachContents.Count; i++)
+				UDebug.Log($">>> objectInStomach = {player.objectInStomach?.ToString() ?? "null"}, stomachItems.Count = {stomachItems.Count}");
+				if (player.objectInStomach != null && stomachItems.Count == 0)
 				{
-					UDebug.Log($">>> 挨饿轮回，重新解析 {stomachContents[i]}");
-
-					string? strings;
-					if (stomachContents[i] is AbstractCreature abstractCreature3)
-					{
-						abstractCreature3.pos = player.coord;
-						strings = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature3);
-					}
-					else
-					{
-						strings = stomachContents[i].ToString();
-					}
-					if (strings != null)
-					{
-						AbstractPhysicalObject? obj = null;
-
-						if (strings.Contains("<oA>"))
-						{
-							UDebug.Log(">>> [40] 解析物品对象");
-							obj = SaveState.AbstractPhysicalObjectFromString(player.room?.world, strings);
-						}
-						else if (strings.Contains("<cA>"))
-						{
-							UDebug.Log(">>> [41] 解析生物对象");
-							obj = SaveState.AbstractCreatureFromString(player.room?.world, strings, false, default(WorldCoordinate));
-						}
-						if (obj != null)
-						{
-							stomachContents[i] = obj;
-						}
-					}
+					UDebug.Log(">>> 使用原版 objectInStomach");
+					stomachItems.Add(player.objectInStomach);
 				}
 
-			}
+				UDebug.Log($">>> 当前轮回数: {GlobalVar._game?.GetStorySession?.saveState?.cycleNumber}_Player_ctor_cycleNum");
 
-			/*if (player.SlugCatClass == SlugcatStats.Name.Red && !player.playerState.isGhost)
-			{
-				if (player.room?.game.devToolsActive ?? false && player.room.game.rainWorld.buildType == RainWorld.BuildType.Development && player.room.game.manager.menuSetup.startGameCondition == ProcessManager.MenuSetup.StoryGameInitCondition.Dev && player.objectInStomach == null)
-				{
-                    UDebug.Log(">>> objectInStomach_NSHSwarmer");
-                    UDebug.Log($">>> 2objectInStomach{player.objectInStomach}_stomachContents.Count{stomachContents.Count}");
-                    player.objectInStomach = new AbstractConsumable(world, AbstractPhysicalObject.AbstractObjectType.NSHSwarmer, null, abstractCreature.pos, world.game.GetNewID(), -1, -1, null);
-				}
-			}*/
-            UDebug.Log($">>> objectInStomach{player.objectInStomach}_stomachContents.Count{stomachContents.Count}");
-			if (player.objectInStomach != null && stomachContents.Count == 0)
-			{
-				UDebug.Log(">>> 使用原版 objectInStomach");
-				stomachContents.Add(player.objectInStomach);
-			}
+				//最后总是移除
+				UDebug.Log($">>> 从 playersStrStomachs 移除玩家 {N}");
+				GlobalVar.playersStrStomachs.Remove(N);
 
-			UDebug.Log($"{GlobalVar._game?.GetStorySession.saveState.cycleNumber}_Player_ctor_cycleNum");
-			//最后总是移除
-			GlobalVar.playerStomachsDict.Remove(N);
+#if MYDEBUG
+			}
+			catch (Exception e)
+			{
+				StackTrace st = new StackTrace(new StackFrame(true));
+				StackFrame sf = st.GetFrame(0);
+				var sr = sf.GetFileName().Split('\\');
+				MyDebug.outStr = sr[sr.Length - 1] + "\n";
+				MyDebug.outStr += sf.GetMethod() + "\n";
+				MyDebug.outStr += e;
+				UDebug.Log(e);
+			}
+#endif
 		}
 
 		// 管理扩展的胃部存储
 		public class ESS//ExtendedStomachStorage
 		{
-			public static readonly Dictionary<int, List<AbstractPhysicalObject>> stomachContents = new();//胃部存储列表
+			public static readonly Dictionary<int, List<AbstractPhysicalObject>> stomachItems = new();//胃部存储列表
 
-            public static List<AbstractPhysicalObject> GetStomachContents(Player player)
+			public static List<AbstractPhysicalObject> GetstomachItems(Player player)
 			{
 				int N = player.playerState.playerNumber;
-				if (!stomachContents.TryGetValue(N, out var contents))
+				if (!stomachItems.TryGetValue(N, out var contents))
 				{
 					contents = new List<AbstractPhysicalObject>();
-					stomachContents.Add(N, contents);
+					stomachItems.Add(N, contents);
 				}
 				return contents;
 			}
-			/*public static List<AbstractPhysicalObject> GetStomachContents(Player player)
+			/*public static List<AbstractPhysicalObject> GetstomachItems(Player player)
 			{
-				return GlobalVar.GetPlayerVar(player).stomachContents;
+				return GlobalVar.GetPlayerVar(player).stomachItems;
 			}*/
 
 			// 获取第一个物品
 			public static AbstractPhysicalObject? GetFirstStomachItem(Player player)
 			{
-				var contents = GetStomachContents(player);
+				var contents = GetstomachItems(player);
 				return contents.Count > 0 ? contents[0] : null;
 			}
 
 			// 获取最后一个物品
 			public static AbstractPhysicalObject? GetLastStomachItem(Player player)
 			{
-				var contents = GetStomachContents(player);
+				var contents = GetstomachItems(player);
 				return contents.Count > 0 ? contents[contents.Count - 1] : null;
 			}
 
 			// 移除指定位置的物品
 			public static AbstractPhysicalObject? RemoveStomachItem(Player player, int index)
 			{
-				var contents = GetStomachContents(player);
+				var contents = GetstomachItems(player);
 				if (index >= 0 && index < contents.Count)
 				{
 					var item = contents[index];
@@ -306,7 +422,7 @@ namespace CustomStomachStorage
 			// 检查是否有空间
 			public static bool HasSpace(Player player)
 			{
-				return GetStomachContents(player).Count < GetStomachCapacity(player);
+				return GetstomachItems(player).Count < GetStomachCapacity(player);
 			}
 		}
 
@@ -317,40 +433,40 @@ namespace CustomStomachStorage
 			if (player == null) return;
 		}
 
-        #region MyOptions
-        private static Player.ObjectGrabability Player_Grabability(On.Player.orig_Grabability orig, Player player, PhysicalObject testObj)
-        {
-            var opt = MyOptions.Instance;
-            Player.ObjectGrabability original = orig(player, testObj);
+		#region MyOptions
+		private static Player.ObjectGrabability Player_Grabability(On.Player.orig_Grabability orig, Player player, PhysicalObject testObj)
+		{
+			var opt = MyOptions.Instance;
+			Player.ObjectGrabability original = orig(player, testObj);
 
-            if (testObj == player) return original;
+			if (testObj == player) return original;
 
-            // 全局抓取设置
-            if (opt.GetGrabSpecial("OneHandGrabAll"))
-                return Player.ObjectGrabability.OneHand;
+			// 全局抓取设置
+			if (opt.GetGrabSpecial("OneHandGrabAll"))
+				return Player.ObjectGrabability.OneHand;
 
-            if (opt.GetGrabSpecial("DragGrabAll") && original == Player.ObjectGrabability.CantGrab)
-                return Player.ObjectGrabability.Drag;
+			if (opt.GetGrabSpecial("DragGrabAll") && original == Player.ObjectGrabability.CantGrab)
+				return Player.ObjectGrabability.Drag;
 
-            bool isCreature = testObj is Creature;
+			bool isCreature = testObj is Creature;
 
-            // 2. 再检查大类（Creature/Item）
-            if (isCreature)
-            {
-                string mode = opt.GetGrabMode("Creature");
-                if (mode != MyOptions.NotSelected)
-                {
-                    return opt.GetPlayerGrab(mode);
-                }
-            }
-            else
-            {
-                string mode = opt.GetGrabMode("Item");
-                if (mode != MyOptions.NotSelected)
-                {
-                    return opt.GetPlayerGrab(mode);
-                }
-            }
+			
+			if (isCreature)
+			{
+				string mode = opt.GetGrabMode("Creature");
+				if (mode != MyOptions.NotSelected)
+				{
+					return opt.GetPlayerGrab(mode);
+				}
+			}
+			else
+			{
+				string mode = opt.GetGrabMode("Item");
+				if (mode != MyOptions.NotSelected)
+				{
+					return opt.GetPlayerGrab(mode);
+				}
+			}
 			if (testObj is Player)
 			{
 				string mode = opt.GetGrabMode("Slugcat");
@@ -360,26 +476,26 @@ namespace CustomStomachStorage
 				}
 			}
 
-			// 1. 先检查具体的类型（从最具体到最一般）
+			
 			HashSet<string> chain = GetInheritanceChain(testObj);
 
-            foreach (string type in chain)
-            {
-                string mode = opt.GetGrabMode(type);
-                if (mode != MyOptions.NotSelected)
-                {
-                    return opt.GetPlayerGrab(mode);
-                }
-            }
+			foreach (string type in chain)
+			{
+				string mode = opt.GetGrabMode(type);
+				if (mode != MyOptions.NotSelected)
+				{
+					return opt.GetPlayerGrab(mode);
+				}
+			}
 
-            return original;
-        }
+			return original;
+		}
 
-        private static bool Player_CanBeSwallowed(On.Player.orig_CanBeSwallowed orig, Player player, PhysicalObject testObj)
+		private static bool Player_CanBeSwallowed(On.Player.orig_CanBeSwallowed orig, Player player, PhysicalObject testObj)
 		{
 			//bool a = testObj is Player;//Slugcat
 
-            var opt = MyOptions.Instance;
+			var opt = MyOptions.Instance;
 
 			// 矛大师特殊处理
 			if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear && !(opt.SpearmasterStoreItems?.Value == true))
@@ -399,21 +515,21 @@ namespace CustomStomachStorage
 			{
 				return true;
 			}
-            if (testObj is Player && opt.CanSwallow("Slugcat"))
-            {
-                return true;
-            }
+			if (testObj is Player && opt.CanSwallow("Slugcat"))
+			{
+				return true;
+			}
 
-            // 获取继承链
-            HashSet<string> chain = GetInheritanceChain(testObj);
+			// 获取继承链
+			HashSet<string> chain = GetInheritanceChain(testObj);
 			// 遍历所有启用的吞咽类型
 			foreach (string inherit in chain)
 			{
 				if (opt.CanSwallow(inherit))
 				{
-                    return true;
-                }
-            }
+					return true;
+				}
+			}
 
 			/*foreach (var kvp in opt.SwallowTypes)
 			{
@@ -468,12 +584,12 @@ namespace CustomStomachStorage
 			}
 			if (MyOptions.Instance?.DebugMode?.Value == true)
 			{
-                var stomachContents = ESS.GetStomachContents(player);
-                for (int i = 0; i < stomachContents.Count; i++)
-                {
-                    UDebug.Log(stomachContents[i].ToString());
-                }
-            }
+				var stomachItems = ESS.GetstomachItems(player);
+				for (int i = 0; i < stomachItems.Count; i++)
+				{
+					UDebug.Log(stomachItems[i].ToString());
+				}
+			}
 
 			player.objectInStomach = null;
 
@@ -481,15 +597,15 @@ namespace CustomStomachStorage
 
 			if (player.objectInStomach != null)
 			{
-				var stomachContents = ESS.GetStomachContents(player);
-				stomachContents.Add(player.objectInStomach);
+				var stomachItems = ESS.GetstomachItems(player);
+				stomachItems.Add(player.objectInStomach);
 
 				//player.objectInStomach = null;
 
-				UDebug.Log($"吞咽成功！胃部物品数量: {stomachContents.Count}");
-				for (int i = 0; i < stomachContents.Count; i++)
+				UDebug.Log($"吞咽成功！胃部物品数量: {stomachItems.Count}");
+				for (int i = 0; i < stomachItems.Count; i++)
 				{
-					UDebug.Log(stomachContents[i].ToString());
+					UDebug.Log(stomachItems[i].ToString());
 				}
 			}
 			else
@@ -503,14 +619,14 @@ namespace CustomStomachStorage
 		private static void Player_Regurgitate(On.Player.orig_Regurgitate orig, Player player)
 		{
 			UDebug.Log("Regurgitate_B");
-			var stomachContents = ESS.GetStomachContents(player);
+			var stomachItems = ESS.GetstomachItems(player);
 
-            for (int i = 0; i < stomachContents.Count; i++)
-            {
-                UDebug.Log(stomachContents[i].ToString());
-            }
+			for (int i = 0; i < stomachItems.Count; i++)
+			{
+				UDebug.Log(stomachItems[i].ToString());
+			}
 
-            if (stomachContents.Count == 0)
+			if (stomachItems.Count == 0)
 			{
 				UDebug.Log("胃部为空");
 
@@ -534,10 +650,10 @@ namespace CustomStomachStorage
 				}
 			}
 
-			if (stomachContents.Count > 0)
+			if (stomachItems.Count > 0)
 			{
-                player.objectInStomach = stomachContents[stomachContents.Count - 1];
-            }
+				player.objectInStomach = stomachItems[stomachItems.Count - 1];
+			}
 
 			if (player.objectInStomach.world.GetAbstractRoom(player.objectInStomach.pos)?.realizedRoom != null)
 			{ }
@@ -585,10 +701,10 @@ namespace CustomStomachStorage
 				orig(player);
 			}
 
-			stomachContents.RemoveAt(stomachContents.Count - 1);
-			if (stomachContents.Count > 0)
+			stomachItems.RemoveAt(stomachItems.Count - 1);
+			if (stomachItems.Count > 0)
 			{
-				player.objectInStomach = stomachContents[stomachContents.Count - 1];
+				player.objectInStomach = stomachItems[stomachItems.Count - 1];
 			}
 			else
 			{
@@ -602,79 +718,82 @@ namespace CustomStomachStorage
 		public static void Player_GrabUpdate(On.Player.orig_GrabUpdate orig, Player player, bool eu)
 		{
 			//
-			var stomachContents = ESS.GetStomachContents(player);
+			var stomachItems = ESS.GetstomachItems(player);
 			if (player.objectInStomach == null)
 			{
-				//UDebug.Log($">>> [2] {stomachContents.Count}_GrabUpdate");
-				if (stomachContents.Count > 0)
+				//UDebug.Log($">>> [2] {stomachItems.Count}_GrabUpdate");
+				if (stomachItems.Count > 0)
 				{
-					//UDebug.Log($">>> [3] {stomachContents[stomachContents.Count - 1]}_GrabUpdate");
-					player.objectInStomach = stomachContents[stomachContents.Count - 1];
+					//UDebug.Log($">>> [3] {stomachItems[stomachItems.Count - 1]}_GrabUpdate");
+					player.objectInStomach = stomachItems[stomachItems.Count - 1];
 				}
 			}
 			else
 			{
-                bool found = false;
+				//bool found = false;
 
-                string objectInStrings = "";
-                if (player.objectInStomach is AbstractCreature abstractCreature4)
-                {
-                    if (player.room?.world?.GetAbstractRoom(abstractCreature4.pos.room) == null)
-                    {
-                        abstractCreature4.pos = player.coord;
-                    }
-                    objectInStrings = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature4);
-                }
-                else
-                {
-                    objectInStrings = player.objectInStomach.ToString();
-                }
+/*                string objectInStrings = "";
+				if (player.objectInStomach is AbstractCreature abstractCreature4)
+				{
+					if (player.room?.world?.GetAbstractRoom(abstractCreature4.pos.room) == null)
+					{
+						abstractCreature4.pos = player.coord;
+					}
+					objectInStrings = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature4);
+				}
+				else
+				{
+					objectInStrings = player.objectInStomach.ToString();
+				}*/
 
-                if (!string.IsNullOrWhiteSpace(objectInStrings))
-                {
-                    foreach (var item in stomachContents)
-                    {
-                        string strings = "";
-                        if (item is AbstractCreature abstractCreature3)
-                        {
-                            if (player.room?.world?.GetAbstractRoom(abstractCreature3.pos.room) == null)
-                            {
-                                abstractCreature3.pos = player.coord;
-                            }
-                            strings = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature3);
-                        }
-                        else
-                        {
-                            strings = item.ToString();
-                        }
-                        if (!string.IsNullOrWhiteSpace(strings))
-                        {
-                            if (strings == objectInStrings)
-                            {
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                /*for (int i = 0; i < stomachContents.Count; i++)
-                {
-                                if (stomachContents[i] == player.objectInStomach) { found = true; break; }
-                }*/
-                if (found && stomachContents.Count > 0)
-                {
-                    player.objectInStomach = stomachContents[stomachContents.Count - 1];
-                }
-                else
-                {
-                    for (int i = 0; i < stomachContents.Count; i++)
-                    {
-                        UDebug.Log($"GrabUpdate_{stomachContents[i].ToString()}");
-                    }
-                    stomachContents.Add(player.objectInStomach);
-                    UDebug.Log($"GrabUpdate_{player.objectInStomach.ToString()}");
-                }
-            }
+				/*if (!string.IsNullOrWhiteSpace(objectInStrings))
+				{
+					foreach (var item in stomachItems)
+					{
+						string strings = "";
+						if (item is AbstractCreature abstractCreature3)
+						{
+							if (player.room?.world?.GetAbstractRoom(abstractCreature3.pos.room) == null)
+							{
+								abstractCreature3.pos = player.coord;
+							}
+							strings = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature3);
+						}
+						else
+						{
+							strings = item.ToString();
+						}
+						if (!string.IsNullOrWhiteSpace(strings))
+						{
+							if (strings == objectInStrings)
+							{
+								found = true;
+								break;
+							}
+						}
+					}
+				}*/
+				/*for (int i = 0; i < stomachItems.Count; i++)
+				{
+								if (stomachItems[i] == player.objectInStomach) { found = true; break; }
+				}*/
+
+
+
+				if (Find(stomachItems, player.objectInStomach, player.coord) && stomachItems.Count > 0)
+				{
+					player.objectInStomach = stomachItems[stomachItems.Count - 1];
+				}
+				else
+				{
+					for (int i = 0; i < stomachItems.Count; i++)
+					{
+						UDebug.Log($"GrabUpdate_{stomachItems[i].ToString()}");
+					}
+					stomachItems.Add(player.objectInStomach);
+					UDebug.Log($"GrabUpdate_{player.objectInStomach.ToString()}");
+				}
+			}
 			//
 
 			if (GlobalVar.IsPressedSwallow(player) && ESS.HasSpace(player))
@@ -728,13 +847,13 @@ namespace CustomStomachStorage
 
 				return;
 			}
-			else if (GlobalVar.IsPressedRegurgitate(player) && ((player.objectInStomach != null && stomachContents.Count > 0) || player.isGourmand))
+			else if (GlobalVar.IsPressedRegurgitate(player) && ((player.objectInStomach != null && stomachItems.Count > 0) || player.isGourmand))
 			{
 				if (player.isGourmand)
 				{
-					if (stomachContents.Count > 0)
+					if (stomachItems.Count > 0)
 					{
-						player.objectInStomach = stomachContents[stomachContents.Count - 1];
+						player.objectInStomach = stomachItems[stomachItems.Count - 1];
 					}
 					else
 					{
@@ -838,19 +957,19 @@ namespace CustomStomachStorage
 					}
 
 					// 根据玩家状态和 stomach 内容判断是否可以进行物品反刍
-					if ((player.objectInStomach != null && stomachContents.Count > 0) || player.isGourmand || (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear))
+					if ((player.objectInStomach != null && stomachItems.Count > 0) || player.isGourmand || (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear))
 					{
 						bool flag6 = false;
-						if (player.isGourmand && stomachContents.Count == 0)
+						if (player.isGourmand && stomachItems.Count == 0)
 						{
 							flag6 = true;
 						}
 						if (!flag6 || (flag6 && player.FoodInStomach >= 1))
 						{
-							//UDebug.Log($">>> [5] {stomachContents.Count > 0}_GrabUpdate");
-							if (stomachContents.Count > 0)
+							//UDebug.Log($">>> [5] {stomachItems.Count > 0}_GrabUpdate");
+							if (stomachItems.Count > 0)
 							{
-								player.objectInStomach = stomachContents[stomachContents.Count - 1];
+								player.objectInStomach = stomachItems[stomachItems.Count - 1];
 							}
 							else
 							{
@@ -871,6 +990,30 @@ namespace CustomStomachStorage
 
 			// 调用原始方法
 			orig(player, eu);
+		}
+
+		private static void PlayerGraphics_InitiateSprites(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics playerGra, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+		{
+			orig(playerGra, sLeaser, rCam);
+
+			GlobalVar.playerVar.TryGetValue(playerGra.player, out var pv);
+
+			if (pv.myDebug != null)
+			{
+				pv.myDebug.InitiateSprites(sLeaser, rCam);
+			}
+		}
+
+		public static void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics playerGra, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+		{
+			orig(playerGra, sLeaser, rCam, timeStacker, camPos);
+
+			GlobalVar.playerVar.TryGetValue(playerGra.player, out var pv);
+
+			if (pv.myDebug != null)
+			{
+				pv.myDebug.DrawSprites(sLeaser, rCam, timeStacker, camPos);
+			}
 		}
 
 		private static void PlayerGraphics_Update(On.PlayerGraphics.orig_Update orig, PlayerGraphics playerGra)

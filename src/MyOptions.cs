@@ -189,8 +189,9 @@ namespace CustomStomachStorage
         public enum GlobalVisibilityMode
 		{
 			WhenMapButtonIsHeld,  // 按住地图键时显示
-			Always                // 始终显示
-		}
+			Always,               // 始终显示
+            Never,                // 从不显示
+        }
 
         /// <summary>
         /// 部件可见性模式（背景/侧边线）
@@ -269,8 +270,9 @@ namespace CustomStomachStorage
 			{
 				GlobalVisibilityMode.WhenMapButtonIsHeld => "When Map button is held",
 				GlobalVisibilityMode.Always => "Always",
-				_ => "Always"
-			};
+                GlobalVisibilityMode.Never => "Never",
+                _ => "Never"
+            };
 		}
 		private static GlobalVisibilityMode GlobalVisibilityModeFromString(string value)
 		{
@@ -391,7 +393,7 @@ namespace CustomStomachStorage
 			// 添加 HUD 相关配置
 			GlobalVisibility = config.Bind<string>(
 				$"GlobalVisibility_conf_{MOD_name}",
-				GlobalVisibilityModeToString(GlobalVisibilityMode.Always)
+				GlobalVisibilityModeToString(GlobalVisibilityMode.Never)
 			);
 
 			BackgroundVisibility = config.Bind<string>(
@@ -518,7 +520,7 @@ namespace CustomStomachStorage
             InGameTranslator translator = Custom.rainWorld.inGameTranslator;
 			// 计算合适的宽度（基于最长的选项文本）
             float maxItemWidth = CalculateMaxItemWidth(items);
-			float comboBoxWidth = Mathf.Max(100f, maxItemWidth + 10f);
+			float comboBoxWidth = Mathf.Max(100f, maxItemWidth + 20f);
 
 			/*for (int i = 0; i < items.Length; i++)
 			{
@@ -775,7 +777,8 @@ namespace CustomStomachStorage
 			// 全局可见性
 			string[] globalVisModes = new[]
 			{
-				GlobalVisibilityModeToString(GlobalVisibilityMode.WhenMapButtonIsHeld),
+                GlobalVisibilityModeToString(GlobalVisibilityMode.Never),
+                GlobalVisibilityModeToString(GlobalVisibilityMode.WhenMapButtonIsHeld),
 				GlobalVisibilityModeToString(GlobalVisibilityMode.Always)
 			};
 			AddLabeledComboBox(hudTab, new Vector2(TITLE_X, yPos),

@@ -9,7 +9,7 @@ namespace CustomStomachStorage
     public class PlayerVar
     {
         public MyDebug? myDebug = null;//调试图像
-        //public List<AbstractPhysicalObject> stomachContents = new();//胃部存储列表
+        //public List<AbstractPhysicalObject> stomachItems = new();//胃部存储列表
 
 
 

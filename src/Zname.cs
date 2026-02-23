@@ -42,53 +42,54 @@ namespace CustomStomachStorage
 
 		private void A(Player player)
 		{
-			//mklink /j "D:\Steam\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\EnderPearl" "D:\Other\EnderPearl\mod"
+            //mklink /j "D:\Steam\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\EnderPearl" "D:\Other\EnderPearl\mod"
 
-			//存档字符串
-			// 读取存档字符串：
-			// "player_name<svB>玩家A<svA>level<svB>5<svA>coins<svB>100<svA>my_simple_data<svB>123<svA>"
+            //存档字符串
+            // 读取存档字符串：
+            // "player_name<svB>玩家A<svA>level<svB>5<svA>coins<svB>100<svA>my_simple_data<svB>123<svA>"
 
-			// 分割成：
-			// ["player_name<svB>玩家A", "level<svB>5", "coins<svB>100", "my_simple_data<svB>123"]
+            // 分割成：
+            // ["player_name<svB>玩家A", "level<svB>5", "coins<svB>100", "my_simple_data<svB>123"]
 
-			// 再分割每个部分：
-			// "my_simple_data<svB>123" → ["my_simple_data", "123"]
+            // 再分割每个部分：
+            // "my_simple_data<svB>123" → ["my_simple_data", "123"]
 
-			// 发现键是"my_simple_data"，值就是"123"
+            // 发现键是"my_simple_data"，值就是"123"
 
-			//ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1
+            //ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1
+
+            //StomachStorage_ESS_SAVEFIELD<svB>Player0<svD>ID.-1.4206<oB>0<oA>OverseerCarcass<oA>HI_S05.16.16.0<oA>0.4470588<oA>0.9019608<oA>0.7686275<oA>0<oA>0,ID.-1.4206<oB>0<oA>OverseerCarcass<oA>HI_S05.16.16.0<oA>0.4470588<oA>0.9019608<oA>0.7686275<oA>0<oA>0,ID.-1.7342<oB>0<oA>DataPearl<oA>HI_S05.16.16.0<oA>131<oA>1<oA>Misc,ID.-1.7341<oB>0<oA>DataPearl<oA>HI_S05.16.16.0<oA>131<oA>0<oA>HI,ID.-1.3843<oB>0<oA>ScavengerBomb<oA>HI_S05.16.16.0,ID.-1.3840<oB>0<oA>ScavengerBomb<oA>HI_S05.16.16.0,ID.-1.3841<oB>0<oA>ScavengerBomb<oA>HI_S05.16.16.0<svC><svA><svA><svA>
+
+            //层级 分隔符  作用
+            //-------------------------------------------
+            //顶级 <svA>   分隔主项
+            //     <svB>   主项内的键值分隔
+            //二级 <mwA>   分隔子项
+            //	   <mwB>   子项内的键值分隔
+            //三级 <slosA> 分隔子子项
+            //     <slosB> 子子项内的键值分隔
+            //四级 <svC>   分隔子子子项
+            //	   <svD>   子子子项内的键值分隔
+
+            // 最终保存格式：
+            // ESS_savefield_name<svB>Player0<mwB>物品1,物品2<mwA>Player1<mwB>物品3<mwA><svA>
+
+            //Debug
+            //Debug.Log("普通消息");
+            //Debug.LogWarning("警告消息");
+            //Debug.LogError("错误消息");
 
 
-			//层级 分隔符  作用
-			//-------------------------------------------
-			//顶级 <svA>   分隔主项
-			//     <svB>   主项内的键值分隔
-			//二级 <mwA>   分隔子项
-			//	   <mwB>   子项内的键值分隔
-			//三级 <slosA> 分隔子子项
-			//     <slosB> 子子项内的键值分隔
-			//四级 <svC>   分隔子子子项
-			//	   <svD>   子子子项内的键值分隔
+            //room
+            //player.room.game.Players
+            //player.room.game.GetStorySession.Players
+            //player.room.game.warpDeferPlayerSpawnRoomName
+            //player.room.abstractRoom.name
 
-			// 最终保存格式：
-			// ESS_savefield_name<svB>Player0<mwB>物品1,物品2<mwA>Player1<mwB>物品3<mwA><svA>
+        }
 
-			//Debug
-			//Debug.Log("普通消息");
-			//Debug.LogWarning("警告消息");
-			//Debug.LogError("错误消息");
-
-
-			//room
-			//player.room.game.Players
-			//player.room.game.GetStorySession.Players
-			//player.room.game.warpDeferPlayerSpawnRoomName
-			//player.room.abstractRoom.name
-
-		}
-
-		//保存部分
-		private static string SaveState_SaveToString(On.SaveState.orig_SaveToString orig, SaveState saveState)
+        //保存部分
+        private static string SaveState_SaveToString(On.SaveState.orig_SaveToString orig, SaveState saveState)
 		{
 			// 获取原版存档
 			string text = orig(saveState);
@@ -150,9 +151,9 @@ namespace CustomStomachStorage
 			string content = player.room.game.warpDeferPlayerSpawnRoomName + ":" + player.grasps[grasp].ToString() + "\n";
 			File.WriteAllText(filePath, content);*/
 
-			/*for (int i = 0; i < stomachContents.Count; i++)
+			/*for (int i = 0; i < stomachItems.Count; i++)
 			{
-				UnityEngine.Debug.Log(stomachContents[i].ToString());
+				UnityEngine.Debug.Log(stomachItems[i].ToString());
 			}*/
 		}
 

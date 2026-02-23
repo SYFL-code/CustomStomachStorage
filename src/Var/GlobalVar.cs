@@ -23,7 +23,7 @@ namespace CustomStomachStorage
         //全局系统变量
         public static RainWorldGame? _game = null;
         //最后一次的存档数据
-        public static Dictionary<int, List<string>> playerStomachsDict = new Dictionary<int, List<string>>();
+        public static Dictionary<int, List<string>> playersStrStomachs = new Dictionary<int, List<string>>();
         //技能按键
         public static readonly PlayerKeybind Swallow = PlayerKeybind.Register($"{MOD_NAME}:Swallow", MOD_NAME, "Swallow", KeyCode.C, KeyCode.JoystickButton4);
 		public static readonly PlayerKeybind Regurgitate = PlayerKeybind.Register($"{MOD_NAME}:Regurgitate", MOD_NAME, "Regurgitate", KeyCode.V, KeyCode.JoystickButton5);
@@ -65,12 +65,12 @@ namespace CustomStomachStorage
             Regurgitate.MapSuppressed = true;// 是否在地图中抑制
             Regurgitate.SleepSuppressed = true;// 是否在睡眠中抑制
 
-            playerStomachsDict = new Dictionary<int, List<string>>();
+            playersStrStomachs = new Dictionary<int, List<string>>();
             _game = null;
         }
         public static void HookSubtract()
         {
-            playerStomachsDict?.Clear();
+            playersStrStomachs?.Clear();
             _game = null;
         }
     }

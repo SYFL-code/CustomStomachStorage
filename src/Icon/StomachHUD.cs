@@ -113,21 +113,21 @@ namespace CustomStomachStorage
             // 安全检查
             if (player == null || options == null) return;
 
-            var stomachContents = MyPlayer.ESS.GetStomachContents(player);
-            if (stomachContents == null) return;
+            var stomachItems = MyPlayer.ESS.GetstomachItems(player);
+            if (stomachItems == null) return;
 
             // 更新图标数量
-            if (stomachContents.Count != itemIcons.Count)
+            if (stomachItems.Count != itemIcons.Count)
             {
-                RebuildIcons(stomachContents.Count);
+                RebuildIcons(stomachItems.Count);
             }
 
             // 更新每个图标的内容
-            for (int i = 0; i < stomachContents.Count && i < itemIcons.Count; i++)
+            for (int i = 0; i < stomachItems.Count && i < itemIcons.Count; i++)
             {
                 try
                 {
-                    itemIcons[i].SetObject(stomachContents[i], ObjectIcon.DisplayMode.Holding);
+                    itemIcons[i].SetObject(stomachItems[i], ObjectIcon.DisplayMode.Holding);
 
                     // 确保图标可见
                     itemIcons[i].isVisible = true;
@@ -138,13 +138,10 @@ namespace CustomStomachStorage
                 }
             }
 
-            // 控制显示/隐藏 - ✅ 修复空引用
-            bool shouldShow = options.GetGlobalVisibility() == GlobalVisibilityMode.Always;
-
-            if (!shouldShow)
-            {
-                shouldShow = player.mapInput.mp;
-            }
+            // 控制显示/隐藏
+            bool shouldShow = (options.GetGlobalVisibility() == GlobalVisibilityMode.Always || 
+                (options.GetGlobalVisibility() == GlobalVisibilityMode.WhenMapButtonIsHeld && player.mapInput.mp)) && 
+                options.GetGlobalVisibility() != GlobalVisibilityMode.Never;
 
             container.isVisible = shouldShow;
         }

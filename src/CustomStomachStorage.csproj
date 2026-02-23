@@ -5,6 +5,7 @@
         <LangVersion>11</LangVersion>
         <Nullable>enable</Nullable>
         <DebugType>portable</DebugType>
+		<DefineConstants>MYDEBUG</DefineConstants>
     </PropertyGroup>
     
     <ItemGroup>

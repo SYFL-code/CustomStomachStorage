@@ -18,9 +18,11 @@ namespace CustomStomachStorage
         private static DateTime _lastFlush = DateTime.Now;
 
         // 缓存条件结果，避免每次重复判断
-        private static bool ShouldLog =>
+        public static bool ShouldLog =>
             DebugMode || (MyOptions.Instance?.DebugMode?.Value ?? false);
 
+
+        public static void Log(object message) => UnityEngine.Debug.Log(message);
         public static void Log(string message) => LogInternal(message, UnityEngine.Debug.Log);
         public static void LogWarning(string message) => LogInternal(message, UnityEngine.Debug.LogWarning);
         public static void LogError(string message) => LogInternal(message, UnityEngine.Debug.LogError);
