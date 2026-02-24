@@ -58,8 +58,8 @@ namespace CustomStomachStorage
 		/// </summary>
 		public readonly Configurable<bool> SpearmasterStoreItems;
 
-        //public readonly Configurable<string> SelectedItemType;
-        //public readonly Configurable<string> SelectedCreatureType;
+        public readonly Configurable<string> SelectedItemType;
+        public readonly Configurable<string> SelectedCreatureType;
 		/// <summary>
 		/// 可配置的吞咽类型字典
 		/// </summary>
@@ -73,7 +73,7 @@ namespace CustomStomachStorage
 		/// </summary>
 		public readonly Dictionary<string, Configurable<bool>> GrabSpecialTypes = new();
 
-		//public Dictionary<string, OpaqueComboBox> GrabItemComboBoxes = new();
+		public Dictionary<string, OpaqueComboBox> GrabItemComboBoxes = new();
 
 		/// <summary>
 		/// 可配置的全局可见性模式
@@ -192,11 +192,11 @@ namespace CustomStomachStorage
             };
         #endregion*/
 		#region Items
-		List<string> baseItemTypes = GetTypeNames(_baseItemTypes);
-		List<string> mscItemTypes = GetTypeNames(_mscItemTypes);
-		List<string> watcherItemTypes = GetTypeNames(_watcherItemTypes);
+		//List<string> baseItemTypes = GetTypeNames(_baseItemTypes);
+		//List<string> mscItemTypes = GetTypeNames(_mscItemTypes);
+		//List<string> watcherItemTypes = GetTypeNames(_watcherItemTypes);
 
-		static Type[] _baseItemTypes = {
+		Type[] _baseItemTypes = {
 			typeof(PhysicalObject),//Item
 			typeof(Rock),
 			typeof(Spear),
@@ -211,7 +211,7 @@ namespace CustomStomachStorage
 			typeof(KarmaFlower),
 		};
 
-		static Type[] _mscItemTypes = {
+		Type[] _mscItemTypes = {
 			typeof(LillyPuck),
 			typeof(FireEgg),
 			typeof(JokeRifle),
@@ -219,17 +219,17 @@ namespace CustomStomachStorage
 			typeof(MoonCloak),
 		};
 
-		static Type[] _watcherItemTypes = {
+		Type[] _watcherItemTypes = {
 			typeof(Boomerang),
 			typeof(GraffitiBomb),
 		};
 		#endregion
 		#region Creatures
-		List<string> baseCreatureTypes = GetTypeNames(_baseCreatureTypes);
-		List<string> mscCreatureTypes = GetTypeNames(_mscCreatureTypes);
-		List<string> watcherCreatureTypes = GetTypeNames(_watcherCreatureTypes);
+		//List<string> baseCreatureTypes = GetTypeNames(_baseCreatureTypes);
+		//List<string> mscCreatureTypes = GetTypeNames(_mscCreatureTypes);
+		//List<string> watcherCreatureTypes = GetTypeNames(_watcherCreatureTypes);
 
-		static Type[] _baseCreatureTypes = {
+		Type[] _baseCreatureTypes = {
 				typeof(Creature),
 				typeof(Player),//Slugcat
 				typeof(Lizard),
@@ -250,12 +250,12 @@ namespace CustomStomachStorage
 				typeof(Deer),
 				typeof(TempleGuard),
 			};
-		static Type[] _mscCreatureTypes = {
+		Type[] _mscCreatureTypes = {
 				typeof(Yeek),
 				typeof(Inspector),
 				typeof(StowawayBug),
 			};
-		static Type[] _watcherCreatureTypes = {
+		Type[] _watcherCreatureTypes = {
 			typeof(Loach),
 			typeof(BigMoth),
 			typeof(SkyWhale),
@@ -539,7 +539,7 @@ namespace CustomStomachStorage
 			GrabSpecialTypes["OneHandGrabAll"] = config.Bind<bool>($"{"OneHandGrabAll"}_GrabSpecial_conf_{MOD_name}", false);
 			GrabSpecialTypes["DragGrabAll"] = config.Bind<bool>($"{"DragGrabAll"}_GrabSpecial_conf_{MOD_name}", false);
 
-			/*SelectedItemType = config.Bind<string>(
+			SelectedItemType = config.Bind<string>(
 				$"SelectedItemType_conf_{MOD_name}",
 				"Item"
 			);
@@ -553,7 +553,7 @@ namespace CustomStomachStorage
 			List<string> watcherItemTypes = GetTypeNames(_watcherItemTypes);
 			List<string> baseCreatureTypes = GetTypeNames(_baseCreatureTypes);
 			List<string> mscCreatureTypes = GetTypeNames(_mscCreatureTypes);
-			List<string> watcherCreatureTypes = GetTypeNames(_watcherCreatureTypes);*/
+			List<string> watcherCreatureTypes = GetTypeNames(_watcherCreatureTypes);
 
 			foreach (string typeName in baseItemTypes)
 				InitializeSwallowType(typeName, false);
@@ -583,7 +583,7 @@ namespace CustomStomachStorage
 			}
 		}
 
-		/*public static List<string> GetTypeNames(Type[] types)
+		public static List<string> GetTypeNames(Type[] types)
 		{
 			List<string> s = new();
 			foreach (var type in types)
@@ -603,7 +603,7 @@ namespace CustomStomachStorage
 				}
 			}
 			return s;
-		}*/
+		}
 
 		private void InitializeSwallowType(string typeName, bool defaultValue = false)
 		{
