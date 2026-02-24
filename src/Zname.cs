@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿#region using
+using BepInEx;
 using SlugBase.Features;
 using System;
 using System.Collections.Generic;
@@ -6,28 +7,29 @@ using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using static SlugBase.Features.FeatureTypes;
+using Menu.Remix.MixedUI;
+using Menu.Remix.MixedUI.ValueTypes;
+#endregion
 
 namespace CustomStomachStorage
 {
 	internal class Zname//Scrap 废案
 	{
-        #region Items
-        #endregion
-        #region Creatures
-        #endregion
+		#region Items
+		#endregion
+		#region Creatures
+		#endregion
 
 
-        //<DefineConstants>MYDEBUG</DefineConstants>
 
-        /*public static readonly PlayerKeybind Explode = PlayerKeybind.Register(
-				"example:explode",      // 唯一ID（格式：作者:功能）
-				"Example Mod",          // 模组显示名称
-				"Explode",              // 按键显示名称
-				KeyCode.C,              // 键盘默认键（C键）
-				KeyCode.JoystickButton3 // 手柄默认键（通常是RB或R1）
-			);*/
 
-        private static void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
+		//mklink /j "D:\Steam\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\EnderPearl" "D:\Other\EnderPearl\mod"
+
+		//<DefineConstants>MYDEBUG</DefineConstants>
+
+
+		#region More
+		private static void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
 		{
 			if (self.room.world.game.rainWorld.ExpeditionMode)//在探险模式里开启冰盾能力
 			{
@@ -37,59 +39,62 @@ namespace CustomStomachStorage
 			{
 				//GlobalVar.glacier2_iceshield_lock = false;
 			}
+
+			#region room
+			//room
+			//player.room.game.Players
+			//player.room.game.GetStorySession.Players
+			//player.room.game.warpDeferPlayerSpawnRoomName
+			//player.room.abstractRoom.name
+			#endregion
+			#region Debug
+			//Debug
+			//Debug.Log("普通消息");
+			//Debug.LogWarning("警告消息");
+			//Debug.LogError("错误消息");
+			#endregion
+		}
+		#endregion
+
+		#region Save
+		private void Save()
+		{
+			//存档字符串
+			// 读取存档字符串：
+			// "player_name<svB>玩家A<svA>level<svB>5<svA>coins<svB>100<svA>my_simple_data<svB>123<svA>"
+
+			// 分割成：
+			// ["player_name<svB>玩家A", "level<svB>5", "coins<svB>100", "my_simple_data<svB>123"]
+
+			// 再分割每个部分：
+			// "my_simple_data<svB>123" → ["my_simple_data", "123"]
+
+			// 发现键是"my_simple_data"，值就是"123"
+
+			//ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1
+
+			//StomachStorage_ESS_SAVEFIELD<svB>Player0<svD>ID.-1.4206<oB>0<oA>OverseerCarcass<oA>HI_S05.16.16.0<oA>0.4470588<oA>0.9019608<oA>0.7686275<oA>0<oA>0,ID.-1.4206<oB>0<oA>OverseerCarcass<oA>HI_S05.16.16.0<oA>0.4470588<oA>0.9019608<oA>0.7686275<oA>0<oA>0,ID.-1.7342<oB>0<oA>DataPearl<oA>HI_S05.16.16.0<oA>131<oA>1<oA>Misc,ID.-1.7341<oB>0<oA>DataPearl<oA>HI_S05.16.16.0<oA>131<oA>0<oA>HI,ID.-1.3843<oB>0<oA>ScavengerBomb<oA>HI_S05.16.16.0,ID.-1.3840<oB>0<oA>ScavengerBomb<oA>HI_S05.16.16.0,ID.-1.3841<oB>0<oA>ScavengerBomb<oA>HI_S05.16.16.0<svC><svA><svA><svA>
+
+			//层级 分隔符  作用
+			//-------------------------------------------
+			//顶级 <svA>   分隔主项
+			//     <svB>   主项内的键值分隔
+			//二级 <mwA>   分隔子项
+			//	   <mwB>   子项内的键值分隔
+			//三级 <slosA> 分隔子子项
+			//     <slosB> 子子项内的键值分隔
+			//四级 <svC>   分隔子子子项
+			//	   <svD>   子子子项内的键值分隔
+
+			// 最终保存格式：
+			// ESS_savefield_name<svB>Player0<mwB>物品1,物品2<mwA>Player1<mwB>物品3<mwA><svA>
+
+
+
 		}
 
-
-		private void A(Player player)
-		{
-            //mklink /j "D:\Steam\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\EnderPearl" "D:\Other\EnderPearl\mod"
-
-            //存档字符串
-            // 读取存档字符串：
-            // "player_name<svB>玩家A<svA>level<svB>5<svA>coins<svB>100<svA>my_simple_data<svB>123<svA>"
-
-            // 分割成：
-            // ["player_name<svB>玩家A", "level<svB>5", "coins<svB>100", "my_simple_data<svB>123"]
-
-            // 再分割每个部分：
-            // "my_simple_data<svB>123" → ["my_simple_data", "123"]
-
-            // 发现键是"my_simple_data"，值就是"123"
-
-            //ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1，ID.-1.266<oB>0<oA>FlareBomb<oA>SL_S10.20.24.0<oA>-1<oA>-1
-
-            //StomachStorage_ESS_SAVEFIELD<svB>Player0<svD>ID.-1.4206<oB>0<oA>OverseerCarcass<oA>HI_S05.16.16.0<oA>0.4470588<oA>0.9019608<oA>0.7686275<oA>0<oA>0,ID.-1.4206<oB>0<oA>OverseerCarcass<oA>HI_S05.16.16.0<oA>0.4470588<oA>0.9019608<oA>0.7686275<oA>0<oA>0,ID.-1.7342<oB>0<oA>DataPearl<oA>HI_S05.16.16.0<oA>131<oA>1<oA>Misc,ID.-1.7341<oB>0<oA>DataPearl<oA>HI_S05.16.16.0<oA>131<oA>0<oA>HI,ID.-1.3843<oB>0<oA>ScavengerBomb<oA>HI_S05.16.16.0,ID.-1.3840<oB>0<oA>ScavengerBomb<oA>HI_S05.16.16.0,ID.-1.3841<oB>0<oA>ScavengerBomb<oA>HI_S05.16.16.0<svC><svA><svA><svA>
-
-            //层级 分隔符  作用
-            //-------------------------------------------
-            //顶级 <svA>   分隔主项
-            //     <svB>   主项内的键值分隔
-            //二级 <mwA>   分隔子项
-            //	   <mwB>   子项内的键值分隔
-            //三级 <slosA> 分隔子子项
-            //     <slosB> 子子项内的键值分隔
-            //四级 <svC>   分隔子子子项
-            //	   <svD>   子子子项内的键值分隔
-
-            // 最终保存格式：
-            // ESS_savefield_name<svB>Player0<mwB>物品1,物品2<mwA>Player1<mwB>物品3<mwA><svA>
-
-            //Debug
-            //Debug.Log("普通消息");
-            //Debug.LogWarning("警告消息");
-            //Debug.LogError("错误消息");
-
-
-            //room
-            //player.room.game.Players
-            //player.room.game.GetStorySession.Players
-            //player.room.game.warpDeferPlayerSpawnRoomName
-            //player.room.abstractRoom.name
-
-        }
-
-        //保存部分
-        private static string SaveState_SaveToString(On.SaveState.orig_SaveToString orig, SaveState saveState)
+		//保存部分
+		private static string SaveState_SaveToString(On.SaveState.orig_SaveToString orig, SaveState saveState)
 		{
 			// 获取原版存档
 			string text = orig(saveState);
@@ -136,937 +141,971 @@ namespace CustomStomachStorage
 			// 构建完整路径
 			return Path.Combine(localLowPath, "Videocult", "Rain World", "ModConfigs", $"{modName}_data.txt");
 		}
+		#endregion
 
-		private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player player, int grasp)
-		{
-			/*if (grasp < 0 || player.grasps[grasp] == null)
-			{
-				orig(player, grasp);
-				return;
-			}
+		#region 按键
+		/*public static readonly PlayerKeybind Explode = PlayerKeybind.Register(
+				"example:explode",      // 唯一ID（格式：作者:功能）
+				"Example Mod",          // 模组显示名称
+				"Explode",              // 按键显示名称
+				KeyCode.C,              // 键盘默认键（C键）
+				KeyCode.JoystickButton3 // 手柄默认键（通常是RB或R1）
+			);*/
+		#endregion
 
-			string filePath = GetSavePath();
-			Console.WriteLine($"配置文件路径: {filePath}");
+		#region Items
+		string[] baseItemTypes = {
+				"Item",
+				"Rock",
+				"Spear",
+				"VultureMask",
+				"NeedleEgg",
+				"OracleSwarmer",
+				"SeedCob",
+				"SporePlant",
+				"FlareBomb",
+				"PuffBall",
+				"FirecrackerPlant",
+				"KarmaFlower",
+			};
+		string[] mscItemTypes = {
+				"LillyPuck",
+				"FireEgg",
+				"JokeRifle",
+				"EnergyCell",
+				"MoonCloak",
+			};
+		string[] watcherItemTypes = {
+				"Boomerang",
+				"GraffitiBomb",
+			};
+		#endregion
+		#region Creatures
+			string[] baseCreatureTypes = {
+				"Creature",
+				"Slugcat",
+				"Lizard",
+				"Vulture",
+				"Centipede",
+				"Spider",
+				"DropBug",
+				"BigEel",
+				"MirosBird",
+				"DaddyLongLegs",
+				"Cicada",
+				"Snail",
+				"Scavenger",
+				"EggBug",
+				"LanternMouse",
+				"JetFish",
+				"TubeWorm",
+				"Deer",
+				"TempleGuard"
+			};
+			string[] mscCreatureTypes = {
+				"Yeek",
+				"Inspector",
+				"StowawayBug"
+			};
+			string[] watcherCreatureTypes = {
+				"Loach",
+				"BigMoth",
+				"SkyWhale",
+				"BoxWorm",
+				"DrillCrab",
+				"Tardigrade",
+				"Barnacle",
+				"Frog"
+			};
+		#endregion
 
-			string content = player.room.game.warpDeferPlayerSpawnRoomName + ":" + player.grasps[grasp].ToString() + "\n";
-			File.WriteAllText(filePath, content);*/
 
-			/*for (int i = 0; i < stomachItems.Count; i++)
-			{
-				UnityEngine.Debug.Log(stomachItems[i].ToString());
-			}*/
-		}
-
-        /// <summary>
-        /// 添加选择框的类型列
-        /// </summary>
-        /*private void AddCheckboxType(OpTab tab, ref float yPos, string title,
-            IEnumerable<string> types, Dictionary<string, Configurable<bool>> configs,
-            float xOffset = 0, string note = "")
-        {
-            if (!types.Any()) return;
-
-            InGameTranslator translator = Custom.rainWorld.inGameTranslator;
-            // 分类标题
-            if (!string.IsNullOrEmpty(title))
-            {
-                var titleLabel = new OpLabel(TITLE_X + xOffset, yPos, translator.Translate(title), true)
-                {
-                    alignment = FLabelAlignment.Left
-                };
-                tab.AddItems(new UIelement[] { titleLabel });
-                yPos -= SPACING * 1.5f;
-            }
-            float yTop = TITLE_Y;
-
-            // 类型复选框
-            foreach (var type in types)
-            {
-                if (!configs.ContainsKey(type)) continue;
-
-                string displayName = translator.Translate(type);
-                if (!string.IsNullOrEmpty(note))
-                    displayName += $" {translator.Translate(note)}";
-
-                displayName = translator.Translate(displayName);
-
-                if (yPos < -1f)
-                {
-                    yPos = yTop;
-                    xOffset += xOffset;
-                }
-                AddLabeledCheckbox(tab,
-                    new Vector2(TITLE_X + xOffset, yPos),
-                    displayName,
-                    configs[type]);
-
-                yPos -= SPACING;
-            }
-
-            yPos -= SPACING * 0.5f;
-        }*/
-
-        private void Options()
-		{
-
-
-
-			/*public readonly Configurable<bool> All;
-//
-public readonly Configurable<bool> Item;
-
-public readonly Configurable<bool> Spear;
-public readonly Configurable<bool> VultureMask;
-public readonly Configurable<bool> NeedleEgg;
-
-public readonly Configurable<bool> JokeRifle;
-public readonly Configurable<bool> EnergyCell;
-public readonly Configurable<bool> MoonCloak;
-
-public readonly Configurable<bool> Boomerang;
-//
-public readonly Configurable<bool> Creature;
-public readonly Configurable<bool> Lizard;
-public readonly Configurable<bool> Vulture;
-public readonly Configurable<bool> Centipede;
-public readonly Configurable<bool> Spider;
-public readonly Configurable<bool> DropBug;
-public readonly Configurable<bool> BigEel;
-public readonly Configurable<bool> MirosBird;
-public readonly Configurable<bool> DaddyLongLegs;
-public readonly Configurable<bool> Cicada;
-public readonly Configurable<bool> Snail;
-public readonly Configurable<bool> Scavenger;
-public readonly Configurable<bool> LanternMouse;
-public readonly Configurable<bool> JetFish;
-public readonly Configurable<bool> TubeWorm;
-public readonly Configurable<bool> Deer;
-public readonly Configurable<bool> Yeek;
-public readonly Configurable<bool> Inspector;
-public readonly Configurable<bool> StowawayBug;
-public readonly Configurable<bool> Loach;
-public readonly Configurable<bool> BigMoth;
-public readonly Configurable<bool> SkyWhale;
-public readonly Configurable<bool> BoxWorm;
-public readonly Configurable<bool> DrillCrab;
-public readonly Configurable<bool> Tardigrade;
-public readonly Configurable<bool> Barnacle;
-public readonly Configurable<bool> Frog;*/
-
-			/*private readonly List<Configurable<bool>> ItemsTypesList = new List<Configurable<bool>>();
-		private readonly List<string> ItemsTypeName = new List<string>();
-		private readonly List<Configurable<bool>> CreaturesTypesList = new List<Configurable<bool>>();
-		private readonly List<string> CreaturesTypeName = new List<string>();*/
-
-			/*ui.Add(new OpCheckBox(All, new Vector2(Title_X + (Creature_X / 2), OpBox_Y)));
-ui.Add(new OpLabel(new Vector2(OpLabel_X + (Creature_X / 2), OpBox_Y), new Vector2(200f, 24f),
-                               inGameTranslator.Translate("All"),
-                               FLabelAlignment.Left, false, null));
-
-for (int i = 0; i < ItemsTypesList.Count; i++)
-{
-    float yPos = OpBox_Y - (spacing * (i + 1));
-
-    // 创建复选框
-    OpCheckBox checkBox = new OpCheckBox(ItemsTypesList[i], new Vector2(Title_X, yPos));
-
-    // 创建标签（使用存储的类型名称）
-    OpLabel label = new OpLabel(new Vector2(OpLabel_X, yPos), new Vector2(200f, 24f),
-                               inGameTranslator.Translate(ItemsTypeName[i]),
-                               FLabelAlignment.Left, false, null);
-    ui.Add(checkBox);
-    ui.Add(label);
+	}
 }
 
-for (int i = 0; i < CreaturesTypesList.Count; i++)
+#region 胖世界 BPOptions
+public class BPOptions : OptionInterface
 {
-    float yPos = OpBox_Y - (spacing * (i + 1));
 
-    OpCheckBox checkBox;
-    OpLabel label;
-    if (i <= 14)
-    {
-        yPos = OpBox_Y - (spacing * (i + 1));
-        // 创建复选框
-        checkBox = new OpCheckBox(CreaturesTypesList[i], new Vector2(Title_X + Creature_X, yPos));
 
-        // 创建标签（使用存储的类型名称）
-        label = new OpLabel(new Vector2(OpLabel_X + Creature_X, yPos), new Vector2(200f, 24f),
-                                   inGameTranslator.Translate(CreaturesTypeName[i]),
-                                   FLabelAlignment.Left, false, null);
-    }
-    else
-    {
-        yPos = OpBox_Y - (spacing * (i + 1 - 15));
-        // 创建复选框
-        checkBox = new OpCheckBox(CreaturesTypesList[i], new Vector2(Title_X + (Creature_X * 2), yPos));
+	public BPOptions()
+	{
+		//BPOptions.hardMode = this.config.Bind<bool>("hardMode", true, new ConfigurableInfo("(This is just info I guess)", null, "", new object[] { "something idk" }));
 
-        // 创建标签（使用存储的类型名称）
-        label = new OpLabel(new Vector2(OpLabel_X + (Creature_X * 2), yPos), new Vector2(200f, 24f),
-                                   inGameTranslator.Translate(CreaturesTypeName[i]),
-                                   FLabelAlignment.Left, false, null);
-    }
+		BPOptions.hardMode = this.config.Bind<bool>("hardMode", false);
+		BPOptions.holdShelterDoor = this.config.Bind<bool>("holdShelterDoor", false);
+		BPOptions.backFoodStorage = this.config.Bind<bool>("backFoodStorage", false);
+		BPOptions.easilyWinded = this.config.Bind<bool>("easilyWinded", false);
+		BPOptions.extraTime = this.config.Bind<bool>("extraTime", true);
+		BPOptions.hudHints = this.config.Bind<bool>("hudHints", true);
+		BPOptions.fatArmor = this.config.Bind<bool>("fatArmor", true);
+		BPOptions.slugSlams = this.config.Bind<bool>("slugSlams", true);
+		//BPOptions.dietNeedles = this.config.Bind<bool>("dietNeedles", false);
+		BPOptions.detachNeedles = this.config.Bind<bool>("detachNeedles", false);
+		BPOptions.detachablePopcorn = this.config.Bind<bool>("detachablePopcorn", true);
+		BPOptions.foodLoverPerk = this.config.Bind<bool>("foodLoverPerk", false);
+		BPOptions.visualsOnly = this.config.Bind<bool>("visualsOnly", false);
 
-    ui.Add(checkBox);
-    ui.Add(label);
-}*/
+		BPOptions.debugTools = this.config.Bind<bool>("debugTools", false);
+		BPOptions.debugLogs = this.config.Bind<bool>("debugLogs", false);
+		BPOptions.blushEnabled = this.config.Bind<bool>("blushEnabled", false);
+		BPOptions.bpDifficulty = this.config.Bind<float>("bpDifficulty", -2f, new ConfigAcceptableRange<float>(-5f, 5f));
+		BPOptions.sfxVol = this.config.Bind<float>("sfxVol", 0.1f, new ConfigAcceptableRange<float>(-0.1f, 0.4f));
+		BPOptions.startThresh = this.config.Bind<int>("startThresh", 4, new ConfigAcceptableRange<int>(-4, 8));//(0, 4)
+		BPOptions.gapVariance = this.config.Bind<float>("gapVariance", 1.0f, new ConfigAcceptableRange<float>(0.5f, 1.75f));
+		BPOptions.jokeContent1 = this.config.Bind<bool>("jokeContent1", true);
+		BPOptions.foodMult = this.config.Bind<int>("foodMult", 1, new ConfigAcceptableRange<int>(1, 4));
+		BPOptions.meadowFoodStart = this.config.Bind<int>("meadowFoodStart", 4, new ConfigAcceptableRange<int>(0, 25));
+		BPOptions.visualFatScale = this.config.Bind<float>("visualFatScale", 1.0f, new ConfigAcceptableRange<float>(0.33f, 1.00f));
 
-			/*typeTab.AddItems(new UIelement[]
-{
-    new OpCheckBox(Spear, new Vector2(Title_X, OpBox_Y - 0f)),
-    new OpLabel(new Vector2(OpLabel_X, OpBox_Y - 0f), new Vector2(200f, 24f), inGameTranslator.Translate("Spear"), FLabelAlignment.Left, false, null),
+		BPOptions.fatP1 = this.config.Bind<bool>("fatP1", true);
+		BPOptions.fatP2 = this.config.Bind<bool>("fatP2", true);
+		BPOptions.fatP3 = this.config.Bind<bool>("fatP3", true);
+		BPOptions.fatP4 = this.config.Bind<bool>("fatP4", true);
+		BPOptions.fatLiz = this.config.Bind<bool>("fatLiz", true);
+		BPOptions.fatMice = this.config.Bind<bool>("fatMice", true);
+		BPOptions.fatScavs = this.config.Bind<bool>("fatScavs", true);
+		BPOptions.fatSquids = this.config.Bind<bool>("fatSquids", true);
+		BPOptions.fatNoots = this.config.Bind<bool>("fatNoots", true);
+		BPOptions.fatCentis = this.config.Bind<bool>("fatCentis", true);
+		BPOptions.fatDll = this.config.Bind<bool>("fatDll", true);
+		BPOptions.fatVults = this.config.Bind<bool>("fatVults", true);
+		BPOptions.fatMiros = this.config.Bind<bool>("fatMiros", true);
+		BPOptions.fatWigs = this.config.Bind<bool>("fatWigs", true);
+		BPOptions.fatEels = this.config.Bind<bool>("fatEels", true);
+		BPOptions.fatPups = this.config.Bind<bool>("fatPups", true);
 
-    new OpCheckBox(VultureMask, new Vector2(Title_X, OpBox_Y - 40f)),
-    new OpLabel(new Vector2(OpLabel_X, OpBox_Y - 40f), new Vector2(200f, 24f), inGameTranslator.Translate("VultureMask"), FLabelAlignment.Left, false, null),
+		BPOptions.fatJets = this.config.Bind<bool>("fatJets", true);
+		BPOptions.fatDeer = this.config.Bind<bool>("fatDeer", true);
+		BPOptions.fatYeeks = this.config.Bind<bool>("fatYeeks", true);
+		BPOptions.fatLeechs = this.config.Bind<bool>("fatLeechs", true);
+		BPOptions.fatMoths = this.config.Bind<bool>("fatMoths", true);
+		BPOptions.fatTards = this.config.Bind<bool>("fatTards", true);
+		BPOptions.fatLoachs = this.config.Bind<bool>("fatLoachs", true);
+	}
 
-    new OpCheckBox(NeedleEgg, new Vector2(Title_X, OpBox_Y - 80f)),
-    new OpLabel(new Vector2(OpLabel_X, OpBox_Y - 80f), new Vector2(200f, 24f), inGameTranslator.Translate("NeedleEgg"), FLabelAlignment.Left, false, null),
 
-    new OpCheckBox(Boomerang, new Vector2(Title_X, OpBox_Y - 120f)),
-    new OpLabel(new Vector2(OpLabel_X, OpBox_Y - 120f), new Vector2(200f, 24f), inGameTranslator.Translate("Boomerang"), FLabelAlignment.Left, false, null),
 
-    new OpCheckBox(JokeRifle, new Vector2(Title_X, OpBox_Y - 160f)),
-    new OpLabel(new Vector2(OpLabel_X, OpBox_Y - 160f), new Vector2(200f, 24f), inGameTranslator.Translate("JokeRifle"), FLabelAlignment.Left, false, null),
+	public static Configurable<bool> blushEnabled;
+	public static Configurable<bool> debugTools;
+	public static Configurable<bool> holdShelterDoor;
+	public static Configurable<bool> backFoodStorage;
+	public static Configurable<bool> hardMode;
+	public static Configurable<bool> easilyWinded;
+	public static Configurable<bool> extraTime;
+	public static Configurable<bool> hudHints;
+	public static Configurable<bool> fatArmor;
+	public static Configurable<bool> slugSlams;
+	public static Configurable<bool> debugLogs;
+	public static Configurable<float> bpDifficulty;
+	public static Configurable<float> sfxVol;
+	public static Configurable<int> startThresh;
+	public static Configurable<float> gapVariance;
+	public static Configurable<bool> detachNeedles;
+	public static Configurable<bool> visualsOnly;
+	public static Configurable<bool> jokeContent1;
+	public static Configurable<bool> detachablePopcorn;
+	public static Configurable<bool> foodLoverPerk;
+	public static Configurable<int> foodMult;
+	public static Configurable<int> meadowFoodStart;
+	public static Configurable<float> visualFatScale;
 
-    //new OpCheckBox(OpCheckBoxStunDuration, new Vector2(10, 420)),
-    */
+	public static Configurable<bool> fatP1;
+	public static Configurable<bool> fatP2;
+	public static Configurable<bool> fatP3;
+	public static Configurable<bool> fatP4;
+	public static Configurable<bool> fatLiz;
+	public static Configurable<bool> fatMice;
+	public static Configurable<bool> fatScavs;
+	public static Configurable<bool> fatSquids;
+	public static Configurable<bool> fatNoots;
+	public static Configurable<bool> fatCentis;
+	public static Configurable<bool> fatDll;
+	public static Configurable<bool> fatVults;
+	public static Configurable<bool> fatMiros;
+	public static Configurable<bool> fatWigs;
+	public static Configurable<bool> fatEels;
+	public static Configurable<bool> fatPups;
+	public static Configurable<bool> fatJets;
+	public static Configurable<bool> fatDeer;
+	public static Configurable<bool> fatYeeks;
+	public static Configurable<bool> fatLeechs;
+	public static Configurable<bool> fatMoths;
+	public static Configurable<bool> fatTards;
+	public static Configurable<bool> fatLoachs;
+	//Lizard
+	//Lantern Mice
+	//Scavengers
 
-			//选项
-			/*opTab.AddItems(new UIelement[]
-            {
-				new OpCheckBox(OpCheckBoxStunDuration, new Vector2(10, 420)),
-				new OpTextBox(OpCheckBoxStunDuration, new Vector2(10, 420), 50f),
-				new OpLabel(new Vector2(75f, 420f), new Vector2(200f, 24f), inGameTranslator.Translate("Stun duration"), FLabelAlignment.Left, false, null),
+	//Squidcada
+	//Noodle Flies
+	//Centipedes
 
-				new OpCheckBox(OpCheckBoxSaveIceData_conf, new Vector2(10, 390)),
-				new OpLabel(new Vector2(50f, 390f), new Vector2(200f, 24f), inGameTranslator.Translate("Save Ice data to the next cycle(Save bug not fixed yet)"), FLabelAlignment.Left, false, null),
-				new OpCheckBox(OpCheckBoxUnlockIceShieldNum_conf, new Vector2(10, 360)),
-				new OpLabel(new Vector2(50f, 360f), new Vector2(200f, 24f), inGameTranslator.Translate("Unlock the maximum number of ice shields"), FLabelAlignment.Left, false, null),
+	//DLL
+	//Vultures
+	//Miros Birds
 
-				new OpLabel(new Vector2(50f, 420f), new Vector2(200f, 24f), inGameTranslator.Translate("If scavenger dies, the players continue playing"), FLabelAlignment.Left, false, null),
-				radioButtonGroup,
-				radioButton1,
-				radioButton2
-			});*/
-		}
+	//Dropwigs
+	//Leviathan
 
-		private void InitializeSwallowType(string typeName, bool defaultValue = false)
+
+	private OpSimpleButton presetSilly;
+	private OpSimpleButton presetBalanced;
+	private OpSimpleButton presetPipeCleaner;
+
+
+	public override void Update()
+	{
+		base.Update();
+
+		//this.Tabs[0].items
+
+		if (this.chkBoxVisOnly != null)
 		{
-			//SwallowTypes[typeName] = config.Bind<bool>($"{typeName}_conf_CustomStomachStorage", defaultValue);
-
-			/*// 获取字段
-			FieldInfo field = typeof(Options).GetField(typeName,
-				BindingFlags.Public | BindingFlags.Instance);
-
-			if (field != null)
+			if (this.chkBoxVisOnly.GetValueBool() == true)
 			{
-				// 创建配置项
-				Configurable<bool> configurable = config.Bind<bool>(
-					$"{typeName}_conf_CustomStomachStorage",
-					defaultValue);
-
-				// 设置字段值
-				field.SetValue(this, configurable);
-
-				// 添加到列表
-				if (ItemTypeNames.Contains(typeName))
+				this.diffSlide.greyedOut = true;
+				this.opLab1.Hidden = true;
+				this.opLab2.Hidden = true;
+				for (int i = 1; i < myBoxes.Length; i++)
 				{
-					ItemsTypesList.Add(configurable);
-					ItemsTypeName.Add(typeName);
-				}
-				if (CreatureTypeNames.Contains(typeName))
-				{
-					CreaturesTypesList.Add(configurable);
-					CreaturesTypeName.Add(typeName);
-				}
-
-			}*/
-		}
-
-
-        /*// 类型选项卡
-            List<UIelement> S_ui = new List<UIelement>();
-
-			float S_ItemPos_Y = OpBox_Y;
-			int S_Itemi = 0;
-
-			float S_CreaturePos_Y = OpBox_Y;
-			int S_Creaturei = 0;
-
-			HashSet<string> itemSet = new HashSet<string>(ItemTypeNames);
-			HashSet<string> creatureSet = new HashSet<string>(CreatureTypeNames);
-
-			foreach (var kvp in SwallowTypes)
-			{
-				OpCheckBox? cb = null;
-				OpLabel? label = null;
-
-				if (kvp.Key == "All")
-				{
-					cb = new OpCheckBox(kvp.Value, new Vector2(Title_X, OpBox_Y));
-					label = new OpLabel(new Vector2(OpLabel_X, OpBox_Y), new Vector2(200f, 24f),
-												inGameTranslator.Translate(kvp.Key),
-												FLabelAlignment.Left, false, null);
-				}
-
-				else if (itemSet.Contains(kvp.Key))
-				{
-					S_ItemPos_Y = OpBox_Y - (spacing * (S_Itemi + 1));
-
-					// 创建复选框
-					cb = new OpCheckBox(kvp.Value, new Vector2(Title_X, S_ItemPos_Y));
-
-					// 创建标签（使用存储的类型名称）
-					label = new OpLabel(new Vector2(OpLabel_X, S_ItemPos_Y), new Vector2(200f, 24f),
-											   inGameTranslator.Translate(kvp.Key),
-											   FLabelAlignment.Left, false, null);
-					S_Itemi += 1;
-				}
-
-				else if (creatureSet.Contains(kvp.Key))
-				{
-					if (S_Creaturei <= 14)
-					{
-						S_CreaturePos_Y = OpBox_Y - (spacing * (S_Creaturei + 1));
-						// 创建复选框
-						cb = new OpCheckBox(kvp.Value, new Vector2(Title_X + Creature_X, S_CreaturePos_Y));
-
-						// 创建标签（使用存储的类型名称）
-						label = new OpLabel(new Vector2(OpLabel_X + Creature_X, S_CreaturePos_Y), new Vector2(200f, 24f),
-												   inGameTranslator.Translate(kvp.Key),
-												   FLabelAlignment.Left, false, null);
-					}
-					else
-					{
-						S_CreaturePos_Y = OpBox_Y - (spacing * (S_Creaturei + 1 - 15));
-
-						// 创建复选框
-						cb = new OpCheckBox(kvp.Value, new Vector2(Title_X + (Creature_X * 2), S_CreaturePos_Y));
-
-						// 创建标签（使用存储的类型名称）
-						label = new OpLabel(new Vector2(OpLabel_X + (Creature_X * 2), S_CreaturePos_Y), new Vector2(200f, 24f),
-												   inGameTranslator.Translate(kvp.Key),
-												   FLabelAlignment.Left, false, null);
-					}
-
-					S_Creaturei += 1;
-				}
-
-				if (cb != null && label != null)
-				{
-					S_ui.Add(cb);
-					S_ui.Add(label);
+					if (myBoxes[i] != null)
+						myBoxes[i].greyedOut = true;
 				}
 			}
-
-			// 添加到类型选项卡
-			SwallowTypeTab.AddItems(S_ui.ToArray());
-
-
-
-			// 抓握类型标题
-			GrabTypeTab.AddItems(new UIelement[]
+			else
 			{
-				new OpLabel(Title_X, Title_Y, inGameTranslator.Translate("Types of graspable"), true)
+				this.diffSlide.greyedOut = false;
+				this.opLab1.Hidden = false;
+				this.opLab2.Hidden = false;
+				for (int i = 1; i < myBoxes.Length; i++)
 				{
-					alignment = FLabelAlignment.Left
+					if (myBoxes[i] != null)
+						myBoxes[i].greyedOut = false;
 				}
+			}
+		}
+
+	}
+
+	public static string BPTranslate(string t)
+	{
+		return OptionInterface.Translate(t); //this.manager.rainWorld.inGameTranslator.BPTranslate(t);
+	}
+
+
+	public OpFloatSlider diffSlide;
+	public OpCheckBox chkBoxVisOnly;
+
+	public OpCheckBox chkBoxslugSlams;
+	public OpCheckBox chkBoxNeedles;
+
+	public OpLabel opLab1;
+	public OpLabel opLab2;
+
+	public static OpCheckBox[] myBoxes;
+
+
+	public void SillyPreset(UIfocusable trigger)
+	{
+		//for (int i = 0; i < MMF.boolPresets.Count; i++)
+		//{
+		//    if (MMF.boolPresets[i].config.BoundUIconfig != null)
+		//    {
+		//        //MMF.boolPresets[i].config.BoundUIconfig.value = ValueConverter.ConvertToString<bool>(MMF.boolPresets[i].remixValue);
+		//    }
+		//}
+		this.diffSlide.SetValueFloat(-2f);
+	}
+
+	public void BalancedPreset(UIfocusable trigger)
+	{
+		this.diffSlide.SetValueFloat(0f);
+	}
+
+	public void PipeCleanerPreset(UIfocusable trigger)
+	{
+		this.diffSlide.SetValueFloat(3f);
+	}
+
+
+	public override void Initialize()
+	{
+		base.Initialize();
+
+		// OpTab opTab = new OpTab(this, "Options");
+		this.Tabs = new OpTab[]
+		{
+			//opTab
+			new OpTab(this, BPTranslate("Options")),
+			new OpTab(this, BPTranslate("Misc")),
+			new OpTab(this, BPTranslate("Creatures")),
+			new OpTab(this, BPTranslate("Info"))
+		};
+
+		Vector2 btnSize = new Vector2(130f, 25f);
+		float btnHeight = 548f;
+		Tabs[0].AddItems(
+			 this.presetSilly = new OpSimpleButton(new Vector2(40f, btnHeight), btnSize, "Silly") { description = OptionInterface.Translate("A more relaxed and goofy experience with fewer downsides to becoming round (Default)") },
+			 this.presetBalanced = new OpSimpleButton(new Vector2(40f + 145f, btnHeight), btnSize, "Balanced") { description = OptionInterface.Translate("The original mod experience of risk and reward where each extra pip comes with tradeoffs to consider") },
+			 this.presetPipeCleaner = new OpSimpleButton(new Vector2(40f + 290f, btnHeight), btnSize, "Pipe Cleaner") { description = OptionInterface.Translate("A challenge mode for only the most stubborn food enthusiests") }
+		   );
+		Tabs[0].AddItems(new OpLabel(40F, 578, BPTranslate("Difficulty Presets")));
+		this.presetSilly.OnClick += this.SillyPreset;
+		this.presetBalanced.OnClick += this.BalancedPreset;
+		this.presetPipeCleaner.OnClick += this.PipeCleanerPreset;
+
+
+		float lineCount = 500;
+
+		Tabs[0].AddItems(new OpLabel(175f, 595, BPTranslate("Hover over a setting to read more info about it")));
+
+
+		//OpLabel opLabel = new OpLabel(new Vector2(100f, opRect.size.y - 25f), new Vector2(30f, 25f), ":(", FLabelAlignment.Left, true, null)
+		//OpCheckBox opCheckBox = new OpCheckBox(this.config as Configurable<bool>, posX, posY)
+		//this.numberPlayersSlider = new OpSliderTick(menu.oi.config.Bind<int>("_cosmetic", Custom.rainWorld.options.JollyPlayerCount, new ConfigAcceptableRange<int>(1, 4)), this.playerSelector[0].pos + new Vector2((float)num / 2f, 130f), (int)(this.playerSelector[3].pos - this.playerSelector[0].pos).x, false);
+		// Tabs[0].AddItems(new OpLabel(50f, lineCount - 20f, "Makes squeezing through pipes even more difficult for fatter creatures") { description = "This is My Text" });
+
+		//Tabs[0].AddItems(new OpLabel(50f, lineCount - 20f, "Makes squeezing through pipes even more difficult for fatter creatures") { description = "This is My Text" });
+		// Tabs[0].AddItems(new OpSlider(BPOptions.bpDifficulty, new Vector2(50f, lineCount), 50, false));
+		this.diffSlide = new OpFloatSlider(BPOptions.bpDifficulty, new Vector2(55f, lineCount - 0), 250, 0, false);
+		string discDiff = BPTranslate("Sets the average difficulty for squeezing through pipes, and the impact weight has on your agility");
+		Tabs[0].AddItems(this.diffSlide, new OpLabel(50f, lineCount - 15, BPTranslate("Pipe Size Difficulty")) { bumpBehav = this.diffSlide.bumpBehav, description = discDiff });
+		this.diffSlide.description = discDiff;
+		Tabs[0].AddItems(this.opLab1 = new OpLabel(15f, lineCount + 5, BPTranslate("Wide")) { description = BPTranslate("Easy") });
+		Tabs[0].AddItems(this.opLab2 = new OpLabel(320f, lineCount + 5, BPTranslate("Snug")) { description = BPTranslate("Hard") });
+
+		//OpCheckBox chkBox5 = new OpCheckBox(BPOptions.hardMode, new Vector2(15f, lineCount));
+		//Tabs[0].AddItems(chkBox5, new OpLabel(45f, lineCount, "Snug Pipes") { bumpBehav = chkBox5.bumpBehav });
+
+
+
+		/*
+		OpFloatSlider agilSlide = new OpFloatSlider(BPOptions.agilityDiff, new Vector2(55f, lineCount - 0), 250, 0, false);
+		Tabs[0].AddItems(agilSlide, new OpLabel(50f, lineCount - 15, BPTranslate("Agility Penalty")) { bumpBehav = agilSlide.bumpBehav, description = BPTranslate("Your weight has a more noticeable impact on your ability to run, climb and jump") });
+
+		Tabs[0].AddItems(new OpLabel(15f, lineCount + 5, BPTranslate("Easy")) );
+		Tabs[0].AddItems(new OpLabel(320f, lineCount +5, BPTranslate("Hard")) );
+		*/
+
+
+		string dscVisuals = BPTranslate("Removes all gameplay changes except visual ones");
+		this.chkBoxVisOnly = new OpCheckBox(BPOptions.visualsOnly, new Vector2(15f + 425, lineCount));
+		Tabs[0].AddItems(this.chkBoxVisOnly, new OpLabel(45f + 425, lineCount, BPTranslate("Visuals only")) { bumpBehav = this.chkBoxVisOnly.bumpBehav, description = dscVisuals });
+		this.chkBoxVisOnly.description = dscVisuals;
+		//chkBoxVisOnly.Hidden = true;
+
+
+
+		float indenting = 250f;
+
+		lineCount -= 70;
+		OpSlider threshSlide = new OpSlider(BPOptions.startThresh, new Vector2(55f, lineCount - 0), 150, false);
+		string dscThresh = BPTranslate("Offset how much food you need to eat to get fat. Lower values will make you fat earlier.");
+		// Tabs[0].AddItems(threshSlide, new OpLabel(50f, lineCount - 15, BPTranslate("Starting threshold")) { bumpBehav = threshSlide.bumpBehav, description = BPTranslate("Sets how close to full you must be before eating food will add weight. Lower values will make you fat earlier.") });
+		Tabs[0].AddItems(threshSlide, new OpLabel(50f, lineCount - 15, BPTranslate("Starting threshold")) { bumpBehav = threshSlide.bumpBehav, description = dscThresh });
+		Tabs[0].AddItems(new OpLabel(15f, lineCount + 5, BPTranslate("Early")) { description = BPTranslate("You will start getting fat before your belly is full.") });
+		Tabs[0].AddItems(new OpLabel(220f, lineCount + 5, BPTranslate("Late")) { description = BPTranslate("You won't start getting fat until your belly is full") });
+		threshSlide.description = dscThresh;
+
+
+		OpFloatSlider varianceSlide = new OpFloatSlider(BPOptions.gapVariance, new Vector2(350f, lineCount - 0), 150, 1, false);
+		dscThresh = BPTranslate("Determines how wide the range of gap sizes can be. Wider variety makes easy gaps easier and harder gaps harder");
+		Tabs[0].AddItems(varianceSlide, new OpLabel(varianceSlide.pos.x + 25f, lineCount - 15, BPTranslate("Pipe size variety")) { bumpBehav = varianceSlide.bumpBehav, description = dscThresh });
+		Tabs[0].AddItems(new OpLabel(varianceSlide.pos.x - 45f, lineCount + 5, BPTranslate("Similar")) { description = BPTranslate("Gap sizes will be similar to each other") });
+		Tabs[0].AddItems(new OpLabel(varianceSlide.pos.x + 160f, lineCount + 5, BPTranslate("Diverse")) { description = BPTranslate("Gap sizes will vary widely") });
+		varianceSlide.description = dscThresh;
+
+
+
+
+
+		//Pipes are less snug and easier to wiggle through, even when very fat
+		//Makes squeezing through pipes even more difficult for fatter creatures
+		//Snug Pipes
+		lineCount -= 60;
+		BPOptions.hardMode.Value = false;
+
+		//OKAY MAKE IT BUT DON'T SHOW IT
+		/*-------------------------------------
+		string dsc5 = BPTranslate("Outgrowing pipes is more punishing on how long it takes to wiggle through");
+		//Tabs[0].AddItems(new OpLabel(50f, lineCount - 20f, BPTranslate("Outgrowing pipes is more punishing on how long it takes to wiggle through")) );
+		OpCheckBox chkBox5 = new OpCheckBox(BPOptions.hardMode, new Vector2(15f + 800f, lineCount - 120f));
+		Tabs[0].AddItems(chkBox5, new OpLabel(45f + 800f, lineCount - 120, BPTranslate("Unforgiving Gap Sizes")) { bumpBehav = chkBox5.bumpBehav, description = dsc5 });
+		chkBox5.description = dsc5;
+		*/
+
+		string dscHints = BPTranslate("Occasionally show in-game hints related to controls and mechanics of the mod");
+		//Tabs[0].AddItems(new OpLabel(50f, lineCount - 20f, "Occasionally show in-game hints related to controls and mechanics of the mod") ); //{ description = "This is My Text" }
+		OpCheckBox chkBoxHints = new OpCheckBox(BPOptions.hudHints, new Vector2(15f, lineCount));
+		Tabs[0].AddItems(chkBoxHints, new OpLabel(45f, lineCount, BPTranslate("Hud Hints")) { bumpBehav = chkBoxHints.bumpBehav, description = dscHints });
+		chkBoxHints.description = dscHints;
+
+
+		string dscArmor = BPTranslate("Increase resistance to bites based on how fat you are") + ", as well as spears, stuns, and coldness";
+		OpCheckBox chkBoxArmor = new OpCheckBox(BPOptions.fatArmor, new Vector2(15f + indenting, lineCount));
+		Tabs[0].AddItems(chkBoxArmor, new OpLabel(45f + indenting, lineCount, BPTranslate("Fat Armor")) { bumpBehav = chkBoxArmor.bumpBehav, description = dscArmor });
+		chkBoxArmor.description = dscArmor;
+
+
+
+
+
+		lineCount -= 40;
+		string dsc6 = BPTranslate("Your weight has a more noticeable impact on your ability to run, climb and jump");
+		//Tabs[0].AddItems(new OpLabel(50f, lineCount - 20f, BPTranslate("Your weight has a more noticeable impact on your ability to run, climb and jump")) );
+		OpCheckBox chkBox6 = new OpCheckBox(BPOptions.easilyWinded, new Vector2(15f, lineCount));
+		Tabs[0].AddItems(chkBox6, new OpLabel(45f, lineCount, BPTranslate("Easily Winded")) { bumpBehav = chkBox6.bumpBehav, description = dsc6 });
+		chkBox6.description = dsc6;
+
+
+		string dscCorn = BPTranslate("Popcorn plants can be torn from their stems");
+		OpCheckBox mpBox1 = new OpCheckBox(BPOptions.detachablePopcorn, new Vector2(15f + indenting, lineCount));
+		Tabs[0].AddItems(mpBox1, new OpLabel(45f + indenting, lineCount, BPTranslate("Detachable Popcorn Plants")) { bumpBehav = mpBox1.bumpBehav, description = dscCorn });
+		mpBox1.description = dscCorn;
+
+
+
+
+
+		lineCount -= 40;
+		string dsc4 = BPTranslate("Double-tap the Grab button to store an edible item on your back like a spear");
+		//Tabs[0].AddItems(new OpLabel(50f, lineCount - 20f, BPTranslate("Double-tap the Grab button to store an edible item on your back like a spear")) );
+		OpCheckBox chkBox4 = new OpCheckBox(BPOptions.backFoodStorage, new Vector2(15f, lineCount));
+		Tabs[0].AddItems(chkBox4, new OpLabel(45f, lineCount, BPTranslate("Back Food Storage")) { bumpBehav = chkBox4.bumpBehav, description = dsc4 });
+		chkBox4.description = dsc4;
+
+
+
+
+		string dscFood = BPTranslate("Allows the player to eat all food types for their full value");
+		OpCheckBox mpBox2 = new OpCheckBox(BPOptions.foodLoverPerk, new Vector2(15f + indenting, lineCount));
+		Tabs[0].AddItems(mpBox2, new OpLabel(45f + indenting, lineCount, BPTranslate("Food Lover")) { bumpBehav = mpBox2.bumpBehav, description = dscFood });
+		mpBox2.description = dscFood;
+
+
+		lineCount -= 40;
+		string dsc7 = BPTranslate("Slightly increase the cycle timer to account for the slowdowns");
+		//Tabs[0].AddItems(new OpLabel(50f, lineCount - 20f, BPTranslate("Slightly increase the cycle timer to account for the slowdowns")) );
+		OpCheckBox chkBox7 = new OpCheckBox(BPOptions.extraTime, new Vector2(15f, lineCount));
+		Tabs[0].AddItems(chkBox7, new OpLabel(45f, lineCount, BPTranslate("Extra Cycle Time")) { bumpBehav = chkBox7.bumpBehav, description = dsc7 });
+		chkBox7.description = dsc7;
+
+
+		if (ModManager.MSC)
+		{
+			string dscSlams = BPTranslate("All slugcats can do Gourmand's body slam, if fat enough") + " (" + BPTranslate("an audio queue will play" + ")");
+			this.chkBoxslugSlams = new OpCheckBox(BPOptions.slugSlams, new Vector2(15f + indenting, lineCount));
+			Tabs[0].AddItems(this.chkBoxslugSlams, new OpLabel(45f + indenting, lineCount, BPTranslate("Slug Slams")) { bumpBehav = this.chkBoxslugSlams.bumpBehav, description = dscSlams });
+			this.chkBoxslugSlams.description = dscSlams;
+		}
+		else
+		{
+			BPOptions.slugSlams.Value = false;
+		}
+
+
+		if (ModManager.MSC)
+		{
+			lineCount -= 40;
+			//string dscNeedles = BPTranslate("Spearmaster's needles will gain less food when your belly is full");
+			//Diet Needles
+			string dscNeedles = BPTranslate("When Spearmaster is full, switching hands (double tap grab) will detatch your needles");
+			this.chkBoxNeedles = new OpCheckBox(BPOptions.detachNeedles, new Vector2(15f + 0, lineCount));
+			Tabs[0].AddItems(this.chkBoxNeedles, new OpLabel(45f + 0, lineCount, BPTranslate("Detachable Needles")) { bumpBehav = this.chkBoxNeedles.bumpBehav, description = dscNeedles });
+			this.chkBoxNeedles.description = dscNeedles;
+		}
+
+
+		//lineCount -= 40;
+		OpSlider meadowSizeSlider = new OpSlider(BPOptions.meadowFoodStart, new Vector2(15f + indenting, lineCount - 10), 200, false);
+		string dscMeadowSizeSlider = BPTranslate("Set how rotund your character will be when joining Meadow-Mode lobbies online. Requires the Rain Meadow mod");
+		Tabs[0].AddItems(meadowSizeSlider, new OpLabel(15f + indenting, lineCount - 25, BPTranslate("Meadow Mode character fatness")) { bumpBehav = meadowSizeSlider.bumpBehav, description = dscMeadowSizeSlider });
+		meadowSizeSlider.description = dscMeadowSizeSlider;
+
+
+
+		myBoxes = new OpCheckBox[10];
+		myBoxes[0] = null; // chkBox5;
+		myBoxes[1] = chkBoxArmor;
+		myBoxes[2] = chkBox6;
+		myBoxes[3] = chkBox4;
+		myBoxes[4] = chkBox7;
+		myBoxes[5] = chkBoxHints;
+		myBoxes[6] = mpBox1;
+		myBoxes[7] = mpBox2;
+		if (ModManager.MSC)
+		{
+			myBoxes[8] = this.chkBoxslugSlams;
+			myBoxes[9] = this.chkBoxNeedles;
+		}
+
+
+
+		//EHH, WE CAN DO WTHIS WITH SANDBOX MODE
+		//OpCheckBox chkBox3 = new OpCheckBox(50f, 250f, "noRain", false);
+		//      Tabs[0].AddItems(chkBox3,
+		//          new OpLabel(50f, 280f, "No Rain") { bumpBehav = chkBox2.bumpBehav });
+
+		//lineCount -= 65;
+		//Tabs[0].AddItems(new OpLabel(50f, lineCount - 20f, "If enabled; shelter doors won't automatically close unless a player holds down to sleep") { description = "This is My Text" });
+		//OpCheckBox chkBox3 = new OpCheckBox(BPOptions.holdShelterDoor, new Vector2(15f, lineCount));
+		//Tabs[0].AddItems(chkBox3, new OpLabel(45f, lineCount, "Hold Shelter Doors") { bumpBehav = chkBox3.bumpBehav });
+
+
+
+
+
+
+
+		//------------------ NEW TAB FOR OTHER STUFF
+
+
+
+		lineCount = 550;
+		Tabs[1].AddItems(new OpLabel(50f, lineCount - 20f, BPTranslate("Press Throw + Jump to add food pips. Press Crouch + Throw + Jump to subtract")));
+		OpCheckBox chkBox2 = new OpCheckBox(BPOptions.debugTools, new Vector2(15f, lineCount));
+		Tabs[1].AddItems(chkBox2, new OpLabel(45f, lineCount, BPTranslate("Debug Tools")) { bumpBehav = chkBox2.bumpBehav });
+
+		lineCount -= 65;
+		Tabs[1].AddItems(new OpLabel(50f, lineCount - 20f, BPTranslate("Development logs. For development things")));
+		OpCheckBox chkLogs = new OpCheckBox(BPOptions.debugLogs, new Vector2(15f, lineCount));
+		Tabs[1].AddItems(chkLogs, new OpLabel(45f, lineCount, BPTranslate("Debug Logs")) { bumpBehav = chkLogs.bumpBehav });
+
+
+		lineCount -= 65;
+		Tabs[1].AddItems(new OpLabel(50f, lineCount - 20f, BPTranslate("Adds a panting and red-faced visual effect when struggling for long periods of time")));
+		OpCheckBox chkExample = new OpCheckBox(BPOptions.blushEnabled, new Vector2(15f, lineCount));
+		Tabs[1].AddItems(chkExample, new OpLabel(45f, lineCount, BPTranslate("Exhaustion FX")) { bumpBehav = chkExample.bumpBehav });
+		Tabs[1].AddItems(new OpLabel(50f, lineCount - 35f, BPTranslate("(can cause some visual glitches with held items)")));
+
+
+		lineCount -= 95;
+		OpFloatSlider sfxSlide = new OpFloatSlider(BPOptions.sfxVol, new Vector2(30f, lineCount - 25), 250, 2, false);
+		string dscSFXvol = BPTranslate("Volume of the squeeze sound effect when slugcats are stuck");
+		Tabs[1].AddItems(sfxSlide, new OpLabel(30f, lineCount + 15, BPTranslate("Squeeze SFX Volume")) { bumpBehav = sfxSlide.bumpBehav, description = dscSFXvol });
+		Tabs[1].AddItems(new OpLabel(10f, lineCount - 40f, BPTranslate("(If the sfx is too soft or played without headphones)")));
+		sfxSlide.description = dscSFXvol;
+
+		OpSlider foodMultSlide = new OpSlider(BPOptions.foodMult, new Vector2(325f, lineCount - 25), 125, false);
+		string dscFoodMult = BPTranslate("Multiplies how much food you get per-food");
+		Tabs[1].AddItems(foodMultSlide, new OpLabel(325f, lineCount + 15, BPTranslate("Food Multiplier")) { bumpBehav = foodMultSlide.bumpBehav, description = dscFoodMult });
+		foodMultSlide.description = dscFoodMult;
+
+		OpFloatSlider fatScaleSlider = new OpFloatSlider(BPOptions.visualFatScale, new Vector2(475f, lineCount - 25), 125, 1, false); //WHY DOES THIS NOT WORK IF ITS 2 DECIMALS?????? HELLO???
+		string dscFatScale = BPTranslate("The scale at which food points affect your visual size. Lower numbers makes fat look less pronounced.");
+		Tabs[1].AddItems(fatScaleSlider, new OpLabel(475f, lineCount + 15, BPTranslate("Fat Visual Scale")) { bumpBehav = fatScaleSlider.bumpBehav, description = dscFatScale });
+		fatScaleSlider.description = dscFatScale;
+
+		lineCount -= 80;
+		Tabs[1].AddItems(new OpLabel(50f, lineCount, BPTranslate("Tip: The squeeze sfx pitch hints how close you are to popping free")));
+		lineCount -= 20;
+		Tabs[1].AddItems(new OpLabel(50f, lineCount, BPTranslate("Spending lots of stamina when you are close to freedom can help you pop through early!")));
+
+
+		for (int j = 0; j < 2; j++)
+		{
+			int descLine = 155;
+			Tabs[j].AddItems(new OpLabel(25f, descLine + 25f, "--- MOD FEATURES ---"));
+			// Tabs[0].AddItems(new OpLabel(25f, descLine, "Press up against stuck creatures to push them. Grab them to pull"));
+			// descLine -= 20;
+			Tabs[j].AddItems(new OpLabel(25f, descLine, BPTranslate("Press against stuck creatures to push them. Grab them and move backwards to pull")));
+			descLine -= 20;
+			Tabs[j].AddItems(new OpLabel(25f, descLine, BPTranslate("Press Jump while pushing or pulling to strain harder and spend stamina")));
+			descLine -= 20;
+			Tabs[j].AddItems(new OpLabel(25f, descLine, BPTranslate("Pivot dash, belly slide, or charge-jump into stuck creatures to ram them")));
+			descLine -= 20;
+			Tabs[j].AddItems(new OpLabel(25f, descLine, BPTranslate("Spending stamina too quickly can make you exhausted and slow down progress")));
+			descLine -= 30;
+			//descLine -= 20;
+			// Tabs[0].AddItems(new OpLabel(25f, 140f, "Certain fruits can be used to slicken up stuck creatures. Push against them with fruit in hand to apply"));
+			Tabs[j].AddItems(new OpLabel(25f, descLine, BPTranslate("Certain fruits can be used to slicken up stuck creatures. (blue fruit, slime mold, mushrooms, etc)")));
+			descLine -= 20;
+			Tabs[j].AddItems(new OpLabel(25f, descLine, BPTranslate("While stuck, tab the Grab button to smear fruit on yourself")));
+			descLine -= 20;
+			Tabs[j].AddItems(new OpLabel(25f, descLine, BPTranslate("Push against stuck creatures with fruit in hand and press Jump to smear it on them")));
+			descLine -= 25;
+			if (ModManager.JollyCoop)
+				Tabs[j].AddItems(new OpLabel(25f, descLine, BPTranslate("Hold Grab + Throw while holding food next to a co-op partner to feed them")));
+		}
+
+
+
+
+		//SIIIIGH.... FIIIIINE....
+
+		int critTab = 2;
+		float xPad = 30f;
+		float yPad = 3f;
+		//Slugcat
+
+		//Lizard
+		//Lantern Mice
+		//Scavengers
+
+		//Squidcada
+		//Noodle Flies
+		//Centipedes
+
+		//DLL
+		//Vultures
+		//Miros Birds
+
+		//Dropwigs
+		//Leviathan
+
+
+		Tabs[critTab].AddItems(new OpLabel(125f, 575f, BPTranslate("Select which creatures can become fat"), bigText: true));
+
+		lineCount = 515;
+		int baseMargin = 65;
+		int margin = baseMargin;
+		string dsc = "";
+
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			new OpRect(new Vector2(0, lineCount - 15), new Vector2(600, 55))
+		});
+
+		OpCheckBox pBox1;
+		dsc = BPTranslate("Player") + " 1";
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			pBox1 = new OpCheckBox(BPOptions.fatP1, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(pBox1.pos.x + xPad, pBox1.pos.y + yPad, dsc)
+			{description = dsc}  //bumpBehav = chkBox5.bumpBehav, 
+		});
+
+		margin += 125;
+		OpCheckBox pBox2;
+		dsc = BPTranslate("Player") + " 2";
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			pBox2 = new OpCheckBox(BPOptions.fatP2, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(pBox2.pos.x + xPad, pBox2.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+		margin += 125;
+		OpCheckBox pBox3;
+		dsc = BPTranslate("Player") + " 3";
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			pBox3 = new OpCheckBox(BPOptions.fatP3, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(pBox3.pos.x + xPad, pBox3.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+		margin += 125;
+		OpCheckBox pBox4;
+		dsc = BPTranslate("Player") + " 4";
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			pBox4 = new OpCheckBox(BPOptions.fatP4, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(pBox4.pos.x + xPad, pBox4.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+
+		//---------------- crits-------------
+		margin = baseMargin;
+		lineCount -= 75;
+		float linePadding = 45f;
+
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			new OpRect(new Vector2(0, lineCount - 285), new Vector2(600, 405))
+		});
+
+		OpCheckBox critBox1;
+		dsc = BPTranslate("Lizard"); //creaturetype-GreenLizard
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox1 = new OpCheckBox(BPOptions.fatLiz, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox1.pos.x + xPad, critBox1.pos.y + yPad, dsc)
+			{description = dsc}  //bumpBehav = chkBox5.bumpBehav, 
+		});
+
+
+		margin += 175;
+		OpCheckBox critBox2;
+		dsc = BPTranslate("creaturetype-LanternMouse");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox2 = new OpCheckBox(BPOptions.fatMice, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox2.pos.x + xPad, critBox2.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+
+		margin += 175;
+		OpCheckBox critBox3;
+		dsc = BPTranslate("creaturetype-Scavenger");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox3 = new OpCheckBox(BPOptions.fatScavs, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox3.pos.x + xPad, critBox3.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+
+		margin = baseMargin;
+		lineCount -= linePadding;
+		OpCheckBox critBox4;
+		dsc = BPTranslate("creaturetype-CicadaA");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox4 = new OpCheckBox(BPOptions.fatSquids, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox4.pos.x + xPad, critBox4.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+		margin += 175;
+		OpCheckBox critBox5;
+		dsc = BPTranslate("creaturetype-BigNeedleWorm");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox5 = new OpCheckBox(BPOptions.fatNoots, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox5.pos.x + xPad, critBox5.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+		margin += 175;
+		OpCheckBox critBox6;
+		dsc = BPTranslate("creaturetype-Centipede");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox6 = new OpCheckBox(BPOptions.fatCentis, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox6.pos.x + xPad, critBox6.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+		//DLL
+		//Vultures
+		//Miros Birds
+		margin = baseMargin;
+		lineCount -= linePadding;
+		OpCheckBox critBox7;
+		dsc = BPTranslate("creaturetype-DaddyLongLegs");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox7 = new OpCheckBox(BPOptions.fatDll, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox7.pos.x + xPad, critBox7.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+		margin += 175;
+		OpCheckBox critBox8;
+		dsc = BPTranslate("creaturetype-Vulture");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox8 = new OpCheckBox(BPOptions.fatVults, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox8.pos.x + xPad, critBox8.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+		margin += 175;
+		OpCheckBox critBox9;
+		dsc = BPTranslate("creaturetype-MirosBird");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox9 = new OpCheckBox(BPOptions.fatMiros, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox9.pos.x + xPad, critBox9.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+		//Dropwigs
+		//Leviathan
+		margin = baseMargin;
+		lineCount -= linePadding;
+		OpCheckBox critBox10;
+		dsc = BPTranslate("creaturetype-DropBug");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox10 = new OpCheckBox(BPOptions.fatWigs, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox10.pos.x + xPad, critBox10.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+		margin += 175;
+		OpCheckBox critBox11;
+		dsc = BPTranslate("creaturetype-BigEel");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox11 = new OpCheckBox(BPOptions.fatEels, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox11.pos.x + xPad, critBox11.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+		margin += 175;
+		//OpCheckBox critBox11;
+		dsc = BPTranslate("creaturetype-JetFish");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox11 = new OpCheckBox(BPOptions.fatJets, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox11.pos.x + xPad, critBox11.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+		margin = baseMargin;
+		lineCount -= linePadding;
+		dsc = BPTranslate("creaturetype-Deer");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox11 = new OpCheckBox(BPOptions.fatDeer, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox11.pos.x + xPad, critBox11.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+		margin += 175;
+		//OpCheckBox critBox11;
+		dsc = BPTranslate("creaturetype-Leech");
+		Tabs[critTab].AddItems(new UIelement[]
+		{
+			critBox11 = new OpCheckBox(BPOptions.fatLeechs, new Vector2(margin, lineCount))
+			{description = dsc},
+			new OpLabel(critBox11.pos.x + xPad, critBox11.pos.y + yPad, dsc)
+			{description = dsc}
+		});
+
+
+		if (ModManager.MSC)
+		{
+			margin += 175;
+			OpCheckBox critBox13;
+			dsc = BPTranslate("creaturetype-Yeek");
+			Tabs[critTab].AddItems(new UIelement[]
+			{
+				critBox13 = new OpCheckBox(BPOptions.fatYeeks, new Vector2(margin, lineCount))
+				{description = dsc},
+				new OpLabel(critBox13.pos.x + xPad, critBox13.pos.y + yPad, dsc)
+				{description = dsc}
 			});
 
-			// 类型选项卡
-			List<UIelement> G_ui = new List<UIelement>();
 
-			float G_ItemPos_Y = OpBox_Y;
-			int G_Itemi = 0;
 
-			float G_CreaturePos_Y = OpBox_Y;
-			int G_Creaturei = 0;
-
-			foreach (var kvp in GrabTypes)
+			margin = baseMargin;
+			lineCount -= linePadding;
+			OpCheckBox critBox12;
+			dsc = BPTranslate("creaturetype-SlugNPC");
+			Tabs[critTab].AddItems(new UIelement[]
 			{
-				OpCheckBox? cb = null;
-				OpLabel? label = null;
-
-				if (kvp.Key == "OneHandGrabAll")
-				{
-					cb = new OpCheckBox(kvp.Value, new Vector2(Title_X, OpBox_Y));
-					label = new OpLabel(new Vector2(OpLabel_X, OpBox_Y), new Vector2(200f, 24f),
-												inGameTranslator.Translate("One hand can grab all"),
-												FLabelAlignment.Left, false, null);
-				}
-				if (kvp.Key == "DragGrabAll")
-				{
-					cb = new OpCheckBox(kvp.Value, new Vector2(Title_X + Creature_X, OpBox_Y));
-					label = new OpLabel(new Vector2(OpLabel_X + Creature_X, OpBox_Y), new Vector2(200f, 24f),
-												inGameTranslator.Translate("At least able to drag all"),
-												FLabelAlignment.Left, false, null);
-				}
-
-				else if (itemSet.Contains(kvp.Key))
-				{
-					G_ItemPos_Y = OpBox_Y - (spacing * (G_Itemi + 1));
-
-					// 创建复选框
-					cb = new OpCheckBox(kvp.Value, new Vector2(Title_X, G_ItemPos_Y));
-
-					// 创建标签（使用存储的类型名称）
-					label = new OpLabel(new Vector2(OpLabel_X, G_ItemPos_Y), new Vector2(200f, 24f),
-											   inGameTranslator.Translate(kvp.Key),
-											   FLabelAlignment.Left, false, null);
-					G_Itemi += 1;
-				}
-
-				else if (creatureSet.Contains(kvp.Key))
-				{
-					if (G_Creaturei <= 14)
-					{
-						G_CreaturePos_Y = OpBox_Y - (spacing * (G_Creaturei + 1));
-						// 创建复选框
-						cb = new OpCheckBox(kvp.Value, new Vector2(Title_X + Creature_X, G_CreaturePos_Y));
-
-						// 创建标签（使用存储的类型名称）
-						label = new OpLabel(new Vector2(OpLabel_X + Creature_X, G_CreaturePos_Y), new Vector2(200f, 24f),
-												   inGameTranslator.Translate(kvp.Key),
-												   FLabelAlignment.Left, false, null);
-					}
-					else
-					{
-						G_CreaturePos_Y = OpBox_Y - (spacing * (G_Creaturei + 1 - 15));
-
-						// 创建复选框
-						cb = new OpCheckBox(kvp.Value, new Vector2(Title_X + (Creature_X * 2), G_CreaturePos_Y));
-
-						// 创建标签（使用存储的类型名称）
-						label = new OpLabel(new Vector2(OpLabel_X + (Creature_X * 2), G_CreaturePos_Y), new Vector2(200f, 24f),
-												   inGameTranslator.Translate(kvp.Key),
-												   FLabelAlignment.Left, false, null);
-					}
-
-					G_Creaturei += 1;
-				}
-
-				if (cb != null && label != null)
-				{
-					G_ui.Add(cb);
-					G_ui.Add(label);
-				}
-			}
-
-			// 添加到类型选项卡
-			GrabTypeTab.AddItems(G_ui.ToArray());*/
-
-
-
-
-        // 基础类型
-        /*foreach (string typeName in otherTypeNames)
-            InitializeSwallowType(typeName, false);
-        foreach (string typeName in baseItemTypes)
-            InitializeSwallowType(typeName, false);
-        foreach (string typeName in baseCreatureTypes)
-            InitializeSwallowType(typeName, false);
-        ItemTypeNames.UnionWith(baseItemTypes);
-        CreatureTypeNames.UnionWith(baseCreatureTypes);
-        // MSC类型
-        if (ModManager.MSC)
-        {
-            foreach (string typeName in mscItemTypes)
-                InitializeSwallowType(typeName, false);
-            foreach (string typeName in mscCreatureTypes)
-                InitializeSwallowType(typeName, false);
-            ItemTypeNames.UnionWith(mscItemTypes);
-            CreatureTypeNames.UnionWith(mscCreatureTypes);
-        }
-        // Watcher类型
-        if (ModManager.Watcher)
-        {
-            foreach (string typeName in watcherItemTypes)
-                InitializeSwallowType(typeName, false);
-            foreach (string typeName in watcherCreatureTypes)
-                InitializeSwallowType(typeName, false);
-            ItemTypeNames.UnionWith(watcherItemTypes);
-            CreatureTypeNames.UnionWith(watcherCreatureTypes);
-        }*/
-
-
-
-        #region Items
-        /*namespace CustomStomachStorage
-        {
-            public class MyOptions : OptionInterface
-            {
-                public static readonly MyOptions Instance = new MyOptions();
-
-                public readonly Configurable<int> StomachCapacity;
-                public readonly Configurable<bool> DebugMode;
-                public readonly Configurable<bool> SpearmasterStoreItems;
-
-                public readonly Dictionary<string, Configurable<bool>> SwallowConfigs = new();
-                public readonly Dictionary<string, Configurable<string>> GrabConfigs = new();
-                public readonly Dictionary<string, Configurable<bool>> GrabSpecialConfigs = new();
-
-                public HashSet<string> ItemTypeNames { get; private set; } = new();
-                public HashSet<string> CreatureTypeNames { get; private set; } = new();
-
-                // 抓取模式枚举
-                public enum GrabMode
-                {
-                    NotSelected,    // 未选择
-                    OneHand,        // 单手可抓
-                    BigOneHand,     // 单手但更大
-                    TwoHands,       // 双手抓
-                    Drag,           // 拖动
-                    CantGrab,       // 不能抓取
-                }
-                // 抓取模式显示文本
-                private static readonly Dictionary<GrabMode, string> GrabModeDisplay = new()
-                {
-                    { GrabMode.NotSelected, "NotSelected" },
-                    { GrabMode.OneHand, "OneHand" },
-                    { GrabMode.BigOneHand, "BigOneHand" },
-                    { GrabMode.TwoHands, "TwoHands" },
-                    { GrabMode.Drag, "Drag" },
-                    { GrabMode.CantGrab, "CantGrab" },
-                };
-                private static readonly Dictionary<GrabMode, Player.ObjectGrabability> PlayerGrabDisplay = new()
-                {
-                    { GrabMode.NotSelected, Player.ObjectGrabability.CantGrab },
-                    { GrabMode.OneHand, Player.ObjectGrabability.OneHand },
-                    { GrabMode.BigOneHand, Player.ObjectGrabability.BigOneHand },
-                    { GrabMode.TwoHands, Player.ObjectGrabability.TwoHands },
-                    { GrabMode.Drag, Player.ObjectGrabability.Drag },
-                    { GrabMode.CantGrab, Player.ObjectGrabability.CantGrab },
-                };
-                public List<ListItem> GrabModeItem = new List<ListItem> {
-                    new ListItem("Not selected", "NotSelected"),
-                    new ListItem("One hand", "OneHand"),
-                    new ListItem("Big one hand", "BigOneHand"),
-                    new ListItem("Two hands", "TwoHands"),
-                    new ListItem("Drag", "Drag"),
-                    new ListItem("Cannot grab", "CantGrab"),
-                };
-
-
-                /*public List<ListItem> GrabModeItem = new List<ListItem> {
-			new ListItem("Not selected", NotSelected),
-			new ListItem("One hand", "OneHand"),
-			new ListItem("Big one hand", "BigOneHand"),
-			new ListItem("Two hands", "TwoHands"),
-			new ListItem("Drag", "Drag"),
-			new ListItem("Cannot grab", "CantGrab"),
-		};
-		private static readonly Dictionary<string, Player.ObjectGrabability> PlayerGrabDisplay = new()
+				critBox12 = new OpCheckBox(BPOptions.fatPups, new Vector2(margin, lineCount))
+				{description = dsc},
+				new OpLabel(critBox12.pos.x + xPad, critBox12.pos.y + yPad, dsc)
+				{description = dsc}
+			});
+		}
+		else
 		{
-			{ NotSelected, Player.ObjectGrabability.CantGrab },
-			{ "OneHand", Player.ObjectGrabability.OneHand },
-			{ "BigOneHand", Player.ObjectGrabability.BigOneHand },
-			{ "TwoHands", Player.ObjectGrabability.TwoHands },
-			{ "Drag", Player.ObjectGrabability.Drag },
-			{ "CantGrab", Player.ObjectGrabability.CantGrab },
-		};
-
-		// ============ 访问器 ============
-		public bool CanSwallow(string typeName) =>
-			SwallowTypes.TryGetValue(typeName, out var config) && config.Value == true;
-		public bool GetGrabSpecial(string typeName) =>
-			GrabSpecialTypes.TryGetValue(typeName, out var config) && config.Value == true;
-		public string GetGrabMode(string typeName) =>
-			GrabTypes.TryGetValue(typeName, out var config) ? config.Value : NotSelected;
-        public Player.ObjectGrabability GetPlayerGrab(string mode) =>
-            PlayerGrabDisplay.TryGetValue(mode, out var value) ? value : Player.ObjectGrabability.CantGrab;*/
-
-        // ============ 访问器 ============
-        /*public bool CanSwallow(string type) =>
-                    SwallowConfigs.TryGetValue(type, out var config) && config.Value == true;
-                public bool GetGrabSpecial(string type) =>
-                    GrabSpecialConfigs.TryGetValue(type, out var config) && config.Value == true;
-                public GrabMode GetGrabMode(string type) =>
-                    GrabConfigs.TryGetValue(type, out var config) ? GrabModeFromString(config.Value) : GrabMode.NotSelected;
-                public string GrabModeToString(GrabMode mode) => GrabModeDisplay[mode];
-                public Player.ObjectGrabability GetPlayerGrab(GrabMode mode) => PlayerGrabDisplay[mode];
-                public GrabMode GrabModeFromString(string value)
-                {
-                    foreach (var pair in GrabModeDisplay)
-                        if (pair.Value == value)
-                            return pair.Key;
-                    return GrabMode.NotSelected;
-                }
-
-                string[] specialTypeNames = {//45
-                        "All",
-
-                        "OneHandGrabAll",
-                        "DragGrabAll",
-                    };
-
-                #region Items
-                string[] baseItemTypes = {
-                        "Item",
-                        "Spear", 
-                        "VultureMask", 
-                        "NeedleEgg",
-                        "OracleSwarmer", 
-                        "SeedCob"
-                    };
-                string[] mscItemTypes = {
-                        "LillyPuck",
-                        "FireEgg", 
-                        "JokeRifle", 
-                        "EnergyCell",
-                        "MoonCloak"
-                    };
-                string[] watcherItemTypes = {
-                        "Boomerang",
-                        "GraffitiBomb"
-                    };
-                #endregion
-                #region Creature
-                string[] baseCreatureTypes = {
-                        "Creature",
-                        "Lizard",
-                        "Vulture",
-                        "Centipede", 
-                        "Spider", 
-                        "DropBug",
-                        "BigEel", 
-                        "MirosBird", 
-                        "DaddyLongLegs",
-                        "Cicada", 
-                        "Snail",
-                        "Scavenger", 
-                        "EggBug", 
-                        "LanternMouse", 
-                        "JetFish", 
-                        "TubeWorm",
-                        "Deer", 
-                        "TempleGuard"
-                    };
-                string[] mscCreatureTypes = {
-                        "Yeek", 
-                        "Inspector", 
-                        "StowawayBug"
-                    };
-                string[] watcherCreatureTypes = {
-                        "Loach",
-                        "BigMoth", 
-                        "SkyWhale", 
-                        "BoxWorm", 
-                        "DrillCrab",
-                        "Tardigrade",
-                        "Barnacle", 
-                        "Frog"
-                    };
-                #endregion
-
-                // 常量
-
-                MyOptions()
-                {
-                    //设置默认值
-                    StomachCapacity = config.Bind<int>($"StomachCapacity_conf_{MOD_name}", 3, new ConfigAcceptableRange<int>(0, 500));
-
-                    DebugMode = config.Bind<bool>($"DebugMode_conf_{MOD_name}", false);
-
-                    SpearmasterStoreItems = config.Bind<bool>($"SpearmasterStoreItems_conf_{MOD_name}", false);
-
-                    // 基础类型
-                    foreach (string typeName in specialTypeNames)
-                    {
-                        InitializeSwallowType(typeName, false);
-                        GrabSpecialConfigs[typeName] = config.Bind<bool>($"{typeName}_Grab_conf_{MOD_name}", false);
-                    }
-                    foreach (string typeName in baseItemTypes)
-                        InitializeSwallowType(typeName, false);
-                    foreach (string typeName in baseCreatureTypes)
-                        InitializeSwallowType(typeName, false);
-                    ItemTypeNames.UnionWith(baseItemTypes);
-                    CreatureTypeNames.UnionWith(baseCreatureTypes);
-                    // MSC类型
-                    if (ModManager.MSC)
-                    {
-                        foreach (string typeName in mscItemTypes)
-                            InitializeSwallowType(typeName, false);
-                        foreach (string typeName in mscCreatureTypes)
-                            InitializeSwallowType(typeName, false);
-                        ItemTypeNames.UnionWith(mscItemTypes);
-                        CreatureTypeNames.UnionWith(mscCreatureTypes);
-                    }
-                    // Watcher类型
-                    if (ModManager.Watcher)
-                    {
-                        foreach (string typeName in watcherItemTypes)
-                            InitializeSwallowType(typeName, false);
-                        foreach (string typeName in watcherCreatureTypes)
-                            InitializeSwallowType(typeName, false);
-                        ItemTypeNames.UnionWith(watcherItemTypes);
-                        CreatureTypeNames.UnionWith(watcherCreatureTypes);
-                    }
-                }
-
-                private void InitializeSwallowType(string typeName, bool defaultValue = false)
-                {
-                    SwallowConfigs[typeName] = config.Bind<bool>($"{typeName}_Swallow_conf_{MOD_name}", defaultValue);
-                    //SwallowTypes[typeName] = config.Bind<bool>($"{typeName}_Swallow_conf_{MOD_name}", defaultValue);
-                    GrabConfigs[typeName] = config.Bind<string>($"{typeName}_Grab_conf_{MOD_name}", GrabModeToString(GrabMode.NotSelected));
-
-                    *//*if (!ItemTypeNames.Contains(typeName))
-                    {
-                        GrabTypes[typeName] = config.Bind<bool>($"{typeName}_Grab_conf_{MOD_name}", defaultValue);
-                    }*//*
-                }
-
-
-                public override void Initialize()
-                {
-                    // 创建选项卡
-                    var optionsTab = new OpTab(this, "Options");
-                    var swallowTab = new OpTab(this, "Swallowing");
-                    var grabTab = new OpTab(this, "Grasping");
-                    InGameTranslator inGameTranslator = Custom.rainWorld.inGameTranslator;
-                    this.Tabs = new OpTab[]
-                    {
-                        optionsTab,
-                        swallowTab,
-                        grabTab,
-                    };
-
-                    const float Title_X = 10f;
-                    const float Title_Y = 560;
-
-                    const float Creature_X = 230f;
-
-                    const float OpBox_Y = 450f;
-                    const float OpLabel_X = 75f;
-
-                    const float spacing = 30f; // 元素间距
-
-                    const float ComboBox_width = 50f;
-
-                    // 标题
-                    optionsTab.AddItems(new UIelement[]
-                    {
-                        new OpLabel(Title_X, Title_Y, inGameTranslator.Translate("Custom Stomach Storage"), true)
-                        {
-                            alignment = FLabelAlignment.Left
-                        }
-                    });
-
-                    //选项
-                    optionsTab.AddItems(new UIelement[]
-                    {
-                        new OpTextBox(StomachCapacity, new Vector2(Title_X, OpBox_Y - 0f), 50f),
-                        new OpLabel(new Vector2(OpLabel_X, OpBox_Y - 0f), new Vector2(200f, 24f), inGameTranslator.Translate("Stomach capacity"), FLabelAlignment.Left, false, null),
-
-                        new OpCheckBox(SpearmasterStoreItems, new Vector2(Title_X, OpBox_Y - spacing)),
-                        new OpLabel(new Vector2(OpLabel_X, OpBox_Y - spacing), new Vector2(200f, 24f), inGameTranslator.Translate("Allow Spearmaster to store items"), FLabelAlignment.Left, false, null),
-
-                        new OpCheckBox(DebugMode, new Vector2(Title_X, 40f)),
-                        new OpLabel(new Vector2(OpLabel_X, 40f), new Vector2(200f, 24f), inGameTranslator.Translate("DebugMode"), FLabelAlignment.Left, false, null)
-                    });
-
-
-
-
-                    // 吞咽类型标题
-                    swallowTab.AddItems(new UIelement[]
-                    {
-                        new OpLabel(Title_X, Title_Y, inGameTranslator.Translate("Types of swallowing"), true)
-                        {
-                            alignment = FLabelAlignment.Left
-                        }
-                    });
-
-                    // 类型选项卡
-                    List<UIelement> S_ui = new List<UIelement>();
-
-                    float S_ItemPos_Y = OpBox_Y;
-                    int S_Itemi = 0;
-
-                    float S_CreaturePos_Y = OpBox_Y;
-                    int S_Creaturei = 0;
-
-                    HashSet<string> itemSet = new HashSet<string>(ItemTypeNames);
-                    HashSet<string> creatureSet = new HashSet<string>(CreatureTypeNames);
-
-                    foreach (var kvp in SwallowConfigs)
-                    {
-                        OpCheckBox? cb = null;
-                        OpLabel? label = null;
-
-                        if (kvp.Key == "All")
-                        {
-                            cb = new OpCheckBox(kvp.Value, new Vector2(Title_X, OpBox_Y));
-                            label = new OpLabel(new Vector2(OpLabel_X, OpBox_Y), new Vector2(200f, 24f),
-                                                        inGameTranslator.Translate(kvp.Key),
-                                                        FLabelAlignment.Left, false, null);
-                        }
-
-                        else if (itemSet.Contains(kvp.Key))
-                        {
-                            S_ItemPos_Y = OpBox_Y - (spacing * (S_Itemi + 1));
-
-                            // 创建复选框
-                            cb = new OpCheckBox(kvp.Value, new Vector2(Title_X, S_ItemPos_Y));
-
-                            // 创建标签（使用存储的类型名称）
-                            label = new OpLabel(new Vector2(OpLabel_X, S_ItemPos_Y), new Vector2(200f, 24f),
-                                                       inGameTranslator.Translate(kvp.Key),
-                                                       FLabelAlignment.Left, false, null);
-                            S_Itemi += 1;
-                        }
-
-                        else if (creatureSet.Contains(kvp.Key))
-                        {
-                            if (S_Creaturei <= 14)
-                            {
-                                S_CreaturePos_Y = OpBox_Y - (spacing * (S_Creaturei + 1));
-                                // 创建复选框
-                                cb = new OpCheckBox(kvp.Value, new Vector2(Title_X + Creature_X, S_CreaturePos_Y));
-
-                                // 创建标签（使用存储的类型名称）
-                                label = new OpLabel(new Vector2(OpLabel_X + Creature_X, S_CreaturePos_Y), new Vector2(200f, 24f),
-                                                           inGameTranslator.Translate(kvp.Key),
-                                                           FLabelAlignment.Left, false, null);
-                            }
-                            else
-                            {
-                                S_CreaturePos_Y = OpBox_Y - (spacing * (S_Creaturei + 1 - 15));
-
-                                // 创建复选框
-                                cb = new OpCheckBox(kvp.Value, new Vector2(Title_X + (Creature_X * 2), S_CreaturePos_Y));
-
-                                // 创建标签（使用存储的类型名称）
-                                label = new OpLabel(new Vector2(OpLabel_X + (Creature_X * 2), S_CreaturePos_Y), new Vector2(200f, 24f),
-                                                           inGameTranslator.Translate(kvp.Key),
-                                                           FLabelAlignment.Left, false, null);
-                            }
-
-                            S_Creaturei += 1;
-                        }
-
-                        if (cb != null && label != null)
-                        {
-                            S_ui.Add(cb);
-                            S_ui.Add(label);
-                        }
-                    }
-
-                    // 添加到类型选项卡
-                    swallowTab.AddItems(S_ui.ToArray());
-
-
-
-                    // 抓握类型标题
-                    grabTab.AddItems(new UIelement[]
-                    {
-                        new OpLabel(Title_X, Title_Y, inGameTranslator.Translate("Types of graspable"), true)
-                        {
-                            alignment = FLabelAlignment.Left
-                        }
-                    });
-
-                    // 类型选项卡
-                    List<UIelement> G_ui = new List<UIelement>();
-
-                    float G_ItemPos_Y = OpBox_Y;
-                    int G_Itemi = 0;
-
-                    float G_CreaturePos_Y = OpBox_Y;
-                    int G_Creaturei = 0;
-
-                    foreach (var kvp in GrabSpecialConfigs)
-                    {
-                        UIconfig? cb = null;
-                        OpLabel? label = null;
-
-                        if (kvp.Key == "OneHandGrabAll")
-                        {
-                            cb = new OpCheckBox(kvp.Value, new Vector2(Title_X, OpBox_Y));
-                            label = new OpLabel(new Vector2(OpLabel_X, OpBox_Y), new Vector2(200f, 24f),
-                                                        inGameTranslator.Translate("One hand can grab all"),
-                                                        FLabelAlignment.Left, false, null);
-                        }
-                        if (kvp.Key == "DragGrabAll")
-                        {
-                            cb = new OpCheckBox(kvp.Value, new Vector2(Title_X + Creature_X, OpBox_Y));
-                            label = new OpLabel(new Vector2(OpLabel_X + Creature_X, OpBox_Y), new Vector2(200f, 24f),
-                                                        inGameTranslator.Translate("At least able to drag all"),
-                                                        FLabelAlignment.Left, false, null);
-                        }
-
-                        if (cb != null && label != null)
-                        {
-                            G_ui.Add(cb);
-                            G_ui.Add(label);
-                        }
-                    }
-
-                    foreach (var kvp in GrabConfigs)
-                    {
-                        UIconfig? cb = null;
-                        OpLabel? label = null;
-
-                        if (itemSet.Contains(kvp.Key))
-                        {
-                            G_ItemPos_Y = OpBox_Y - (spacing * (G_Itemi + 1));
-
-                            // 创建复选框
-                            cb = new OpComboBox(kvp.Value, new Vector2(Title_X, G_ItemPos_Y), ComboBox_width, GrabModeItem);
-
-                            // 创建标签（使用存储的类型名称）
-                            label = new OpLabel(new Vector2(OpLabel_X, G_ItemPos_Y), new Vector2(200f, 24f),
-                                                       inGameTranslator.Translate(kvp.Key),
-                                                       FLabelAlignment.Left, false, null);
-                            G_Itemi += 1;
-                        }
-
-                        else if (creatureSet.Contains(kvp.Key))
-                        {
-                            if (G_Creaturei <= 14)
-                            {
-                                G_CreaturePos_Y = OpBox_Y - (spacing * (G_Creaturei + 1));
-                                // 创建复选框
-                                cb = new OpComboBox(kvp.Value, new Vector2(Title_X + Creature_X, G_CreaturePos_Y), ComboBox_width, GrabModeItem);
-
-                                // 创建标签（使用存储的类型名称）
-                                label = new OpLabel(new Vector2(OpLabel_X + Creature_X, G_CreaturePos_Y), new Vector2(200f, 24f),
-                                                           inGameTranslator.Translate(kvp.Key),
-                                                           FLabelAlignment.Left, false, null);
-                            }
-                            else
-                            {
-                                G_CreaturePos_Y = OpBox_Y - (spacing * (G_Creaturei + 1 - 15));
-
-                                // 创建复选框
-                                cb = new OpComboBox(kvp.Value, new Vector2(Title_X + (Creature_X * 2), G_CreaturePos_Y), ComboBox_width, GrabModeItem);
-
-                                // 创建标签（使用存储的类型名称）
-                                label = new OpLabel(new Vector2(OpLabel_X + (Creature_X * 2), G_CreaturePos_Y), new Vector2(200f, 24f),
-                                                           inGameTranslator.Translate(kvp.Key),
-                                                           FLabelAlignment.Left, false, null);
-                            }
-
-                            G_Creaturei += 1;
-                        }
-
-                        if (cb != null && label != null)
-                        {
-                            G_ui.Add(cb);
-                            G_ui.Add(label);
-                        }
-                    }
-
-                    // 添加到类型选项卡
-                    grabTab.AddItems(G_ui.ToArray());
-
-                }
-
-
-            }
-        }*/
-        #endregion
-
-
-
-    }
+			BPOptions.fatPups.Value = true;
+		}
+
+
+		if (ModManager.Watcher)
+		{
+			margin = baseMargin;
+			lineCount -= linePadding;
+
+			OpCheckBox critBox13;
+			dsc = BPTranslate("creaturetype-BigMoth");
+			Tabs[critTab].AddItems(new UIelement[]
+			{
+				critBox13 = new OpCheckBox(BPOptions.fatMoths, new Vector2(margin, lineCount))
+				{description = dsc},
+				new OpLabel(critBox13.pos.x + xPad, critBox13.pos.y + yPad, dsc)
+				{description = dsc}
+			});
+
+
+			margin += 175;
+			OpCheckBox critBox12;
+			dsc = BPTranslate("creaturetype-Tardigrade");
+			Tabs[critTab].AddItems(new UIelement[]
+			{
+				critBox12 = new OpCheckBox(BPOptions.fatTards, new Vector2(margin, lineCount))
+				{description = dsc},
+				new OpLabel(critBox12.pos.x + xPad, critBox12.pos.y + yPad, dsc)
+				{description = dsc}
+			});
+
+			margin += 175;
+			dsc = BPTranslate("creaturetype-Loach");
+			Tabs[critTab].AddItems(new UIelement[]
+			{
+				critBox12 = new OpCheckBox(BPOptions.fatLoachs, new Vector2(margin, lineCount))
+				{description = dsc},
+				new OpLabel(critBox12.pos.x + xPad, critBox12.pos.y + yPad, dsc)
+				{description = dsc}
+			});
+		}
+
+
+
+
+
+		//------------------ ANOTHER NEW TAB FOR OTHER STUFF
+
+		int infoTab = 3;
+		lineCount = 550;
+
+		Tabs[infoTab].AddItems(new OpLabel(35f, lineCount, BPTranslate("Enable the Improved Input Config mod to change keybinds")));
+
+		lineCount -= 25;
+		Tabs[infoTab].AddItems(new OpLabel(35, lineCount, BPTranslate("If you run into any bugs or issues, let me know so I can fix them!")));
+
+		lineCount -= 35;
+		Tabs[infoTab].AddItems(new OpLabel(35f, lineCount, BPTranslate("Message me on discord: WillowWisp#3565 ")));
+		lineCount -= 25;
+		Tabs[infoTab].AddItems(new OpLabel(35f, lineCount, BPTranslate("Or ping @WillowWisp on the rain world Discord Server in the modding-support channel")));
+		lineCount -= 25;
+		Tabs[infoTab].AddItems(new OpLabel(35f, lineCount, BPTranslate("Or leave a comment on the mod workshop page in the Bug Reporting discussion!")));
+		lineCount -= 25;
+		Tabs[infoTab].AddItems(new OpLabel(35f, lineCount, BPTranslate("Or anywhere you want please I'm begging and sobbing please report your bugs")));
+
+		lineCount -= 50;
+		Tabs[infoTab].AddItems(new OpLabel(35f, lineCount, BPTranslate("Super bonus points if you include your error log files (if they generated)")));
+		lineCount -= 25;
+		Tabs[infoTab].AddItems(new OpLabel(35f, lineCount, BPTranslate("located in: /Program Files (86)/Steam/steamapps/common/Rain World/exceptionLog.txt")));
+
+
+		lineCount -= 50;
+		Tabs[infoTab].AddItems(new OpLabel(35f, lineCount, BPTranslate("Leave feedback on the mod page and rate the mod if you enjoy it!")));
+		lineCount -= 25;
+		Tabs[infoTab].AddItems(new OpLabel(35f, lineCount, BPTranslate("If you post footage, send me a link! I'd love to see! :D")));
+
+	}
+
 }
+#endregion
+
+
+

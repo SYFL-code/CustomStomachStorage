@@ -33,40 +33,44 @@ using static CustomStomachStorage.Plugin;
 namespace CustomStomachStorage
 {
 	[BepInPlugin(MOD_ID, MOD_NAME, MOD_version)]
-    [BepInDependency(WHATS_IN_MY_POCKET_GUID, BepInDependency.DependencyFlags.SoftDependency)]
-    class Plugin : BaseUnityPlugin
+	[BepInDependency(WHATS_IN_MY_POCKET_GUID, BepInDependency.DependencyFlags.SoftDependency)]
+	class Plugin : BaseUnityPlugin
 	{
-        public const string MOD_NAME = "Custom Stomach Storage";
-        public const string MOD_name = "CustomStomachStorage";
-        public const string MOD_ID = "CustomStomachStorage.Redlyn";
-        public const string MOD_version = "0.1.1";
+		public const string MOD_NAME = "Custom Stomach Storage";
+		public const string MOD_name = "CustomStomachStorage";
+		public const string MOD_ID = "CustomStomachStorage.Redlyn";
+		public const string MOD_version = "0.1.1";
 
-        public const string WHATS_IN_MY_POCKET_GUID = "Jimarad.WhatsInMyPocket";
+		public const string WHATS_IN_MY_POCKET_GUID = "Jimarad.WhatsInMyPocket";
 
 
-        // Add hooks-添加钩子
-        public void OnEnable()
+		// Add hooks-添加钩子
+		public void OnEnable()
 		{
-            GlobalVar.HookAdd();
+			GlobalVar.HookAdd();
 
 			On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
 
-            // Put your custom hooks here!-在此放置你自己的钩子
+			// Put your custom hooks here!-在此放置你自己的钩子
 
-            //On.SaveState.BringUpToDate += SaveState_BringUpToDate;
-            //On.Player.SaveStomachObjectInPlayerState += Player_SaveStomachObjectInPlayerState;
-            MyPlayer.HookAdd();
-            //On.Player.Update += Player_Update;
-            //On.Player.Jump += Player_Jump;    
-            //在玩家触发跳跃时执行Player_Jump
-            //On.Player.Die += Player_Die;
-            //On.Lizard.ctor += Lizard_ctor;
+			//On.SaveState.BringUpToDate += SaveState_BringUpToDate;
+			//On.Player.SaveStomachObjectInPlayerState += Player_SaveStomachObjectInPlayerState;
+			MyPlayer.HookAdd();
+			//On.Player.Update += Player_Update;
+			//On.Player.Jump += Player_Jump;    
+			//在玩家触发跳跃时执行Player_Jump
+			//On.Player.Die += Player_Die;
+			//On.Lizard.ctor += Lizard_ctor;
 
-            State.HookAdd();
+			State.HookAdd();
 			Fix.HookAdd();
 
-            StomachHUD.HookAdd();
-        }
+			StomachHUD.HookAdd();
+
+			DeathPersistentSaveDataPatch.Patch();
+
+            //MyOptions.Instance.HookAdd();
+		}
 
 
 		// add this to do the opposite of whatever you did in OnEnable()
@@ -90,9 +94,11 @@ namespace CustomStomachStorage
 			State.HookSubtract();
 			Fix.HookSubtract();
 
-            StomachHUD.HookSubtract();
+			StomachHUD.HookSubtract();
 
-            GlobalVar.HookSubtract();
+			GlobalVar.HookSubtract();
+
+            //MyOptions.Instance.HookSubtract();
         }
 
 

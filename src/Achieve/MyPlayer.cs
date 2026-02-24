@@ -548,31 +548,6 @@ namespace CustomStomachStorage
 		}
 		#endregion
 
-		private static readonly ConcurrentDictionary<Type, HashSet<string>> _typeCache = new();
-		public static HashSet<string> GetInheritanceChain(object obj)
-		{
-			if (obj == null) return new HashSet<string>();
-
-			var type = obj.GetType();
-			return GetInheritanceChain(type);
-		}
-		public static HashSet<string> GetInheritanceChain(Type type)
-		{
-			if (type == null) return new HashSet<string>();
-
-			return _typeCache.GetOrAdd(type, t =>
-			{
-				var names = new HashSet<string>();
-				var current = t;
-				while (current != null)
-				{
-					names.Add(current.Name);
-					current = current.BaseType;
-				}
-				return names;
-			});
-		}
-
 		// 修改SwallowObject方法
 		private static void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player player, int grasp)
 		{
@@ -694,7 +669,7 @@ namespace CustomStomachStorage
 
 			if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear && MyOptions.Instance.SpearmasterStoreItems?.Value == true)
 			{
-				newRegurgitate(player);
+				NewRegurgitate(player);
 			}
 			else
 			{
@@ -1023,7 +998,7 @@ namespace CustomStomachStorage
 
 
 
-		public static void newRegurgitate(Player player)
+		public static void NewRegurgitate(Player player)
 		{
 			if (player.objectInStomach == null)
 			{

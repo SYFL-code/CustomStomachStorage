@@ -44,41 +44,41 @@ namespace CustomStomachStorage
 			string strObj = "";
 			if (obj is AbstractCreature abstractCreature4)
 			{
-                if (abstractCreature4.world.GetAbstractRoom(abstractCreature4.pos.room) == null)
-                {
-                    abstractCreature4.pos = coord;
-                }
-                strObj = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature4, coord);
+				if (abstractCreature4.world.GetAbstractRoom(abstractCreature4.pos.room) == null)
+				{
+					abstractCreature4.pos = coord;
+				}
+				strObj = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature4, coord);
 			}
 			else
 			{
-                strObj = obj.ToString();
+				strObj = obj.ToString();
 			}
 
 			if (string.IsNullOrWhiteSpace(strObj))
 			{
-                UDebug.Log($"[Extended.Find] Object not found: {strObj}");
-                return false;
-            }
+				UDebug.Log($"[Extended.Find] Object not found: {strObj}");
+				return false;
+			}
 
 			List<string> strList = new();
-            foreach (AbstractPhysicalObject Item in list)
+			foreach (AbstractPhysicalObject Item in list)
 			{
 				string strItem = "";
 				if (Item is AbstractCreature abstractCreature5)
 				{
-                    if (abstractCreature5.world.GetAbstractRoom(abstractCreature5.pos.room) == null)
-                    {
-                        abstractCreature5.pos = coord;
-                    }
-                    strItem = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature5, coord);
+					if (abstractCreature5.world.GetAbstractRoom(abstractCreature5.pos.room) == null)
+					{
+						abstractCreature5.pos = coord;
+					}
+					strItem = SaveState.AbstractCreatureToStringStoryWorld(abstractCreature5, coord);
 				}
 				else
 				{
-                    strItem = Item.ToString();
+					strItem = Item.ToString();
 				}
-                strList.Add(strItem);
-                if (strObj == strItem)
+				strList.Add(strItem);
+				if (strObj == strItem)
 				{
 					return true;
 				}
@@ -88,16 +88,52 @@ namespace CustomStomachStorage
 			{
 				UDebug.Log($">>> strList[{i}] = {strList[i]}");
 			}
-            return false;
+			return false;
 		}
-        public static bool Find(List<AbstractPhysicalObject> list, AbstractPhysicalObject obj)
+		public static bool Find(List<AbstractPhysicalObject> list, AbstractPhysicalObject obj)
 		{
 			return Find(list, obj, obj.pos);
-        }
+		}
 
+		#region Type
+		private static readonly ConcurrentDictionary<Type, HashSet<string>> _typeCache = new();
+		public static HashSet<string> GetInheritanceChain(object obj)
+		{
+			if (obj == null) return new HashSet<string>();
 
-        #region TextWidth
-        /*public static float GetTextWidth(string text, float scale = 1f)
+			var type = obj.GetType();
+			return GetInheritanceChain(type);
+		}
+		public static HashSet<string> GetInheritanceChain(Type type)
+		{
+			if (type == null) return new HashSet<string>();
+
+			return _typeCache.GetOrAdd(type, t =>
+			{
+				var names = new HashSet<string>();
+				var current = t;
+				while (current != null)
+				{
+					names.Add(current.Name);
+					current = current.BaseType;
+				}
+				return names;
+			});
+		}
+
+		public static List<string> GetTypeNames(IEnumerable<Type> types)
+		{
+			List<string> s = new();
+			foreach (var type in types)
+			{
+				s.Add(type.Name);
+			}
+			return s;
+		}
+		#endregion
+
+		#region TextWidth
+		/*public static float GetTextWidth(string text, float scale = 1f)
 		{
 			if (string.IsNullOrEmpty(text)) return 0f;
 
@@ -116,7 +152,7 @@ namespace CustomStomachStorage
 		}*/
 
 
-        public static float GetTextWidth(string text)
+		public static float GetTextWidth(string text)
 		{
 			float width = 0f;
 			foreach (char c in text)
@@ -139,16 +175,16 @@ namespace CustomStomachStorage
 		/// <summary>
 		/// 计算选项最大宽度
 		/// </summary>
-		public static float CalculateMaxItemWidth(string[] items, InGameTranslator? translator = null)
+		public static float CalculateMaxItemWidth(IEnumerable<string> items, InGameTranslator? translator = null)
 		{
 			float maxWidth = 0f;
 
-			for (int i = 0; i < items.Length; i++)
-			{
-				string translated = translator != null ? translator.Translate(items[i]) : items[i];
-				float width = GetTextWidth(translated);
-				maxWidth = Mathf.Max(maxWidth, width);
-			}
+            foreach (var item in items)
+            {
+                string translated = translator != null ? translator.Translate(item) : item;
+                float width = GetTextWidth(translated);
+                maxWidth = Mathf.Max(maxWidth, width);
+            }
 
 			return maxWidth;
 		}
