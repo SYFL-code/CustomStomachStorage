@@ -69,7 +69,7 @@ namespace CustomStomachStorage
 
 			DeathPersistentSaveDataPatch.Patch();
 
-            //MyOptions.Instance.HookAdd();
+            MyOptions.Instance.HookAdd();
 		}
 
 
@@ -98,7 +98,7 @@ namespace CustomStomachStorage
 
 			GlobalVar.HookSubtract();
 
-            //MyOptions.Instance.HookSubtract();
+            MyOptions.Instance.HookSubtract();
         }
 
 

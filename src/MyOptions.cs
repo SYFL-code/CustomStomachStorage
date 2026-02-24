@@ -58,8 +58,11 @@ namespace CustomStomachStorage
 		/// </summary>
 		public readonly Configurable<bool> SpearmasterStoreItems;
 
-        public readonly Configurable<string> SelectedItemType;
-        public readonly Configurable<string> SelectedCreatureType;
+		public OpaqueComboBox SelectedItemType;
+		public OpaqueComboBox SelectedCreatureType;
+
+		public readonly Configurable<string> SelectedItemType_;
+		public readonly Configurable<string> SelectedCreatureType_;
 		/// <summary>
 		/// 可配置的吞咽类型字典
 		/// </summary>
@@ -127,70 +130,70 @@ namespace CustomStomachStorage
 			};
 		#endregion
 		/*#region Items
-        string[] baseItemTypes = {
-                "Item",
-                "Rock",
-                "Spear",
-                "VultureMask",
-                "NeedleEgg",
-                "OracleSwarmer",
-                "SeedCob",
-                "SporePlant",
-                "FlareBomb",
-                "PuffBall",
-                "FirecrackerPlant",
-                "KarmaFlower",
-            };
-        string[] mscItemTypes = {
-                "LillyPuck",
-                "FireEgg",
-                "JokeRifle",
-                "EnergyCell",
-                "MoonCloak",
-            };
-        string[] watcherItemTypes = {
-                "Boomerang",
-                "GraffitiBomb",
-            };
-        #endregion
-        #region Creatures
-        string[] baseCreatureTypes = {
-                "Creature",
-                "Slugcat",
-                "Lizard",
-                "Vulture",
-                "Centipede",
-                "Spider",
-                "DropBug",
-                "BigEel",
-                "MirosBird",
-                "DaddyLongLegs",
-                "Cicada",
-                "Snail",
-                "Scavenger",
-                "EggBug",
-                "LanternMouse",
-                "JetFish",
-                "TubeWorm",
-                "Deer",
-                "TempleGuard"
-            };
-        string[] mscCreatureTypes = {
-                "Yeek",
-                "Inspector",
-                "StowawayBug"
-            };
-        string[] watcherCreatureTypes = {
-                "Loach",
-                "BigMoth",
-                "SkyWhale",
-                "BoxWorm",
-                "DrillCrab",
-                "Tardigrade",
-                "Barnacle",
-                "Frog"
-            };
-        #endregion*/
+		string[] baseItemTypes = {
+				"Item",
+				"Rock",
+				"Spear",
+				"VultureMask",
+				"NeedleEgg",
+				"OracleSwarmer",
+				"SeedCob",
+				"SporePlant",
+				"FlareBomb",
+				"PuffBall",
+				"FirecrackerPlant",
+				"KarmaFlower",
+			};
+		string[] mscItemTypes = {
+				"LillyPuck",
+				"FireEgg",
+				"JokeRifle",
+				"EnergyCell",
+				"MoonCloak",
+			};
+		string[] watcherItemTypes = {
+				"Boomerang",
+				"GraffitiBomb",
+			};
+		#endregion
+		#region Creatures
+		string[] baseCreatureTypes = {
+				"Creature",
+				"Slugcat",
+				"Lizard",
+				"Vulture",
+				"Centipede",
+				"Spider",
+				"DropBug",
+				"BigEel",
+				"MirosBird",
+				"DaddyLongLegs",
+				"Cicada",
+				"Snail",
+				"Scavenger",
+				"EggBug",
+				"LanternMouse",
+				"JetFish",
+				"TubeWorm",
+				"Deer",
+				"TempleGuard"
+			};
+		string[] mscCreatureTypes = {
+				"Yeek",
+				"Inspector",
+				"StowawayBug"
+			};
+		string[] watcherCreatureTypes = {
+				"Loach",
+				"BigMoth",
+				"SkyWhale",
+				"BoxWorm",
+				"DrillCrab",
+				"Tardigrade",
+				"Barnacle",
+				"Frog"
+			};
+		#endregion*/
 		#region Items
 		//List<string> baseItemTypes = GetTypeNames(_baseItemTypes);
 		//List<string> mscItemTypes = GetTypeNames(_mscItemTypes);
@@ -539,11 +542,11 @@ namespace CustomStomachStorage
 			GrabSpecialTypes["OneHandGrabAll"] = config.Bind<bool>($"{"OneHandGrabAll"}_GrabSpecial_conf_{MOD_name}", false);
 			GrabSpecialTypes["DragGrabAll"] = config.Bind<bool>($"{"DragGrabAll"}_GrabSpecial_conf_{MOD_name}", false);
 
-			SelectedItemType = config.Bind<string>(
+			SelectedItemType_ = config.Bind<string>(
 				$"SelectedItemType_conf_{MOD_name}",
 				"Item"
 			);
-			SelectedCreatureType = config.Bind<string>(
+			SelectedCreatureType_ = config.Bind<string>(
 				$"SelectedCreatureType_conf_{MOD_name}",
 				"Creature"
 			);
@@ -628,7 +631,7 @@ namespace CustomStomachStorage
 		/// <summary>
 		/// 列宽度
 		/// </summary>
-		private const float COLUMN_WIDTH = 230f;
+		private const float COLUMN_WIDTH = 210f;
 		/// <summary>
 		/// 基础Y坐标
 		/// </summary>
@@ -651,48 +654,53 @@ namespace CustomStomachStorage
 		private readonly Color WARNING_COLOR = new(0.85f, 0.35f, 0.4f);
 		#endregion
 
-		/*public void HookAdd()
+		public void HookAdd()
 		{
-            SelectedItemType.OnChange += SelectedItemType_OnChange;
+			SelectedItemType_.OnChange += SelectedItemType_OnChange;
 		}
 		public void HookSubtract()
 		{
-            SelectedItemType.OnChange -= SelectedItemType_OnChange;
-        }
+			SelectedItemType_.OnChange -= SelectedItemType_OnChange;
+		}
 
-        private void SelectedItemType_OnChange()
-        {
-            foreach (var item in GrabItemComboBoxes)
-            {
-                if (SelectedItemType.Value == item.Key)
-                {
-                    item.Value.Show();
-                }
+		private void SelectedItemType_OnChange()
+		{
+			UDebug.Log($"SelectedItemType_ changed to {SelectedItemType_.Value}");
+			/*foreach (var item in GrabItemComboBoxes)
+			{
+				if (SelectedItemType_.Value == item.Key)
+				{
+					item.Value.Show();
+				}
 				else
 				{
 					item.Value.Hide();
 				}
-            }
-        }
+			}*/
+		}
 
-        public override void Update()
+		public override void Update()
 		{
 			base.Update();
 
-			*//*foreach (var item in GrabTypes)
+			foreach (var item in GrabTypes)
 			{
 				if (ItemTypeNames.Contains(item.Key))
 				{
 					if (GrabItemComboBoxes.TryGetValue(item.Key, out var grabItemComboBox))
 					{
-						if (SelectedItemType.OnChange)
+						if (SelectedItemType.value == item.Key)
 						{
-
+							grabItemComboBox.Show();
+						}
+						else
+						{
+							grabItemComboBox.Hide();
 						}
 					}
 				}
-			}*//*
-		}*/
+			}
+		}
 
 		#region Add
 		/// <summary>
@@ -1117,25 +1125,24 @@ namespace CustomStomachStorage
 
 			//物品分类 - 左列
 			#region Type
-			/*pos = new Vector2(TITLE_X, 10f + SPACING);
+			pos = new Vector2(TITLE_X, 10f + SPACING);
 
 			float TypeWidth = Mathf.Max(100f, CalculateMaxItemWidth(ItemTypeNames) + 20f);
-			var itemComboBox = new OpaqueComboBox(SelectedItemType, pos, TypeWidth, ItemTypeNames.ToArray())
+			SelectedItemType = new OpaqueComboBox(SelectedItemType_, pos, TypeWidth, ItemTypeNames.ToArray())
 			{
 				description = translator.Translate("Selected item type"),
 				colorFill = new Color(0f, 0f, 0f, 1f),
-				listHeight = 16,
+				listHeight = 18,
 			};
 			var itemLabel = new OpLabel(
 				pos.x + 5f,
-				pos.y + itemComboBox.size.y / 2f - 10f + SPACING,
+				pos.y + SelectedItemType.size.y / 2f - 10f - SPACING,
 				translator.Translate("Selected item type"), false)
 			{
 				description = translator.Translate("Selected item type")
 			};
 
-			// 添加到选项卡
-			grabTab.AddItems(new UIelement[] { itemComboBox, itemLabel });
+			grabTab.AddItems(new UIelement[] { SelectedItemType, itemLabel });
 			#endregion
 
 			pos.x += COLUMN_WIDTH;
@@ -1143,7 +1150,7 @@ namespace CustomStomachStorage
 			#region grabMode
 			float grabModeWidth = Mathf.Max(100f, CalculateMaxItemWidth(grabModeNames) + 20f);
 
-			*//*foreach (var item in GrabTypes)
+			foreach (var item in GrabTypes)
 			{
 				if (ItemTypeNames.Contains(item.Key))
 				{
@@ -1160,19 +1167,19 @@ namespace CustomStomachStorage
 					// 添加到选项卡
 					grabTab.AddItems(new UIelement[] { grabItemComboBox });
 				}
-			}*//*
+			}
 
 			// 创建标签
 			var grabItemLabel = new OpLabel(
 				pos.x + 5f,
-				pos.y + itemComboBox.size.y / 2f - 10f + SPACING,
+				pos.y + SelectedItemType.size.y / 2f - 10f - SPACING,
 				translator.Translate("Selected item grab mode"), false)
 			{
 				description = translator.Translate("Selected item grab mode")
 			};
 
 			// 添加到选项卡
-			grabTab.AddItems(new UIelement[] { grabItemLabel });*/
+			grabTab.AddItems(new UIelement[] { grabItemLabel });
 			#endregion
 
 
