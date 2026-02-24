@@ -1162,7 +1162,14 @@ namespace CustomStomachStorage
 					};
 					grabItemComboBox.Hide();
 
-					GrabItemComboBoxes.Add(item.Key, grabItemComboBox);
+					if (GrabItemComboBoxes.ContainsKey(item.Key))
+					{
+						GrabItemComboBoxes[item.Key] = grabItemComboBox;
+					}
+					else
+					{
+						GrabItemComboBoxes.Add(item.Key, grabItemComboBox);
+					}
 
 					// 添加到选项卡
 					grabTab.AddItems(new UIelement[] { grabItemComboBox });
