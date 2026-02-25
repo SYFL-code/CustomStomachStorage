@@ -3,6 +3,8 @@ Custom Stomach Storage|自定义胃部储存
 CustomStomachStorage.Redlyn-name|自定义胃部储存
 CustomStomachStorage.Redlyn-description|自定义蛞蝓猫的胃部储存物品的类型和数量。<LINE>与自定义蛞蝓猫的抓取方式。<LINE><LINE>源代码：https://github.com/SYFL-code/CustomStomachStorage
 
+
+
 Options|选项
 HUD|HUD
 Swallowing|吞咽
@@ -47,32 +49,35 @@ Right|右
 Side line opacity|侧边线不透明度
 Icon size|图标大小
 
-
-Types of swallowing|吞咽类型
-Types of graspable|抓取类型
-
 Swallowing Settings|吞咽设置
+Types of swallowing|吞咽类型
+
 Swallow All|全部吞咽
-Allow swallowing all objects and creatures|允许吞咽所有物体和生物
+Allow swallowing all objects and creatures (overrides other settings)|吞咽所有物体和生物（覆盖其他设置）
+Only swallow dead creatures|只吞咽死去的生物
+If enabled, only dead creatures can be swallowed (overrides other creature settings)|如果启用，只有死亡的生物可以被吞咽（覆盖其他生物设置）
 ITEMS|物品
 CREATURES|生物
+
+Default|默认
+Can swallow|可吞咽
+Cannot swallow|不可吞咽
 
 Selected item type|选定物品的类型
 Selected item swallow mode|选定物品的吞咽模式
 Selected creature type|选定生物的类型
 Selected creature swallow mode|选定生物的吞咽模式
 
-Default|默认
-Can swallow|可吞咽
-Cannot swallow|不可吞咽
 
 Grasping Settings|抓取设置
+Types of graspable|抓取类型
+
 One hand can grab all|单手抓取所有
 Allows grabbing any object with one hand|允许用一只手抓取任何物体
 At least able to drag all|至少能够拖动所有
 Objects that cannot be grabbed can at least be dragged|无法抓取的物体至少可以被拖动
-ITEMS|物品
-CREATURES|生物
+Only grab dead creatures|只抓取死去的生物
+If enabled, only dead creatures can be grabed (overrides other creature settings)|如果启用，只有死去的生物可以抓取（覆盖其他生物设置）
 
 All|全部
 

@@ -105,12 +105,13 @@ namespace CustomStomachStorage
 			return Find(list, obj, obj.pos);
 		}
 
-		public static string ToTranslate(this string originalNames)
+
+		public static string Translate(this string originalNames)
 		{
 			InGameTranslator translator = Custom.rainWorld.inGameTranslator;
 			return translator.Translate(originalNames);
 		}
-		public static string[] ToTranslate(this IEnumerable<string> originalNames)
+		public static string[] Translate(this IEnumerable<string> originalNames)
 		{
 			InGameTranslator translator = Custom.rainWorld.inGameTranslator;
 

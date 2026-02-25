@@ -27,11 +27,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Watcher;
+using static CustomStomachStorage.Extended;
 using static CustomStomachStorage.MyOptions;
 using static CustomStomachStorage.Plugin;
-using static CustomStomachStorage.Extended;
 using static Player.ObjectGrabability;
 using static SlugBase.Features.FeatureTypes;
+using static UnityEngine.UI.Image;
 //using UDebug =  UnityEngine.Debug;
 
 
@@ -436,10 +437,23 @@ namespace CustomStomachStorage
 		#region MyOptions
 		private static Player.ObjectGrabability Player_Grabability(On.Player.orig_Grabability orig, Player player, PhysicalObject testObj)
 		{
-			var opt = MyOptions.Instance;
 			Player.ObjectGrabability original = orig(player, testObj);
 
 			if (testObj == player) return original;
+
+
+            var opt = MyOptions.Instance;
+
+            if (testObj is Creature creature)
+			{
+                if (opt.GetGrabSpecial("OnlyDeadCreatures"))
+                {
+                    if (!creature.dead)
+                    {
+                        return original;
+                    }
+                }
+            }
 
 			// 全局抓取设置
 			if (opt.GetGrabSpecial("OneHandGrabAll"))
@@ -449,7 +463,27 @@ namespace CustomStomachStorage
 				return Player.ObjectGrabability.Drag;
 
 
-			bool isCreature = testObj is Creature;
+            HashSet<string> chain = GetInheritanceChain(testObj);
+            foreach (string type in chain)
+            {
+                string mode = opt.GetGrabMode(type);
+                if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
+                {
+                    return opt.GetPlayerGrab(mode);
+                }
+            }
+
+            if (testObj is Player)
+            {
+                string mode = opt.GetGrabMode("Slugcat");
+                if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
+                {
+                    return opt.GetPlayerGrab(mode);
+                }
+            }
+
+
+            bool isCreature = testObj is Creature;
 			
 			if (isCreature)
 			{
@@ -468,27 +502,6 @@ namespace CustomStomachStorage
 				}
 			}
 
-			if (testObj is Player)
-			{
-				string mode = opt.GetGrabMode("Slugcat");
-				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
-				{
-					return opt.GetPlayerGrab(mode);
-				}
-			}
-
-			
-			HashSet<string> chain = GetInheritanceChain(testObj);
-
-			foreach (string type in chain)
-			{
-				string mode = opt.GetGrabMode(type);
-				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
-				{
-					return opt.GetPlayerGrab(mode);
-				}
-			}
-
 			return original;
 		}
 
@@ -496,16 +509,49 @@ namespace CustomStomachStorage
 		{
 			var opt = MyOptions.Instance;
 
-			// 矛大师特殊处理
-			if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear && !(opt.SpearmasterStoreItems?.Value == true))
-				return false;
+            // 矛大师特殊处理
+            if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear && !(opt.SpearmasterStoreItems?.Value == true))
+                return false;
+
+            if (testObj is Creature creature)
+            {
+                if (opt.GetGrabSpecial("OnlyDeadCreatures"))
+                {
+                    if (!creature.dead)
+                    {
+                        return orig(player, testObj);
+                    }
+                }
+            }
 
 			// 全局吞咽
-			if (opt.GetSwallowSpecial("All"))
+			if (opt.GetSwallowSpecial("SwallowAll"))
 				return true;
 
 
-			bool isCreature = testObj is Creature;
+            // 获取继承链
+            HashSet<string> chain = GetInheritanceChain(testObj);
+            // 遍历所有启用的吞咽类型
+            foreach (string type in chain)
+            {
+                string mode = opt.GetSwallowMode(type);
+                if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
+                {
+                    return opt.GetCanSwallow(mode);
+                }
+            }
+
+            if (testObj is Player)
+            {
+                string mode = opt.GetSwallowMode("Slugcat");
+                if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
+                {
+                    return opt.GetCanSwallow(mode);
+                }
+            }
+
+
+            bool isCreature = testObj is Creature;
 
 			if (isCreature)
 			{
@@ -518,27 +564,6 @@ namespace CustomStomachStorage
 			else
 			{
 				string mode = opt.GetSwallowMode("Item");
-				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
-				{
-					return opt.GetCanSwallow(mode);
-				}
-			}
-
-			if (testObj is Player)
-			{
-				string mode = opt.GetSwallowMode("Slugcat");
-				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
-				{
-					return opt.GetCanSwallow(mode);
-				}
-			}
-
-			// 获取继承链
-			HashSet<string> chain = GetInheritanceChain(testObj);
-            // 遍历所有启用的吞咽类型
-            foreach (string type in chain)
-            {
-				string mode = opt.GetSwallowMode(type);
 				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
 				{
 					return opt.GetCanSwallow(mode);
