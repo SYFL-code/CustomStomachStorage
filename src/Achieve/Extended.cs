@@ -139,21 +139,21 @@ namespace CustomStomachStorage
 		}
 
 		#region Type
-		private static readonly ConcurrentDictionary<Type, HashSet<string>> _typeCache = new();
-		public static HashSet<string> GetInheritanceChain(object obj)
+		private static readonly ConcurrentDictionary<Type, List<string>> _typeCache = new();
+		public static List<string> GetInheritanceChain(object obj)
 		{
-			if (obj == null) return new HashSet<string>();
+			if (obj == null) return new List<string>();
 
 			var type = obj.GetType();
 			return GetInheritanceChain(type);
 		}
-		public static HashSet<string> GetInheritanceChain(Type type)
+		public static List<string> GetInheritanceChain(Type type)
 		{
-			if (type == null) return new HashSet<string>();
+			if (type == null) return new List<string>();
 
 			return _typeCache.GetOrAdd(type, t =>
 			{
-				var names = new HashSet<string>();
+				var names = new List<string>();
 				var current = t;
 				while (current != null)
 				{

@@ -96,17 +96,30 @@ Drag|拖拽
 Cannot grab|无法抓取
 
 Item|物品
+Weapon|武器
 Rock|石头
 Spear|矛
-VultureMask|秃鹫面具
-NeedleEgg|面条蝇卵
-OracleSwarmer|神经元
-SeedCob|爆米花
+ExplosiveSpear|炸矛
+ScavengerBomb|炸弹
 SporePlant|蜂巢
 FlareBomb|闪光果
 PuffBall|烟雾果
 FirecrackerPlant|鞭炮草
+Mushroom|迷幻菇
+WaterNut|泡水果
+EggBugEgg|蛋虫卵
+DangleFruit|蓝果
+SeedCob|爆米花
+SlimeMold|黏菌
 KarmaFlower|业力花
+DataPearl|珍珠
+NeedleEgg|面条蝇卵
+Lantern|灯笼
+VultureMask|秃鹫面具
+FlyLure|蝠蝇草
+BubbleGrass|气泡草
+OverseerCarcass|监视者眼球
+OracleSwarmer|神经元
 
 LillyPuck|百合花灯
 FireEgg|火虫卵
@@ -121,20 +134,33 @@ Creature|生物
 Slugcat|蛞蝓猫
 Lizard|蜥蜴
 Vulture|秃鹫
+PoleMimic|拟态草
+TentaclePlant|红树
+Leech|水蛭​
 Centipede|蜈蚣
 Spider|蜘蛛
 DropBug|落网虫
 BigEel|利维坦
 MirosBird|钢鸟
 DaddyLongLegs|腐化物
+WormGrass|舌草
+Overseer|监视者
 Cicada|蝉乌贼
+BigNeedleWorm|成年面条蝇
+GarbageWorm|垃圾虫
 Snail|波动龟
 Scavenger|拾荒者
-EggBug|蛋虫
-LanternMouse|光鼠
+LanternMouse|灯笼鼠
 JetFish|蛙鱼
 TubeWorm|管虫
 Deer|雨鹿
+Fly|蝠蝇
+EggBug|蛋虫
+SmallNeedleWorm|幼年面条蝇
+VultureGrub|射线虫
+Hazer|墨鱼
+JellyFish|水母
+VoidSpawn|虚空游魂
 TempleGuard|守卫
 
 Yeek|跃客
@@ -142,10 +168,15 @@ Inspector|监察者
 StowawayBug|偷渡者
 
 Loach|泥鳅
+Angler|琵琶鱼
 BigMoth|大蛾
+MothGrub|蛾幼虫
 SkyWhale|天空鲸
 BoxWorm|箱虫
 DrillCrab|钻蟹
 Tardigrade|水熊虫
 Barnacle|藤壶
 Frog|青蛙
+Rat|老鼠
+SandGrub|沙螬
+Rattler|震骨者

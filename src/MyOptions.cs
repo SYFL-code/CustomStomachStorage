@@ -49,10 +49,10 @@ namespace CustomStomachStorage
 
 		private bool _initialize = false;
 
-        /// <summary>
-        /// 可配置的胃容量
-        /// </summary>
-        public readonly Configurable<int> StomachCapacity;
+		/// <summary>
+		/// 可配置的胃容量
+		/// </summary>
+		public readonly Configurable<int> StomachCapacity;
 		/// <summary>
 		/// 可配置的调试模式
 		/// </summary>
@@ -158,15 +158,27 @@ namespace CustomStomachStorage
 			typeof(Weapon),
 			typeof(Rock),
 			typeof(Spear),
-			typeof(VultureMask),
-			typeof(NeedleEgg),
-			typeof(OracleSwarmer),
-			typeof(SeedCob),
+			typeof(ExplosiveSpear),
+			typeof(ScavengerBomb),
 			typeof(SporePlant),
 			typeof(FlareBomb),
 			typeof(PuffBall),
 			typeof(FirecrackerPlant),
+			typeof(Mushroom),
+			typeof(WaterNut),
+			typeof(EggBugEgg),
+			typeof(DangleFruit),
+			typeof(SeedCob),
+			typeof(SlimeMold),
 			typeof(KarmaFlower),
+			typeof(DataPearl),
+			typeof(NeedleEgg),
+			typeof(Lantern),
+			typeof(VultureMask),
+			typeof(FlyLure),
+			typeof(BubbleGrass),
+			typeof(OverseerCarcass),
+			typeof(OracleSwarmer),
 		};
 
 		Type[] _mscItemTypes = {
@@ -192,37 +204,55 @@ namespace CustomStomachStorage
 				typeof(Player),//Slugcat
 				typeof(Lizard),
 				typeof(Vulture),
+				typeof(PoleMimic),
+				typeof(TentaclePlant),
+				typeof(Leech),
 				typeof(Centipede),
 				typeof(Spider),
 				typeof(DropBug),
 				typeof(BigEel),
 				typeof(MirosBird),
 				typeof(DaddyLongLegs),
+				typeof(WormGrass),
+				typeof(Overseer),
 				typeof(Cicada),
+				typeof(BigNeedleWorm),
+				typeof(GarbageWorm),
 				typeof(Snail),
 				typeof(Scavenger),
-				typeof(EggBug),
 				typeof(LanternMouse),
 				typeof(JetFish),
 				typeof(TubeWorm),
 				typeof(Deer),
-				typeof(TempleGuard),
+                typeof(Fly),
+                typeof(EggBug),
+                typeof(SmallNeedleWorm),
+                typeof(VultureGrub),
+                typeof(Hazer),
+                typeof(JellyFish),
+                typeof(VoidSpawn),
+                typeof(TempleGuard),
 			};
 		Type[] _mscCreatureTypes = {
-				typeof(Yeek),
+                typeof(Yeek),
 				typeof(Inspector),
 				typeof(StowawayBug),
 			};
 		Type[] _watcherCreatureTypes = {
-			typeof(Loach),
+            typeof(Angler),
+            typeof(Loach),
 			typeof(BigMoth),
-			typeof(SkyWhale),
-			typeof(BoxWorm),
+            typeof(MothGrub),
+            typeof(SkyWhale),
+            typeof(BoxWorm),
 			typeof(DrillCrab),
 			typeof(Tardigrade),
 			typeof(Barnacle),
-			typeof(Frog)
-		};
+			typeof(Frog),
+            typeof(Rat),
+            typeof(SandGrub),
+            typeof(Rattler),
+        };
 		#endregion
 
 		public const string NotSelected = "Not selected";
@@ -958,8 +988,8 @@ namespace CustomStomachStorage
 
 		public override void Initialize()
 		{
-            #region _initialize
-            if (!_initialize)
+			#region _initialize
+			if (!_initialize)
 			{
 				_initialize = true;
 
@@ -999,11 +1029,11 @@ namespace CustomStomachStorage
 					CreatureTypeNames.UnionWith(watcherCreatureTypes);
 				}
 			}
-            #endregion
+			#endregion
 
 
-            // 创建选项卡
-            var optionsTab = new OpTab(this, "Options".Translate());
+			// 创建选项卡
+			var optionsTab = new OpTab(this, "Options".Translate());
 			var hudTab = new OpTab(this, "HUD".Translate());
 			var swallowTab = new OpTab(this, "Swallowing".Translate());
 			var grabTab = new OpTab(this, "Grasping".Translate());
@@ -1572,10 +1602,8 @@ namespace CustomStomachStorage
 				if (this.pos.y < 501f)
 				{
 					// 强制向上展开
-					var downwardField = typeof(OpComboBox).GetField("_downward",
-						BindingFlags.NonPublic | BindingFlags.Instance);
-					downwardField?.SetValue(this, false);
-				}
+					_downward = false;
+                }
 
 				// 设置不透明背景和位置
 				if (this._rectList != null)

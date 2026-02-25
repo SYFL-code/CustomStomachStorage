@@ -442,18 +442,18 @@ namespace CustomStomachStorage
 			if (testObj == player) return original;
 
 
-            var opt = MyOptions.Instance;
+			var opt = MyOptions.Instance;
 
-            if (testObj is Creature creature)
+			if (testObj is Creature creature)
 			{
-                if (opt.GetGrabSpecial("OnlyDeadCreatures"))
-                {
-                    if (!creature.dead)
-                    {
-                        return original;
-                    }
-                }
-            }
+				if (opt.GetGrabSpecial("OnlyDeadCreatures"))
+				{
+					if (!creature.dead)
+					{
+						return original;
+					}
+				}
+			}
 
 			// 全局抓取设置
 			if (opt.GetGrabSpecial("OneHandGrabAll"))
@@ -463,27 +463,27 @@ namespace CustomStomachStorage
 				return Player.ObjectGrabability.Drag;
 
 
-            HashSet<string> chain = GetInheritanceChain(testObj);
-            foreach (string type in chain)
-            {
-                string mode = opt.GetGrabMode(type);
-                if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
-                {
-                    return opt.GetPlayerGrab(mode);
-                }
-            }
+			List<string> chain = GetInheritanceChain(testObj);
+			foreach (string type in chain)
+			{
+				string mode = opt.GetGrabMode(type);
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
+				{
+					return opt.GetPlayerGrab(mode);
+				}
+			}
 
             if (testObj is Player)
-            {
-                string mode = opt.GetGrabMode("Slugcat");
-                if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
-                {
-                    return opt.GetPlayerGrab(mode);
-                }
-            }
+			{
+				string mode = opt.GetGrabMode("Slugcat");
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
+				{
+					return opt.GetPlayerGrab(mode);
+				}
+			}
 
 
-            bool isCreature = testObj is Creature;
+			bool isCreature = testObj is Creature;
 			
 			if (isCreature)
 			{
@@ -509,49 +509,49 @@ namespace CustomStomachStorage
 		{
 			var opt = MyOptions.Instance;
 
-            // 矛大师特殊处理
-            if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear && !(opt.SpearmasterStoreItems?.Value == true))
-                return false;
+			// 矛大师特殊处理
+			if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Spear && !(opt.SpearmasterStoreItems?.Value == true))
+				return false;
 
-            if (testObj is Creature creature)
-            {
-                if (opt.GetGrabSpecial("OnlyDeadCreatures"))
-                {
-                    if (!creature.dead)
-                    {
-                        return orig(player, testObj);
-                    }
-                }
-            }
+			if (testObj is Creature creature)
+			{
+				if (opt.GetSwallowSpecial("OnlyDeadCreatures"))
+				{
+					if (!creature.dead)
+					{
+						return orig(player, testObj);
+					}
+				}
+			}
 
 			// 全局吞咽
 			if (opt.GetSwallowSpecial("SwallowAll"))
 				return true;
 
 
-            // 获取继承链
-            HashSet<string> chain = GetInheritanceChain(testObj);
-            // 遍历所有启用的吞咽类型
-            foreach (string type in chain)
-            {
-                string mode = opt.GetSwallowMode(type);
-                if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
-                {
-                    return opt.GetCanSwallow(mode);
-                }
-            }
+			// 获取继承链
+			List<string> chain = GetInheritanceChain(testObj);
+			// 遍历所有启用的吞咽类型
+			foreach (string type in chain)
+			{
+				string mode = opt.GetSwallowMode(type);
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
+				{
+					return opt.GetCanSwallow(mode);
+				}
+			}
 
-            if (testObj is Player)
-            {
-                string mode = opt.GetSwallowMode("Slugcat");
-                if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
-                {
-                    return opt.GetCanSwallow(mode);
-                }
-            }
+			if (testObj is Player)
+			{
+				string mode = opt.GetSwallowMode("Slugcat");
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
+				{
+					return opt.GetCanSwallow(mode);
+				}
+			}
 
 
-            bool isCreature = testObj is Creature;
+			bool isCreature = testObj is Creature;
 
 			if (isCreature)
 			{

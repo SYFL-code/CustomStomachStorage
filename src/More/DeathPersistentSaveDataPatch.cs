@@ -102,7 +102,7 @@ namespace CustomStomachStorage
 	{
 		public SlugcatStats.Name slugName;//The slugcat name this unit belongs to  这个单元所属的slugcat名字
 
-		public string origSaveData;//The original save data loaded from the save file, used for reference when saving as if player died or quit  从存档文件加载的原始存档数据，在以玩家死亡或退出的方式保存时用作参考
+		public string origSaveData = "";//The original save data loaded from the save file, used for reference when saving as if player died or quit  从存档文件加载的原始存档数据，在以玩家死亡或退出的方式保存时用作参考
 		public virtual string header => "";
   
 		public DeathPersistentSaveDataUnit(SlugcatStats.Name name)

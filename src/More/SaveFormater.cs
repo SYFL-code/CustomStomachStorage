@@ -101,7 +101,7 @@ public class SaveFormater
     /// </summary>
     /// <param name="data"></param>
     /// <returns>返回值可能为null</returns>
-    public DataChannel GetChannelOfData(string data)
+    public DataChannel? GetChannelOfData(string data)
     {
         foreach (var channel in channels)
         {
@@ -140,7 +140,7 @@ public class SaveFormater
     public class DataChannel
     {
         internal SaveFormater formatBuilder;
-        internal DataChannel parentChannel;
+        internal DataChannel? parentChannel;
 
         public string data = "";
         public List<DataChannel> subChannels = new List<DataChannel>();
@@ -154,7 +154,7 @@ public class SaveFormater
         /// </summary>
         /// <param name="formatBuilder"></param>
         /// <param name="parent"></param>
-        public DataChannel(SaveFormater formatBuilder, DataChannel parent, int insertAt = -1)
+        public DataChannel(SaveFormater formatBuilder, DataChannel? parent, int insertAt = -1)
         {
             this.formatBuilder = formatBuilder;
             this.parentChannel = parent;
@@ -171,7 +171,7 @@ public class SaveFormater
         /// <param name="formatBuilder"></param>
         /// <param name="parentChannel"></param>
         /// <param name="dataString"></param>
-        public DataChannel(SaveFormater formatBuilder, DataChannel parentChannel, string dataString) : this(formatBuilder, parentChannel)
+        public DataChannel(SaveFormater formatBuilder, DataChannel? parentChannel, string dataString) : this(formatBuilder, parentChannel)
         {
             var nextChannelDatas = Regex.Split(dataString, $"<{formatBuilder.key}{NextDepthChar}>");
             if (nextChannelDatas.Length > 0 && !string.IsNullOrEmpty(nextChannelDatas[0]))
@@ -234,7 +234,7 @@ public class SaveFormater
         /// </summary>
         /// <param name="data"></param>
         /// <returns>返回值可能为null</returns>
-        public DataChannel GetSubChannelOfData(string data)
+        public DataChannel? GetSubChannelOfData(string data)
         {
             foreach (var channel in subChannels)
             {
