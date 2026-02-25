@@ -57,6 +57,15 @@ Allow swallowing all objects and creatures|允许吞咽所有物体和生物
 ITEMS|物品
 CREATURES|生物
 
+Selected item type|选定物品的类型
+Selected item swallow mode|选定物品的吞咽模式
+Selected creature type|选定生物的类型
+Selected creature swallow mode|选定生物的吞咽模式
+
+Default|默认
+Can swallow|可吞咽
+Cannot swallow|不可吞咽
+
 Grasping Settings|抓取设置
 One hand can grab all|单手抓取所有
 Allows grabbing any object with one hand|允许用一只手抓取任何物体
@@ -67,7 +76,13 @@ CREATURES|生物
 
 All|全部
 
+Selected item type|选定物品的类型
+Selected item grab mode|选定物品的抓取模式
+Selected creature type|选定生物的类型
+Selected creature grab mode|选定生物的抓取模式
+
 GrabMode|抓取模式
+Default|默认
 Not selected|未选择
 One hand|单手
 Big one hand|大单手

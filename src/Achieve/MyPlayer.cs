@@ -454,7 +454,7 @@ namespace CustomStomachStorage
 			if (isCreature)
 			{
 				string mode = opt.GetGrabMode("Creature");
-				if (mode != MyOptions.NotSelected)
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
 				{
 					return opt.GetPlayerGrab(mode);
 				}
@@ -462,7 +462,7 @@ namespace CustomStomachStorage
 			else
 			{
 				string mode = opt.GetGrabMode("Item");
-				if (mode != MyOptions.NotSelected)
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
 				{
 					return opt.GetPlayerGrab(mode);
 				}
@@ -471,7 +471,7 @@ namespace CustomStomachStorage
 			if (testObj is Player)
 			{
 				string mode = opt.GetGrabMode("Slugcat");
-				if (mode != MyOptions.NotSelected)
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
 				{
 					return opt.GetPlayerGrab(mode);
 				}
@@ -483,7 +483,7 @@ namespace CustomStomachStorage
 			foreach (string type in chain)
 			{
 				string mode = opt.GetGrabMode(type);
-				if (mode != MyOptions.NotSelected)
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
 				{
 					return opt.GetPlayerGrab(mode);
 				}
@@ -510,7 +510,7 @@ namespace CustomStomachStorage
 			if (isCreature)
 			{
 				string mode = opt.GetSwallowMode("Creature");
-				if (mode != MyOptions.NotSelected)
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
 				{
 					return opt.GetCanSwallow(mode);
 				}
@@ -518,7 +518,7 @@ namespace CustomStomachStorage
 			else
 			{
 				string mode = opt.GetSwallowMode("Item");
-				if (mode != MyOptions.NotSelected)
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
 				{
 					return opt.GetCanSwallow(mode);
 				}
@@ -527,7 +527,7 @@ namespace CustomStomachStorage
 			if (testObj is Player)
 			{
 				string mode = opt.GetSwallowMode("Slugcat");
-				if (mode != MyOptions.NotSelected)
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
 				{
 					return opt.GetCanSwallow(mode);
 				}
@@ -539,7 +539,7 @@ namespace CustomStomachStorage
             foreach (string type in chain)
             {
 				string mode = opt.GetSwallowMode(type);
-				if (mode != MyOptions.NotSelected)
+				if (mode != MyOptions.NotSelected && mode != MyOptions.Default)
 				{
 					return opt.GetCanSwallow(mode);
 				}
