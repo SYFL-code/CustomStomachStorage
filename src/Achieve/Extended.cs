@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿#region using
+using BepInEx;
 using CoralBrain;
 using Expedition;
 using HUD;
@@ -33,6 +34,15 @@ using static CustomStomachStorage.Plugin;
 using static CustomStomachStorage.Extended;
 using static Player.ObjectGrabability;
 using static SlugBase.Features.FeatureTypes;
+using Menu;
+using Menu.Remix.MixedUI;
+using MonoMod.RuntimeDetour;
+using System.Drawing.Drawing2D;
+using System.Drawing.Printing;
+using System.Threading.Tasks;
+using static CustomStomachStorage.ObjectIcon;
+using System.Security.Policy;
+#endregion
 
 namespace CustomStomachStorage
 {
@@ -93,6 +103,38 @@ namespace CustomStomachStorage
 		public static bool Find(List<AbstractPhysicalObject> list, AbstractPhysicalObject obj)
 		{
 			return Find(list, obj, obj.pos);
+		}
+
+		public static string ToTranslate(this string originalNames)
+		{
+			InGameTranslator translator = Custom.rainWorld.inGameTranslator;
+			return translator.Translate(originalNames);
+		}
+		public static string[] ToTranslate(this IEnumerable<string> originalNames)
+		{
+			InGameTranslator translator = Custom.rainWorld.inGameTranslator;
+
+			List<string> items = new();
+			foreach (string name in originalNames)
+			{
+				items.Add(translator.Translate(name));
+			}
+			return items.ToArray();
+		}
+		public static ListItem[] ToListItem(this IEnumerable<string> originalNames)
+		{
+			InGameTranslator translator = Custom.rainWorld.inGameTranslator;
+
+			List<ListItem> items = new();
+
+			int i = 0;
+			foreach (string name in originalNames)
+			{
+				// name 作为实际值，displayName 使用翻译后的文本
+				items.Add(new ListItem(name, translator.Translate(name), i));
+				i += 1;
+			}
+			return items.ToArray();
 		}
 
 		#region Type
@@ -179,12 +221,12 @@ namespace CustomStomachStorage
 		{
 			float maxWidth = 0f;
 
-            foreach (var item in items)
-            {
-                string translated = translator != null ? translator.Translate(item) : item;
-                float width = GetTextWidth(translated);
-                maxWidth = Mathf.Max(maxWidth, width);
-            }
+			foreach (var item in items)
+			{
+				string translated = translator != null ? translator.Translate(item) : item;
+				float width = GetTextWidth(translated);
+				maxWidth = Mathf.Max(maxWidth, width);
+			}
 
 			return maxWidth;
 		}

@@ -58,8 +58,8 @@ namespace CustomStomachStorage
 		/// </summary>
 		public readonly Configurable<bool> SpearmasterStoreItems;
 
-		public OpaqueComboBox SelectedItemType;
-		public OpaqueComboBox SelectedCreatureType;
+		public CustomComboBox? SelectedItemType;
+		public CustomComboBox? SelectedCreatureType;
 
 		public readonly Configurable<string> SelectedItemType_;
 		public readonly Configurable<string> SelectedCreatureType_;
@@ -76,7 +76,8 @@ namespace CustomStomachStorage
 		/// </summary>
 		public readonly Dictionary<string, Configurable<bool>> GrabSpecialTypes = new();
 
-		public Dictionary<string, OpaqueComboBox> GrabItemComboBoxes = new();
+		public Dictionary<string, CustomComboBox> GrabItemComboBoxes = new();
+		public Dictionary<string, CustomComboBox> GrabCreatureComboBoxes = new();
 
 		/// <summary>
 		/// 可配置的全局可见性模式
@@ -129,71 +130,6 @@ namespace CustomStomachStorage
 				"DragGrabAll",
 			};
 		#endregion
-		/*#region Items
-		string[] baseItemTypes = {
-				"Item",
-				"Rock",
-				"Spear",
-				"VultureMask",
-				"NeedleEgg",
-				"OracleSwarmer",
-				"SeedCob",
-				"SporePlant",
-				"FlareBomb",
-				"PuffBall",
-				"FirecrackerPlant",
-				"KarmaFlower",
-			};
-		string[] mscItemTypes = {
-				"LillyPuck",
-				"FireEgg",
-				"JokeRifle",
-				"EnergyCell",
-				"MoonCloak",
-			};
-		string[] watcherItemTypes = {
-				"Boomerang",
-				"GraffitiBomb",
-			};
-		#endregion
-		#region Creatures
-		string[] baseCreatureTypes = {
-				"Creature",
-				"Slugcat",
-				"Lizard",
-				"Vulture",
-				"Centipede",
-				"Spider",
-				"DropBug",
-				"BigEel",
-				"MirosBird",
-				"DaddyLongLegs",
-				"Cicada",
-				"Snail",
-				"Scavenger",
-				"EggBug",
-				"LanternMouse",
-				"JetFish",
-				"TubeWorm",
-				"Deer",
-				"TempleGuard"
-			};
-		string[] mscCreatureTypes = {
-				"Yeek",
-				"Inspector",
-				"StowawayBug"
-			};
-		string[] watcherCreatureTypes = {
-				"Loach",
-				"BigMoth",
-				"SkyWhale",
-				"BoxWorm",
-				"DrillCrab",
-				"Tardigrade",
-				"Barnacle",
-				"Frog"
-			};
-		#endregion*/
 		#region Items
 		//List<string> baseItemTypes = GetTypeNames(_baseItemTypes);
 		//List<string> mscItemTypes = GetTypeNames(_mscItemTypes);
@@ -631,7 +567,7 @@ namespace CustomStomachStorage
 		/// <summary>
 		/// 列宽度
 		/// </summary>
-		private const float COLUMN_WIDTH = 210f;
+		private const float COLUMN_WIDTH = 150f;
 		/// <summary>
 		/// 基础Y坐标
 		/// </summary>
@@ -654,13 +590,18 @@ namespace CustomStomachStorage
 		private readonly Color WARNING_COLOR = new(0.85f, 0.35f, 0.4f);
 		#endregion
 
+		#region Hook
 		public void HookAdd()
 		{
 			SelectedItemType_.OnChange += SelectedItemType_OnChange;
+
+			//On.Menu.Remix.MixedUI.OpComboBox.ctor_Configurable1_Vector2_float_List1 += OpComboBox_ctor;
 		}
 		public void HookSubtract()
 		{
 			SelectedItemType_.OnChange -= SelectedItemType_OnChange;
+
+			//On.Menu.Remix.MixedUI.OpComboBox.ctor_Configurable1_Vector2_float_List1 -= OpComboBox_ctor;
 		}
 
 		private void SelectedItemType_OnChange()
@@ -678,24 +619,39 @@ namespace CustomStomachStorage
 				}
 			}*/
 		}
+		#endregion
 
 		public override void Update()
 		{
 			base.Update();
 
-			foreach (var item in GrabTypes)
+			foreach (var type in GrabTypes)
 			{
-				if (ItemTypeNames.Contains(item.Key))
+				if (ItemTypeNames.Contains(type.Key))
 				{
-					if (GrabItemComboBoxes.TryGetValue(item.Key, out var grabItemComboBox))
+					if (GrabItemComboBoxes.TryGetValue(type.Key, out var grabItemComboBox))
 					{
-						if (SelectedItemType.value == item.Key)
+						if (SelectedItemType?.value == type.Key)
 						{
 							grabItemComboBox.Show();
 						}
 						else
 						{
 							grabItemComboBox.Hide();
+						}
+					}
+				}
+				if (CreatureTypeNames.Contains(type.Key))
+				{
+					if (GrabCreatureComboBoxes.TryGetValue(type.Key, out var grabCreatureComboBox))
+					{
+						if (SelectedItemType?.value == type.Key)
+						{
+							grabCreatureComboBox.Show();
+						}
+						else
+						{
+							grabCreatureComboBox.Hide();
 						}
 					}
 				}
@@ -752,7 +708,7 @@ namespace CustomStomachStorage
 			}*/
 
 			// 创建下拉框
-			var comboBox = new OpaqueComboBox(config, pos, comboBoxWidth, items)
+			var comboBox = new CustomComboBox(config, pos, comboBoxWidth, items)
 			{
 				description = translator.Translate(description),
 				colorFill = new Color(0f, 0f, 0f, 1f),
@@ -1118,21 +1074,25 @@ namespace CustomStomachStorage
 			yPos -= SPACING * 2;
 
 
-			string[] grabModeNames = Enum.GetValues(typeof(GrabMode))
+			string[] grabModes = Enum.GetValues(typeof(GrabMode))
 				.Cast<GrabMode>()
 				.Select(m => GrabModeToString(m))
 				.ToArray();
 
+			string[] traGrabModeNames = grabModes
+				.Select(t => translator.Translate(t))
+				.ToArray();
+
 			//物品分类 - 左列
-			#region Type
+			// Type
 			pos = new Vector2(TITLE_X, 10f + SPACING);
 
-			float TypeWidth = Mathf.Max(100f, CalculateMaxItemWidth(ItemTypeNames) + 20f);
-			SelectedItemType = new OpaqueComboBox(SelectedItemType_, pos, TypeWidth, ItemTypeNames.ToArray())
+			float itemTypeWidth = Mathf.Max(100f, CalculateMaxItemWidth(ItemTypeNames.ToTranslate()) + 20f);
+			SelectedItemType = new CustomComboBox(SelectedItemType_, pos, itemTypeWidth, ItemTypeNames.ToListItem())
 			{
 				description = translator.Translate("Selected item type"),
 				colorFill = new Color(0f, 0f, 0f, 1f),
-				listHeight = 18,
+				listHeight = 17,
 			};
 			var itemLabel = new OpLabel(
 				pos.x + 5f,
@@ -1143,36 +1103,58 @@ namespace CustomStomachStorage
 			};
 
 			grabTab.AddItems(new UIelement[] { SelectedItemType, itemLabel });
-			#endregion
 
 			pos.x += COLUMN_WIDTH;
 
-			#region grabMode
-			float grabModeWidth = Mathf.Max(100f, CalculateMaxItemWidth(grabModeNames) + 20f);
+			// grabMode
+			float grabModeWidth = Mathf.Max(100f, CalculateMaxItemWidth(traGrabModeNames) + 20f);
 
-			foreach (var item in GrabTypes)
+			foreach (var type in GrabTypes)
 			{
-				if (ItemTypeNames.Contains(item.Key))
+				//物品的抓取模式下拉框
+				if (ItemTypeNames.Contains(type.Key))
 				{
-					var grabItemComboBox = new OpaqueComboBox(item.Value, pos, grabModeWidth, grabModeNames)
+					CustomComboBox grabItemComboBox = new CustomComboBox(type.Value, pos, grabModeWidth, grabModes.ToListItem())
 					{
 						description = translator.Translate("Selected item grab mode"),
 						colorFill = new Color(0f, 0f, 0f, 1f),
 						listHeight = 8,
 					};
-					grabItemComboBox.Hide();
+					//grabItemComboBox.Hide();
 
-					if (GrabItemComboBoxes.ContainsKey(item.Key))
+					if (GrabItemComboBoxes.ContainsKey(type.Key))
 					{
-						GrabItemComboBoxes[item.Key] = grabItemComboBox;
+						GrabItemComboBoxes[type.Key] = grabItemComboBox;
 					}
 					else
 					{
-						GrabItemComboBoxes.Add(item.Key, grabItemComboBox);
+						GrabItemComboBoxes.Add(type.Key, grabItemComboBox);
 					}
 
-					// 添加到选项卡
 					grabTab.AddItems(new UIelement[] { grabItemComboBox });
+				}
+				//生物的抓取模式下拉框
+				else if (CreatureTypeNames.Contains(type.Key))
+				{
+					Vector2 newPos = new Vector2(pos.x + (COLUMN_WIDTH * 2), pos.y);
+					CustomComboBox grabCreatureComboBox = new CustomComboBox(type.Value, newPos, grabModeWidth, grabModes.ToListItem())
+					{
+						description = translator.Translate("Selected creature grab mode"),
+						colorFill = new Color(0f, 0f, 0f, 1f),
+						listHeight = 8,
+					};
+					//grabCreatureComboBox.Hide();
+
+					if (GrabCreatureComboBoxes.ContainsKey(type.Key))
+					{
+						GrabCreatureComboBoxes[type.Key] = grabCreatureComboBox;
+					}
+					else
+					{
+						GrabCreatureComboBoxes.Add(type.Key, grabCreatureComboBox);
+					}
+
+					grabTab.AddItems(new UIelement[] { grabCreatureComboBox });
 				}
 			}
 
@@ -1185,9 +1167,39 @@ namespace CustomStomachStorage
 				description = translator.Translate("Selected item grab mode")
 			};
 
-			// 添加到选项卡
 			grabTab.AddItems(new UIelement[] { grabItemLabel });
-			#endregion
+
+			// 生物分类 - 右列
+			pos.x += COLUMN_WIDTH;
+
+			float creatureTypeWidth = Mathf.Max(100f, CalculateMaxItemWidth(CreatureTypeNames.ToTranslate()) + 20f);
+			SelectedCreatureType = new CustomComboBox(SelectedCreatureType_, pos, creatureTypeWidth, CreatureTypeNames.ToListItem())
+			{
+				description = translator.Translate("Selected creature type"),
+				colorFill = new Color(0f, 0f, 0f, 1f),
+				listHeight = 26,
+			};
+			var creatureLabel = new OpLabel(
+				pos.x + 5f,
+				pos.y + SelectedCreatureType.size.y / 2f - 10f - SPACING,
+				translator.Translate("Selected creature type"), false)
+			{
+				description = translator.Translate("Selected creature type")
+			};
+
+			grabTab.AddItems(new UIelement[] { SelectedCreatureType, creatureLabel });
+
+			pos.x += COLUMN_WIDTH;
+
+			var grabCreatureLabel = new OpLabel(
+				pos.x + 5f,
+				pos.y + SelectedCreatureType.size.y / 2f - 10f - SPACING,
+				translator.Translate("Selected creature grab mode"), false)
+			{
+				description = translator.Translate("Selected creature grab mode")
+			};
+
+			grabTab.AddItems(new UIelement[] { grabCreatureLabel });
 
 
 
@@ -1206,17 +1218,31 @@ namespace CustomStomachStorage
 
 		}
 
+		/*public static void OpComboBox_ctor(On.Menu.Remix.MixedUI.OpComboBox.orig_ctor_Configurable1_Vector2_float_List1 orig,
+			OpComboBox self, Configurable<string> config, Vector2 pos, float width, List<ListItem> list)
+		{
+			//orig(self, config, pos, width, list);
+			if (self is CustomComboBox customComboBox)
+			{
+				customComboBox._originalList = list.ToArray();
+				customComboBox._itemList = customComboBox._originalList;
+				customComboBox._ResetIndex();
+			}
+		}*/
 
-	}
+
+    }
+
 
 
 	// 自定义不透明下拉框类
-	public class OpaqueComboBox : OpComboBox
+	public class CustomComboBox : OpComboBox
 	{
-		public OpaqueComboBox(Configurable<string> config, Vector2 pos, float width, string[] list)
+		public CustomComboBox(Configurable<string> config, Vector2 pos, float width, string[] list)
 			: base(config, pos, width, list)
 		{
-			//base.listHeight = 8;
+			base.listHeight = 8;
+
 			/*// 1. 先调用父类构造函数（此时已经排序了）
 
 			// 2. 立即用反射替换为原始顺序
@@ -1236,7 +1262,11 @@ namespace CustomStomachStorage
 			this._originalList = originalArray;*/
 		}
 
-		//private ListItem[] _originalList;
+		public CustomComboBox(Configurable<string> config, Vector2 pos, float width, IEnumerable<ListItem> list)
+			: base(config, pos, width, list.ToList())
+		{
+            base.listHeight = 8;
+        }
 
 		public override void Update()
 		{
