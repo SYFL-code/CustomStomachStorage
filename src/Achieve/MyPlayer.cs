@@ -135,7 +135,7 @@ namespace CustomStomachStorage
 				if (hasValue)
 				{
 					UDebug.Log($">>> 进入 strStomach 处理块");
-                    stomachItems.Clear();
+					stomachItems.Clear();
 
 					// 添加对 strStomach 的详细检查
 					if (strStomach == null)
@@ -448,8 +448,8 @@ namespace CustomStomachStorage
 			if (opt.GetGrabSpecial("DragGrabAll") && original == Player.ObjectGrabability.CantGrab)
 				return Player.ObjectGrabability.Drag;
 
-			bool isCreature = testObj is Creature;
 
+			bool isCreature = testObj is Creature;
 			
 			if (isCreature)
 			{
@@ -467,6 +467,7 @@ namespace CustomStomachStorage
 					return opt.GetPlayerGrab(mode);
 				}
 			}
+
 			if (testObj is Player)
 			{
 				string mode = opt.GetGrabMode("Slugcat");
@@ -493,8 +494,6 @@ namespace CustomStomachStorage
 
 		private static bool Player_CanBeSwallowed(On.Player.orig_CanBeSwallowed orig, Player player, PhysicalObject testObj)
 		{
-			//bool a = testObj is Player;//Slugcat
-
 			var opt = MyOptions.Instance;
 
 			// 矛大师特殊处理
@@ -502,32 +501,47 @@ namespace CustomStomachStorage
 				return false;
 
 			// 全局吞咽
-			if (opt.CanSwallow("All"))
+			if (opt.GetSwallowSpecial("All"))
 				return true;
+
 
 			bool isCreature = testObj is Creature;
 
-			if (isCreature && opt.CanSwallow("Creature"))
+			if (isCreature)
 			{
-				return true;
+				string mode = opt.GetSwallowMode("Creature");
+				if (mode != MyOptions.NotSelected)
+				{
+					return opt.GetCanSwallow(mode);
+				}
 			}
-			if (!isCreature && opt.CanSwallow("Item"))
+			else
 			{
-				return true;
+				string mode = opt.GetSwallowMode("Item");
+				if (mode != MyOptions.NotSelected)
+				{
+					return opt.GetCanSwallow(mode);
+				}
 			}
-			if (testObj is Player && opt.CanSwallow("Slugcat"))
+
+			if (testObj is Player)
 			{
-				return true;
+				string mode = opt.GetSwallowMode("Slugcat");
+				if (mode != MyOptions.NotSelected)
+				{
+					return opt.GetCanSwallow(mode);
+				}
 			}
 
 			// 获取继承链
 			HashSet<string> chain = GetInheritanceChain(testObj);
-			// 遍历所有启用的吞咽类型
-			foreach (string inherit in chain)
-			{
-				if (opt.CanSwallow(inherit))
+            // 遍历所有启用的吞咽类型
+            foreach (string type in chain)
+            {
+				string mode = opt.GetSwallowMode(type);
+				if (mode != MyOptions.NotSelected)
 				{
-					return true;
+					return opt.GetCanSwallow(mode);
 				}
 			}
 

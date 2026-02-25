@@ -1,41 +1,42 @@
-﻿using Menu;
-using Menu.Remix.MixedUI;
-using MonoMod.RuntimeDetour;
-using RWCustom;
-using System;
-using System.Collections.Generic;
-using System.Drawing.Drawing2D;
-using System.Drawing.Printing;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.UI;
-using BepInEx;
+﻿using BepInEx;
 using CoralBrain;
 using Expedition;
 using HUD;
 using ImprovedInput;
 using JollyCoop;
 using JollyCoop.JollyMenu;
+using Menu;
+using Menu.Remix.MixedUI;
+using MonoMod.RuntimeDetour;
 using MoreSlugcats;
 using Noise;
+using RWCustom;
 using SlugBase;
 using SlugBase.Features;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Drawing.Printing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.UI;
 using Watcher;
-using static SlugBase.Features.FeatureTypes;
-using static Player.ObjectGrabability;
-using static CustomStomachStorage.Plugin;
-using static CustomStomachStorage.ObjectIcon;
 using static CustomStomachStorage.Extended;
+using static CustomStomachStorage.MyOptions;
+using static CustomStomachStorage.ObjectIcon;
+using static CustomStomachStorage.Plugin;
+using static Player.ObjectGrabability;
+using static SlugBase.Features.FeatureTypes;
 
 
 namespace CustomStomachStorage
@@ -58,24 +59,34 @@ namespace CustomStomachStorage
 		/// </summary>
 		public readonly Configurable<bool> SpearmasterStoreItems;
 
-		public CustomComboBox? SelectedItemType;
-		public CustomComboBox? SelectedCreatureType;
+		public CustomComboBox? SwallowItemComboBox;
+		public CustomComboBox? SwallowCreatureComboBox;
+		public CustomComboBox? GrabItemComboBox;
+		public CustomComboBox? GrabCreatureComboBox;
 
-		public readonly Configurable<string> SelectedItemType_;
-		public readonly Configurable<string> SelectedCreatureType_;
+		public readonly Configurable<string> SwallowItemTypeValue;
+		public readonly Configurable<string> SwallowCreatureTypeValue;
+		public readonly Configurable<string> GrabItemTypeValue;
+		public readonly Configurable<string> GrabCreatureTypeValue;
 		/// <summary>
 		/// 可配置的吞咽类型字典
 		/// </summary>
-		public readonly Dictionary<string, Configurable<bool>> SwallowTypes = new();
-		/// <summary>
-		/// 可配置的抓取类型字典
-		/// </summary>
-		public readonly Dictionary<string, Configurable<string>> GrabTypes = new();
+		public readonly Dictionary<string, Configurable<string>> SwallowTypes = new();
+        /// <summary>
+        /// 可配置的特殊抓取类型字典
+        /// </summary>
+        public readonly Dictionary<string, Configurable<bool>> SwallowSpecialTypes = new();
+        /// <summary>
+        /// 可配置的抓取类型字典
+        /// </summary>
+        public readonly Dictionary<string, Configurable<string>> GrabTypes = new();
 		/// <summary>
 		/// 可配置的特殊抓取类型字典
 		/// </summary>
 		public readonly Dictionary<string, Configurable<bool>> GrabSpecialTypes = new();
 
+		public Dictionary<string, CustomComboBox> SwallowItemComboBoxes = new();
+		public Dictionary<string, CustomComboBox> SwallowCreatureComboBoxes = new();
 		public Dictionary<string, CustomComboBox> GrabItemComboBoxes = new();
 		public Dictionary<string, CustomComboBox> GrabCreatureComboBoxes = new();
 
@@ -221,6 +232,13 @@ namespace CustomStomachStorage
 			CantGrab
 		}
 
+		public enum SwallowMode
+		{
+			NotSelected,
+			CanSwallow,
+			CantSwallow
+		}
+
 		/// <summary>
 		/// 全局可见性模式
 		/// </summary>
@@ -265,13 +283,13 @@ namespace CustomStomachStorage
 		{
 			return mode switch
 			{
-				GrabMode.NotSelected => "Not selected",
+				GrabMode.NotSelected => NotSelected,
 				GrabMode.OneHand => "One hand",
 				GrabMode.BigOneHand => "Big one hand",
 				GrabMode.TwoHands => "Two hands",
 				GrabMode.Drag => "Drag",
 				GrabMode.CantGrab => "Cannot grab",
-				_ => "Not selected"
+				_ => NotSelected
 			};
 		}
 		private static GrabMode GrabModeFromString(string value)
@@ -291,8 +309,8 @@ namespace CustomStomachStorage
 				"Two hands" => Player.ObjectGrabability.TwoHands,
 				"Drag" => Player.ObjectGrabability.Drag,
 				"Cannot grab" => Player.ObjectGrabability.CantGrab,
-				"Not selected" => Player.ObjectGrabability.CantGrab,
-				"单手" => Player.ObjectGrabability.OneHand,
+                NotSelected => Player.ObjectGrabability.CantGrab,
+                "单手" => Player.ObjectGrabability.OneHand,
 				"大单手" => Player.ObjectGrabability.BigOneHand,
 				"双手" => Player.ObjectGrabability.TwoHands,
 				"拖拽" => Player.ObjectGrabability.Drag,
@@ -302,7 +320,39 @@ namespace CustomStomachStorage
 			};
 		}
 
-		private static string GlobalVisibilityModeToString(GlobalVisibilityMode value)
+		private static string SwallowModeToString(SwallowMode mode)
+		{
+			return mode switch
+			{
+				SwallowMode.NotSelected => NotSelected,
+				SwallowMode.CanSwallow => "Can swallow",
+				SwallowMode.CantSwallow => "Cannot swallow",
+				_ => NotSelected
+			};
+		}
+		private static SwallowMode SwallowModeFromString(string value)
+		{
+			foreach (SwallowMode mode in Enum.GetValues(typeof(SwallowMode)))
+				if (SwallowModeToString(mode) == value)
+					return mode;
+			return SwallowMode.NotSelected;
+		}
+        public bool GetCanSwallow(string mode)
+        {
+            // 转换显示文本到实际值
+            return mode switch
+            {
+                "Can swallow" => true,
+                "Cannot swallow" => false,
+                NotSelected => false,
+                "可以吞咽" => true,
+                "不可吞咽" => false,
+                "未选择" => false,
+                _ => false
+            };
+        }
+
+        private static string GlobalVisibilityModeToString(GlobalVisibilityMode value)
 		{
 			return value switch
 			{
@@ -377,14 +427,16 @@ namespace CustomStomachStorage
 
 		#region 访问器
 		// ============ 访问器 ============
-		public bool CanSwallow(string type) =>
-			SwallowTypes.TryGetValue(type, out var config) && config.Value == true;
-		public bool GetGrabSpecial(string typeName) =>
-			GrabSpecialTypes.TryGetValue(typeName, out var config) && config.Value == true;
-		public string GetGrabMode(string typeName) =>
+		public string GetSwallowMode(string type) =>
+			SwallowTypes.TryGetValue(type, out var config) ? config.Value : NotSelected;
+        public bool GetSwallowSpecial(string typeName) =>
+            SwallowSpecialTypes.TryGetValue(typeName, out var config) && config.Value == true;
+        public string GetGrabMode(string typeName) =>
 			GrabTypes.TryGetValue(typeName, out var config) ? config.Value : NotSelected;
+        public bool GetGrabSpecial(string typeName) =>
+			GrabSpecialTypes.TryGetValue(typeName, out var config) && config.Value == true;
 
-		public int GetIconSize()
+        public int GetIconSize()
 		{
 			return IconSize.Value;
 		}
@@ -473,17 +525,25 @@ namespace CustomStomachStorage
 				new ConfigAcceptableRange<int>(15, 64)
 			);
 
-			// 基础类型
-			SwallowTypes["All"] = config.Bind<bool>($"{"All"}_GrabSpecial_conf_{MOD_name}", false);
+            // 基础类型
+            SwallowSpecialTypes["All"] = config.Bind<bool>($"{"All"}_GrabSpecial_conf_{MOD_name}", false);
 			GrabSpecialTypes["OneHandGrabAll"] = config.Bind<bool>($"{"OneHandGrabAll"}_GrabSpecial_conf_{MOD_name}", false);
 			GrabSpecialTypes["DragGrabAll"] = config.Bind<bool>($"{"DragGrabAll"}_GrabSpecial_conf_{MOD_name}", false);
 
-			SelectedItemType_ = config.Bind<string>(
-				$"SelectedItemType_conf_{MOD_name}",
+			SwallowItemTypeValue = config.Bind<string>(
+				$"SwallowItemTypeValue_conf_{MOD_name}",
 				"Item"
 			);
-			SelectedCreatureType_ = config.Bind<string>(
-				$"SelectedCreatureType_conf_{MOD_name}",
+			SwallowCreatureTypeValue = config.Bind<string>(
+				$"SwallowCreatureTypeValue_conf_{MOD_name}",
+				"Creature"
+			);
+			GrabItemTypeValue = config.Bind<string>(
+				$"GrabItemTypeValue_conf_{MOD_name}",
+				"Item"
+			);
+			GrabCreatureTypeValue = config.Bind<string>(
+				$"GrabCreatureTypeValue_conf_{MOD_name}",
 				"Creature"
 			);
 
@@ -546,11 +606,8 @@ namespace CustomStomachStorage
 
 		private void InitializeSwallowType(string typeName, bool defaultValue = false)
 		{
-			SwallowTypes[typeName] = config.Bind<bool>($"{typeName}_Swallow_conf_{MOD_name}", defaultValue);
-			GrabTypes[typeName] = config.Bind<string>(
-				$"{typeName}_Grab_conf_{MOD_name}",
-				GrabModeToString(GrabMode.NotSelected)
-			);
+			SwallowTypes[typeName] = config.Bind<string>($"{typeName}_Swallow_conf_{MOD_name}", NotSelected);
+			GrabTypes[typeName] = config.Bind<string>($"{typeName}_Grab_conf_{MOD_name}", NotSelected);
 		}
 		#endregion
 
@@ -593,20 +650,20 @@ namespace CustomStomachStorage
 		#region Hook
 		public void HookAdd()
 		{
-			SelectedItemType_.OnChange += SelectedItemType_OnChange;
+			//SelectedItemType_.OnChange += SelectedItemType_OnChange;
 
 			//On.Menu.Remix.MixedUI.OpComboBox.ctor_Configurable1_Vector2_float_List1 += OpComboBox_ctor;
 		}
 		public void HookSubtract()
 		{
-			SelectedItemType_.OnChange -= SelectedItemType_OnChange;
+			//SelectedItemType_.OnChange -= SelectedItemType_OnChange;
 
 			//On.Menu.Remix.MixedUI.OpComboBox.ctor_Configurable1_Vector2_float_List1 -= OpComboBox_ctor;
 		}
 
 		private void SelectedItemType_OnChange()
 		{
-			UDebug.Log($"SelectedItemType_ changed to {SelectedItemType_.Value}");
+			//UDebug.Log($"SelectedItemType_ changed to {SelectedItemType_.Value}");
 			/*foreach (var item in GrabItemComboBoxes)
 			{
 				if (SelectedItemType_.Value == item.Key)
@@ -625,13 +682,46 @@ namespace CustomStomachStorage
 		{
 			base.Update();
 
+			foreach (var type in SwallowTypes)
+			{
+				if (ItemTypeNames.Contains(type.Key))
+				{
+					if (SwallowItemComboBoxes.TryGetValue(type.Key, out var swallowItemComboBox))
+					{
+						if (SwallowItemComboBox?.value == type.Key)
+						{
+                            swallowItemComboBox.Show();
+						}
+						else
+						{
+                            swallowItemComboBox.Hide();
+						}
+					}
+				}
+				else if (CreatureTypeNames.Contains(type.Key))
+				{
+					if (SwallowCreatureComboBoxes.TryGetValue(type.Key, out var swallowCreatureComboBox))
+					{
+						if (SwallowCreatureComboBox?.value == type.Key)
+						{
+                            swallowCreatureComboBox.Show();
+						}
+						else
+						{
+                            swallowCreatureComboBox.Hide();
+						}
+					}
+				}
+			}
+
+
 			foreach (var type in GrabTypes)
 			{
 				if (ItemTypeNames.Contains(type.Key))
 				{
 					if (GrabItemComboBoxes.TryGetValue(type.Key, out var grabItemComboBox))
 					{
-						if (SelectedItemType?.value == type.Key)
+						if (GrabItemComboBox?.value == type.Key)
 						{
 							grabItemComboBox.Show();
 						}
@@ -641,11 +731,11 @@ namespace CustomStomachStorage
 						}
 					}
 				}
-				if (CreatureTypeNames.Contains(type.Key))
+				else if (CreatureTypeNames.Contains(type.Key))
 				{
 					if (GrabCreatureComboBoxes.TryGetValue(type.Key, out var grabCreatureComboBox))
 					{
-						if (SelectedItemType?.value == type.Key)
+						if (GrabCreatureComboBox?.value == type.Key)
 						{
 							grabCreatureComboBox.Show();
 						}
@@ -1029,7 +1119,7 @@ namespace CustomStomachStorage
 
 			// 吞咽全部
 			AddLabeledCheckbox(swallowTab, new Vector2(TITLE_X, yPos),
-				translator.Translate("Swallow All"), SwallowTypes["All"],
+				translator.Translate("Swallow All"), SwallowSpecialTypes["All"],
 				"Allow swallowing all objects and creatures");
 			yPos -= SPACING;
 
@@ -1037,7 +1127,136 @@ namespace CustomStomachStorage
 
 			Vector2 pos = new Vector2(TITLE_X, yPos);
 
-			// 物品分类 - 左列
+
+			string[] swallowModes = Enum.GetValues(typeof(SwallowMode))
+				.Cast<SwallowMode>()
+				.Select(m => SwallowModeToString(m))
+				.ToArray();
+
+			string[] traSwallowModeNames = swallowModes
+                .Select(t => translator.Translate(t))
+				.ToArray();
+
+			//物品分类 - 左列
+			// Type
+			pos = new Vector2(TITLE_X, 10f + SPACING);
+
+			float itemTypeWidth = Mathf.Max(100f, CalculateMaxItemWidth(ItemTypeNames.ToTranslate()) + 20f);
+			SwallowItemComboBox = new CustomComboBox(SwallowItemTypeValue, pos, itemTypeWidth, ItemTypeNames.ToListItem())
+			{
+				description = translator.Translate("Selected item type"),
+				colorFill = new Color(0f, 0f, 0f, 1f),
+				listHeight = 17,
+			};
+			var swallowItemTypesLabel = new OpLabel(
+				pos.x + 5f,
+				pos.y + SwallowItemComboBox.size.y / 2f - 10f - SPACING,
+				translator.Translate("Selected item type"), false)
+			{
+				description = translator.Translate("Selected item type")
+			};
+
+			swallowTab.AddItems(new UIelement[] { SwallowItemComboBox, swallowItemTypesLabel });
+
+			pos.x += COLUMN_WIDTH;
+
+            // swallowMode
+            float swallowModeWidth = Mathf.Max(100f, CalculateMaxItemWidth(traSwallowModeNames) + 20f);
+
+            foreach (var type in SwallowTypes)
+			{
+				//物品的抓取模式下拉框
+				if (ItemTypeNames.Contains(type.Key))
+				{
+                    CustomComboBox swallowItemComboBox = new CustomComboBox(type.Value, pos, swallowModeWidth, swallowModes.ToListItem())
+                    {
+                        description = translator.Translate("Selected item swallow mode"),
+                        colorFill = new Color(0f, 0f, 0f, 1f),
+                        listHeight = 8,
+                    };
+                    //swallowItemComboBox.Hide();
+
+                    if (SwallowItemComboBoxes.ContainsKey(type.Key))
+					{
+                        SwallowItemComboBoxes[type.Key] = swallowItemComboBox;
+					}
+					else
+					{
+                        SwallowItemComboBoxes.Add(type.Key, swallowItemComboBox);
+					}
+
+					swallowTab.AddItems(new UIelement[] { swallowItemComboBox });
+				}
+				//生物的抓取模式下拉框
+				else if (CreatureTypeNames.Contains(type.Key))
+				{
+					Vector2 newPos = new Vector2(pos.x + (COLUMN_WIDTH * 2), pos.y);
+                    CustomComboBox swallowCreatureComboBox = new CustomComboBox(type.Value, newPos, swallowModeWidth, swallowModes.ToListItem())
+                    {
+                        description = translator.Translate("Selected creature swallow mode"),
+                        colorFill = new Color(0f, 0f, 0f, 1f),
+                        listHeight = 8,
+                    };
+                    //swallowCreatureComboBox.Hide();
+
+                    if (SwallowCreatureComboBoxes.ContainsKey(type.Key))
+					{
+                        SwallowCreatureComboBoxes[type.Key] = swallowCreatureComboBox;
+					}
+					else
+					{
+                        SwallowCreatureComboBoxes.Add(type.Key, swallowCreatureComboBox);
+					}
+
+					swallowTab.AddItems(new UIelement[] { swallowCreatureComboBox });
+				}
+			}
+
+			// 创建标签
+			var swallowItemLabel = new OpLabel(
+				pos.x + 5f,
+				pos.y + SwallowItemComboBox.size.y / 2f - 10f - SPACING,
+				translator.Translate("Selected item swallow mode"), false)
+			{
+				description = translator.Translate("Selected item swallow mode")
+			};
+
+			swallowTab.AddItems(new UIelement[] { swallowItemLabel });
+
+			// 生物分类 - 右列
+			pos.x += COLUMN_WIDTH;
+
+			float creatureTypeWidth = Mathf.Max(100f, CalculateMaxItemWidth(CreatureTypeNames.ToTranslate()) + 20f);
+			SwallowCreatureComboBox = new CustomComboBox(SwallowCreatureTypeValue, pos, creatureTypeWidth, CreatureTypeNames.ToListItem())
+			{
+				description = translator.Translate("Selected creature type"),
+				colorFill = new Color(0f, 0f, 0f, 1f),
+				listHeight = 26,
+			};
+			var swallowCreatureTypesLabel = new OpLabel(
+				pos.x + 5f,
+				pos.y + SwallowCreatureComboBox.size.y / 2f - 10f - SPACING,
+				translator.Translate("Selected creature type"), false)
+			{
+				description = translator.Translate("Selected creature type")
+			};
+
+			swallowTab.AddItems(new UIelement[] { SwallowCreatureComboBox, swallowCreatureTypesLabel });
+
+			pos.x += COLUMN_WIDTH;
+
+			var swallowCreatureLabel = new OpLabel(
+				pos.x + 5f,
+				pos.y + SwallowCreatureComboBox.size.y / 2f - 10f - SPACING,
+				translator.Translate("Selected creature swallow mode"), false)
+			{
+				description = translator.Translate("Selected creature swallow mode")
+			};
+
+			swallowTab.AddItems(new UIelement[] { swallowCreatureLabel });
+
+
+			/*// 物品分类 - 左列
 			AddCheckboxType(swallowTab, ref pos,
 				translator.Translate("ITEMS"),
 				ItemTypeNames, SwallowTypes);
@@ -1046,7 +1265,7 @@ namespace CustomStomachStorage
 			//float rightColY = TITLE_Y - SPACING * 2;
 			AddCheckboxType(swallowTab, ref pos,
 				translator.Translate("CREATURES"),
-				CreatureTypeNames, SwallowTypes);
+				CreatureTypeNames, SwallowTypes);*/
 			#endregion
 
 			#region grabTab
@@ -1087,22 +1306,21 @@ namespace CustomStomachStorage
 			// Type
 			pos = new Vector2(TITLE_X, 10f + SPACING);
 
-			float itemTypeWidth = Mathf.Max(100f, CalculateMaxItemWidth(ItemTypeNames.ToTranslate()) + 20f);
-			SelectedItemType = new CustomComboBox(SelectedItemType_, pos, itemTypeWidth, ItemTypeNames.ToListItem())
+			GrabItemComboBox = new CustomComboBox(GrabItemTypeValue, pos, itemTypeWidth, ItemTypeNames.ToListItem())
 			{
 				description = translator.Translate("Selected item type"),
 				colorFill = new Color(0f, 0f, 0f, 1f),
 				listHeight = 17,
 			};
-			var itemLabel = new OpLabel(
+			var grabItemTypesLabel = new OpLabel(
 				pos.x + 5f,
-				pos.y + SelectedItemType.size.y / 2f - 10f - SPACING,
+				pos.y + GrabItemComboBox.size.y / 2f - 10f - SPACING,
 				translator.Translate("Selected item type"), false)
 			{
 				description = translator.Translate("Selected item type")
 			};
 
-			grabTab.AddItems(new UIelement[] { SelectedItemType, itemLabel });
+			grabTab.AddItems(new UIelement[] { GrabItemComboBox, grabItemTypesLabel });
 
 			pos.x += COLUMN_WIDTH;
 
@@ -1161,7 +1379,7 @@ namespace CustomStomachStorage
 			// 创建标签
 			var grabItemLabel = new OpLabel(
 				pos.x + 5f,
-				pos.y + SelectedItemType.size.y / 2f - 10f - SPACING,
+				pos.y + GrabItemComboBox.size.y / 2f - 10f - SPACING,
 				translator.Translate("Selected item grab mode"), false)
 			{
 				description = translator.Translate("Selected item grab mode")
@@ -1172,28 +1390,27 @@ namespace CustomStomachStorage
 			// 生物分类 - 右列
 			pos.x += COLUMN_WIDTH;
 
-			float creatureTypeWidth = Mathf.Max(100f, CalculateMaxItemWidth(CreatureTypeNames.ToTranslate()) + 20f);
-			SelectedCreatureType = new CustomComboBox(SelectedCreatureType_, pos, creatureTypeWidth, CreatureTypeNames.ToListItem())
+			GrabCreatureComboBox = new CustomComboBox(GrabCreatureTypeValue, pos, creatureTypeWidth, CreatureTypeNames.ToListItem())
 			{
 				description = translator.Translate("Selected creature type"),
 				colorFill = new Color(0f, 0f, 0f, 1f),
 				listHeight = 26,
 			};
-			var creatureLabel = new OpLabel(
+			var grabCreatureTypesLabel = new OpLabel(
 				pos.x + 5f,
-				pos.y + SelectedCreatureType.size.y / 2f - 10f - SPACING,
+				pos.y + GrabCreatureComboBox.size.y / 2f - 10f - SPACING,
 				translator.Translate("Selected creature type"), false)
 			{
 				description = translator.Translate("Selected creature type")
 			};
 
-			grabTab.AddItems(new UIelement[] { SelectedCreatureType, creatureLabel });
+			grabTab.AddItems(new UIelement[] { GrabCreatureComboBox, grabCreatureTypesLabel });
 
 			pos.x += COLUMN_WIDTH;
 
 			var grabCreatureLabel = new OpLabel(
 				pos.x + 5f,
-				pos.y + SelectedCreatureType.size.y / 2f - 10f - SPACING,
+				pos.y + GrabCreatureComboBox.size.y / 2f - 10f - SPACING,
 				translator.Translate("Selected creature grab mode"), false)
 			{
 				description = translator.Translate("Selected creature grab mode")
@@ -1231,7 +1448,7 @@ namespace CustomStomachStorage
 		}*/
 
 
-    }
+	}
 
 
 
@@ -1265,8 +1482,8 @@ namespace CustomStomachStorage
 		public CustomComboBox(Configurable<string> config, Vector2 pos, float width, IEnumerable<ListItem> list)
 			: base(config, pos, width, list.ToList())
 		{
-            base.listHeight = 8;
-        }
+			base.listHeight = 8;
+		}
 
 		public override void Update()
 		{
