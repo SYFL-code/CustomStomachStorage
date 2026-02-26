@@ -149,6 +149,119 @@ namespace CustomStomachStorage
 			};
 		#endregion
 		#region Items
+		Type[] _baseItemTypes = {
+	typeof(PhysicalObject),//Item
+	typeof(Weapon),
+	typeof(Rock),
+	typeof(Spear),
+	typeof(ExplosiveSpear),
+	typeof(ScavengerBomb),
+	typeof(SporePlant),
+	typeof(FlareBomb),
+	typeof(PuffBall),
+	typeof(FirecrackerPlant),
+	typeof(Mushroom),
+	typeof(WaterNut),
+	typeof(EggBugEgg),
+	typeof(DangleFruit),
+	typeof(SeedCob),
+	typeof(SlimeMold),
+	typeof(KarmaFlower),
+	typeof(DataPearl),
+	typeof(NeedleEgg),
+	typeof(Lantern),
+	typeof(VultureMask),
+	typeof(FlyLure),
+	typeof(BubbleGrass),
+	typeof(OverseerCarcass),
+	typeof(OracleSwarmer),
+};
+
+		Type[] _mscItemTypes = {
+	typeof(LillyPuck),
+	typeof(FireEgg),
+	typeof(JokeRifle),
+	typeof(EnergyCell),
+	typeof(MoonCloak),
+	typeof(ElectricSpear), //来自117.电矛
+	typeof(SingularityBomb), //来自119.奇点炸弹
+	typeof(GooieDuck), //来自111.悬垂霉菌
+	typeof(DandelionPeach), //来自113.蒲公英桃
+	typeof(GlowWeed), //来自114.发光果
+	typeof(Pomegranate), //来自151.石榴
+};
+
+		Type[] _watcherItemTypes = {
+	typeof(Boomerang),
+	typeof(GraffitiBomb),
+};
+		#endregion
+		#region Creatures
+		Type[] _baseCreatureTypes = {
+	typeof(Creature),
+	typeof(Player),//Slugcat
+	typeof(Lizard),
+	typeof(Vulture), //18.秃鹫
+	typeof(PoleMimic), //19.拟态草
+	typeof(TentaclePlant), //20.红树
+	typeof(Leech), //21.红水蛭
+	typeof(Centipede), //23.蜈蚣
+	typeof(Spider), //25.蜘蛛
+	typeof(BigSpider), //26.狼蛛
+	typeof(DropBug), //27.落网虫
+	typeof(BigEel), //29.利维坦
+	typeof(MirosBird), //30.钢鸟
+	typeof(DaddyLongLegs), //31.蓝长腿菌
+	typeof(WormGrass), //32.舌草
+	typeof(Overseer), //34.监视者
+	typeof(Cicada), //35.蝉乌贼
+	typeof(BigNeedleWorm), //36.成年面条蝇
+	typeof(GarbageWorm), //37.垃圾虫
+	typeof(Snail), //38.波动龟
+	typeof(Scavenger), //39.拾荒者
+	typeof(LanternMouse), //40.光鼠
+	typeof(JetFish), //41.蛙鱼
+	typeof(TubeWorm), //42.管虫
+	typeof(Deer), //43.雨鹿
+	typeof(Fly), //44.蝠蝇
+	typeof(EggBug), //45.蛋虫
+	typeof(SmallNeedleWorm), //46.幼年面条蝇
+	typeof(VultureGrub), //48.射线虫
+	typeof(Hazer), //49.墨鱼
+	typeof(JellyFish), //50.水母
+	typeof(Oracle), //54.仰望皓月, 55.五块卵石 归为同一类? 通常是Oracles
+	typeof(Ghost), //56.回响
+	typeof(VoidSpawn), //57.虚空游魂
+	typeof(TempleGuard), //58.守卫
+};
+
+		Type[] _mscCreatureTypes = {
+	typeof(StowawayBug), //63.偷渡者
+	typeof(Inspector), //66.监察者
+	typeof(Yeek), //68.跃客
+};
+
+		Type[] _watcherCreatureTypes = {
+	typeof(Loach), //127.泥鳅
+	typeof(Barnacle), //128.藤壶
+	typeof(BigMoth), //131.大蛾
+	typeof(SkyWhale), //132.天空鲸
+	typeof(BoxWorm), //133.箱虫
+	typeof(FireSprite), //134.火精灵
+	typeof(DrillCrab), //135.钻蟹
+	typeof(Frog), //136.青蛙
+	typeof(Tardigrade), //137.水熊虫
+	typeof(SandGrub), //138.沙螬
+	typeof(Rattler), //140.震骨者
+	typeof(Rat), //143.老鼠
+	typeof(RotWorm), //148.腐化蠕虫
+	typeof(Angler), //238.琵琶鱼
+	typeof(MothGrub), //240.蛾螬
+	typeof(RippleSpider), //242.涟漪蜘蛛
+};
+		#endregion
+
+		/*#region Items
 		//List<string> baseItemTypes = GetTypeNames(_baseItemTypes);
 		//List<string> mscItemTypes = GetTypeNames(_mscItemTypes);
 		//List<string> watcherItemTypes = GetTypeNames(_watcherItemTypes);
@@ -224,36 +337,36 @@ namespace CustomStomachStorage
 				typeof(JetFish),
 				typeof(TubeWorm),
 				typeof(Deer),
-                typeof(Fly),
-                typeof(EggBug),
-                typeof(SmallNeedleWorm),
-                typeof(VultureGrub),
-                typeof(Hazer),
-                typeof(JellyFish),
-                typeof(VoidSpawn),
-                typeof(TempleGuard),
+				typeof(Fly),
+				typeof(EggBug),
+				typeof(SmallNeedleWorm),
+				typeof(VultureGrub),
+				typeof(Hazer),
+				typeof(JellyFish),
+				typeof(VoidSpawn),
+				typeof(TempleGuard),
 			};
 		Type[] _mscCreatureTypes = {
-                typeof(Yeek),
+				typeof(Yeek),
 				typeof(Inspector),
 				typeof(StowawayBug),
 			};
 		Type[] _watcherCreatureTypes = {
-            typeof(Angler),
-            typeof(Loach),
+			typeof(Angler),
+			typeof(Loach),
 			typeof(BigMoth),
-            typeof(MothGrub),
-            typeof(SkyWhale),
-            typeof(BoxWorm),
+			typeof(MothGrub),
+			typeof(SkyWhale),
+			typeof(BoxWorm),
 			typeof(DrillCrab),
 			typeof(Tardigrade),
 			typeof(Barnacle),
 			typeof(Frog),
-            typeof(Rat),
-            typeof(SandGrub),
-            typeof(Rattler),
-        };
-		#endregion
+			typeof(Rat),
+			typeof(SandGrub),
+			typeof(Rattler),
+		};
+		#endregion*/
 
 		public const string NotSelected = "Not selected";
 		public const string Default = "Default";
@@ -1603,7 +1716,7 @@ namespace CustomStomachStorage
 				{
 					// 强制向上展开
 					_downward = false;
-                }
+				}
 
 				// 设置不透明背景和位置
 				if (this._rectList != null)

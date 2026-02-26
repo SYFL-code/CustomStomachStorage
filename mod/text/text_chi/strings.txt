@@ -126,6 +126,12 @@ FireEgg|火虫卵
 JokeRifle|玩笑步枪
 EnergyCell|质量稀释电池
 MoonCloak|斗篷
+ElectricSpear|电矛
+SingularityBomb|奇点炸弹
+GooieDuck|悬垂霉菌
+DandelionPeach|蒲公英桃
+GlowWeed|发光果
+Pomegranate|石榴
 
 Boomerang|回旋镖
 GraffitiBomb|涂鸦炸弹
@@ -139,6 +145,7 @@ TentaclePlant|红树
 Leech|水蛭​
 Centipede|蜈蚣
 Spider|蜘蛛
+BigSpider|狼蛛
 DropBug|落网虫
 BigEel|利维坦
 MirosBird|钢鸟
@@ -150,7 +157,7 @@ BigNeedleWorm|成年面条蝇
 GarbageWorm|垃圾虫
 Snail|波动龟
 Scavenger|拾荒者
-LanternMouse|灯笼鼠
+LanternMouse|光鼠
 JetFish|蛙鱼
 TubeWorm|管虫
 Deer|雨鹿
@@ -160,23 +167,28 @@ SmallNeedleWorm|幼年面条蝇
 VultureGrub|射线虫
 Hazer|墨鱼
 JellyFish|水母
+Oracle|迭代器
+Ghost|回响
 VoidSpawn|虚空游魂
 TempleGuard|守卫
 
-Yeek|跃客
-Inspector|监察者
 StowawayBug|偷渡者
+Inspector|监察者
+Yeek|跃客
 
 Loach|泥鳅
-Angler|琵琶鱼
+Barnacle|藤壶
 BigMoth|大蛾
-MothGrub|蛾幼虫
 SkyWhale|天空鲸
 BoxWorm|箱虫
+FireSprite|火精灵
 DrillCrab|钻蟹
-Tardigrade|水熊虫
-Barnacle|藤壶
 Frog|青蛙
-Rat|老鼠
+Tardigrade|水熊虫
 SandGrub|沙螬
 Rattler|震骨者
+Rat|老鼠
+RotWorm|腐化蠕虫
+Angler|琵琶鱼
+MothGrub|蛾螬
+RippleSpider|涟漪蜘蛛
